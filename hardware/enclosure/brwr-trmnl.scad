@@ -1,26 +1,30 @@
 // =====================================================================
 // brwr-trmnl enclosure: 10.3" e-paper Home Assistant display
 // =====================================================================
-// A two-part printed frame (bezel + back cover) that hangs on a fridge
-// door with four rubber-coated pot magnets, on a wall with two keyholes,
-// or leans into a small printed desk stand.
+// A thin printed frame (bezel + back cover, 229 x 204 x 13 mm) that sticks
+// to a fridge door with four N52 disc magnets sealed inside the back cover,
+// or leans into a small printed desk stand. Steel rods epoxied into
+// channels stiffen it and splice the split parts.
 //
 // Coordinates (front view, looking at the display): origin at the centre
 // of the outline, +X right, +Y up, +Z toward the viewer. Z = 0 is the
 // back face of the back cover (the face that touches the fridge); the
 // front face of the bezel is at Z = depth. All dimensions are mm.
 //
-// Printable parts: bezel, back, button_caps, stand (render them with
-// ./export.sh). Views: assembly, exploded, inside (back cover removed),
-// fit_check (module envelopes in a see-through enclosure) and clash
-// (intersections between parts and modules; empty when everything fits).
+// Printable parts (split = true, for a 220 x 220 bed): bezel_top,
+// bezel_bottom, bezel_left, bezel_right, back_left, back_right,
+// button_caps, stand. One-piece parts for a 250 x 210 bed: bezel, back
+// (split = false). Render them all with ./export.sh. Views: assembly,
+// exploded, inside (back cover removed), fit_check (module envelopes in a
+// see-through enclosure), plates (print jobs on the bed) and clash
+// (intersections between parts, modules and rods; empty when all fits).
 //
 // OpenSCAD 2021.01 or newer. Open the Customizer to change parameters.
 // =====================================================================
 
 /* [Part] */
 // What to render
-part = "assembly"; // [assembly, exploded, inside, fit_check, clash, bezel, back, button_caps, stand]
+part = "assembly"; // [assembly, exploded, inside, fit_check, clash, plates, bezel_top, bezel_bottom, bezel_left, bezel_right, back_left, back_right, button_caps, stand, bezel, back]
 
 /* [Panel: E Ink ED103TC2] */
 panel_w = 216.70;        // mm, glass outline width (ED103TC2 spec)
@@ -33,9 +37,9 @@ border_bottom = 13.7;    // mm, non-active border to cover at the bottom, FPC si
 pocket_depth = 1.2;      // mm, panel pocket depth (community-measured FrameOS case)
 pocket_clear = 0.3;      // mm per side, panel to pocket wall (spec)
 pocket_rim_b = 2.0;      // mm, rim below the pocket's bottom edge, outside the flex slot (design)
-pocket_relief_d = 2.0;   // mm, relief holes in the pocket corners for the glass corners (design)
+pocket_relief_d = 1.6;   // mm, relief holes in the pocket corners for the glass corners (design: leaves a web to the rod groove)
 gasket_t = 0.5;          // mm, foam gasket on the window lip (spec)
-back_foam_t = 1.0;       // mm, foam strips between the ribs and the panel (spec)
+back_foam_t = 1.0;       // mm, foam strips between the ribs and the panel (lead)
 back_foam_squeeze = 0.3; // mm, foam compression when the back cover is screwed on (design)
 
 /* [Panel flex (FPC)] */
@@ -50,23 +54,38 @@ fpc_bend = 1.5;          // mm, how far the 180 deg bend reaches below the panel
 /* [Enclosure] */
 outer_w = 229;           // mm, outer width (spec target ~229)
 outer_h = 204;           // mm, outer height (spec target ~204)
-depth = 25;              // mm, total depth incl. back cover (spec ~22; 25 so the 21 mm antenna fits the top wall)
+depth = 13;              // mm, total depth incl. back cover (lead: 13; the charger's USB-C sets the minimum, see the console)
 border_top = 6;          // mm, panel top edge to outer top edge (spec ~6)
 corner_r = 6;            // mm, outline corner radius (spec ~6)
 wall_t = 2.5;            // mm, side walls (spec)
-front_t = 2.0;           // mm, front face (spec)
-back_t = 2.0;            // mm, back cover plate (spec)
+front_t = 1.6;           // mm, front face (lead)
+back_t = 1.8;            // mm, back cover plate (lead)
 front_chamfer = 1.5;     // mm, 45 deg chamfer on the front outer edge (design)
 back_chamfer = 1.0;      // mm, 45 deg chamfer on the back outer edge (design)
-seam_chamfer = 0.5;      // mm, V-groove where bezel and back cover meet (design)
-window_chamfer = 1.5;    // mm, 45 deg chamfer on the window's front edge (spec: 45 deg)
+seam_chamfer = 0.5;      // mm, V-groove where bezel and back cover meet, and on the rail joints (design)
+window_chamfer = 1.1;    // mm, 45 deg chamfer on the window's front edge (spec: 45 deg; land + chamfer = front_t)
 window_land = 0.5;       // mm, straight land behind the window chamfer (design)
 window_r = 1.0;          // mm, window corner radius (design)
 lip_t = 1.2;             // mm, locating lip on the back cover, inside the walls (design)
 lip_h = 2.0;             // mm, locating lip height (design)
 lip_clear = 0.25;        // mm, lip to wall clearance (design)
-bed_size = [250, 210];   // mm, printer bed the bezel must fit (Prusa MK4; 220 x 220 is too small)
 print_gap = 4;           // mm, spacing between caps on the bed (design)
+
+/* [Print bed and split] */
+bed_size = [220, 220];   // mm, printer bed (FlashForge Adventurer 5M); one-piece parts need [250, 210]
+bed_margin = 5;          // mm, strip along the bed edge that is not used (lead)
+split = true;            // split bezel and back cover to fit bed_size; false: one-piece bezel and back
+bezel_lap = 4;           // mm, rail joints: the inner half of the side wall runs this far past the outer half (design)
+rail_angle = 45;         // deg, the top rail and the chin turn on the bed so they fit (lead)
+back_split_x = -39;      // mm, back cover seam on its inner face (lead)
+scarf_land = 0.4;        // mm, straight land at both ends of the back cover's 45 deg scarf (design)
+back_tab_y = [-70, 0, 55]; // mm, alignment tabs across the back cover seam (design: clear of the rods)
+back_tab = [2, 8, 0.8];  // mm, tab length past the seam, width, thickness (design)
+tab_clear = 0.2;         // mm, tab to pocket clearance (design)
+seam_clear_min = 1.5;    // mm, back cover seam and bezel joints to any feature (lead)
+tie_seam_min = 4;        // mm, back cover seam to the zip-tie blocks (lead)
+rib_seam_clear = 1.5;    // mm, ribs stop this far from the back cover seam (design)
+plate_gap = 10;          // mm, gap between parts that share a print job (design)
 
 /* [Driver board: Waveshare e-Paper IT8951 Driver HAT (B)] */
 drv_size = [65, 56.5];   // mm, RPi HAT footprint, long x short edge (Waveshare)
@@ -74,78 +93,84 @@ drv_pos = [-73, 0];      // mm, board centre; the short FFC edge faces +X (spec)
 drv_pcb_t = 1.6;         // mm (Waveshare)
 drv_hole_inset = 3.5;    // mm, M2.5 hole centres from the edges, 58 x 49 pattern (Waveshare)
 drv_hole_d = 2.75;       // mm, M2.5 mounting holes (Waveshare)
-drv_header_h = 8.5;      // mm, 2x20 female header below the PCB, faces the back cover (spec)
-drv_header_clear = 1.0;  // mm, minimum gap between the header and the back cover (design)
-drv_header_size = [50.8, 5.1]; // mm, 2x20 header body at 2.54 mm pitch (standard)
-drv_header_side = 1;     // [-1, 1] header along the +Y (1) or -Y (-1) long edge (assumed)
-drv_comp_h = 3.0;        // mm, tallest part on the panel side (estimate: 2.0 mm FFC socket, USB)
+drv_stub_h = 1.0;        // mm, clipped 2x20 header pins left on the back (lead: header removed)
+drv_stub_size = [50.8, 5.1]; // mm, where the header was, along the +Y long edge (standard 2x20)
+drv_comp_h = 3.0;        // mm, tallest part on the panel side (lead: tall socket and pin headers removed)
 drv_air_min = 1.5;       // mm, minimum air gap from components to the panel (spec)
-drv_standoff_h = 10;     // mm, back cover inner face to PCB underside (spec ~10)
+drv_standoff_h = 1.5;    // mm, printed standoffs, back plate to PCB (lead ~1.5, clears the stubs)
 drv_standoff_d = 6;      // mm, standoff diameter (design)
+drv_screw_len = 8;       // mm, M2.5 x 8 countersunk (ISO 10642) from outside into a nut on the component side
 drv_ffc_socket = [5, 30, 2.0]; // mm, FFC socket envelope on the +X edge, X x Y x Z (estimate)
 
 /* [Carrier board: XIAO ESP32-S3 + MiniBoost + TP4056] */
 car_size = [70, 35];     // mm, protoboard W x H (spec)
 car_pcb_t = 1.6;         // mm, protoboard thickness
-car_comp_h = 9;          // mm, tallest part above the board (spec)
-car_solder_h = 2;        // mm, solder joints below the board (spec)
-car_air_min = 1.0;       // mm, minimum gap from the tallest part to the panel (design)
-car_standoff_h = 4;      // mm, back cover inner face to PCB underside (design: 2 mm joints + margin)
-car_boss_d = 6.5;        // mm, screw boss diameter (design)
+car_comp_h = 5.0;        // mm, tallest part above the board: the charger's USB-C (lead)
+car_floor = 0.8;         // mm, back plate left under the board's recess (lead)
+car_ledge_h = 1.2;       // mm, ledges that carry the board; room for its solder joints (lead)
+car_ledge_w = 1.5;       // mm, ledge width along the board's left and right edges (design)
+car_air_min = 1.0;       // mm, minimum gap from the tallest part to the panel or rim (design)
+car_boss_d = 6.5;        // mm, screw boss diameter in the recess (design)
 car_clear = 0.4;         // mm, board to tray rim, per side (design)
 car_tray_wall = 1.2;     // mm, tray rim thickness (design)
 car_tray_rim = 1.0;      // mm, rim height above the PCB underside (design)
 car_screws = [[-30, 30], [30, 4]]; // mm, M2.5 screws as [X, height above the board's bottom edge] (spec -30/+30; right one moved, see README)
-car_wire_gap = [-33, 8]; // mm, gap in the tray rim for incoming wires, [X centre, width] (design)
+car_screw_len = 6;       // mm, M2.5 x 6 countersunk from outside into a nut on the board (design)
+car_wire_gap = [-30, 9]; // mm, gap in the tray rim for incoming wires, [X centre, width] (design; edges not in line with the tie blocks)
 usb_x = [-8, 22];        // mm, USB-C centres: XIAO, charger (spec)
-usb_size = [9, 3.4];     // mm, USB-C receptacle opening W x H (spec)
+usb_size = [9, 3.2];     // mm, USB-C receptacle W x H (typical)
 usb_overhang = 1.5;      // mm, connector beyond the board's top edge (spec)
 usb_len = 7.4;           // mm, receptacle length (typical USB-C)
-usb_zc = 3.0;            // mm, connector centre above the board surface (spec)
+usb_zc = [2.6, 3.2];     // mm, receptacle centre above the protoboard: XIAO 1.0 + 1.6, charger 1.6 + 1.6 (lead)
 usb_slot = [12.5, 6.5];  // mm, plug slot in the top wall, W x H (spec)
 usb_slot_r = 2.0;        // mm, slot corner radius (design)
-usb_label = ["USB", "CHARGE"]; // labels above the slots (spec)
+usb_label = ["USB", "CHARGE"]; // labels beside the slots, outer side (spec)
 label_size = 3.2;        // mm, label text size (design)
 label_depth = 0.4;       // mm, label engraving depth (spec)
+label_gap = 2.0;         // mm, slot edge to label (design)
 label_stagger = 0.3;     // mm, baseline offset between labels (mesh hygiene, invisible)
 xiao_size = [17.8, 21];  // mm, XIAO ESP32-S3, X x Y (Seeed)
-xiao_t = 1.0;            // mm, XIAO PCB (Seeed)
+xiao_t = 1.0;            // mm, XIAO PCB, soldered flat (lead)
 ufl_from_top = 20;       // mm, U.FL connector below the carrier's top edge (spec)
 ufl_plug_h = 2.0;        // mm, U.FL plug above the XIAO PCB (estimate)
 
-/* [Wi-Fi antenna] */
-ant_x = [38, 80];        // mm, X range on the inside of the top wall (spec)
-ant_h = 21;              // mm, reservation along Z (spec 42 x 21; Seeed A-02 FPC is 40 x 20)
-ant_recess = 0.6;        // mm, recess in the top wall (spec)
-ant_t = 0.3;             // mm, FPC and adhesive thickness (estimate)
+/* [Wi-Fi antenna: Taoglas FXP831] */
+ant_x = [38, 83];        // mm, X range on the inside of the top wall (FXP831 is 45 long)
+ant_h = 7;               // mm, height along Z (FXP831 45 x 7 x 0.1)
+ant_recess = 0.3;        // mm, shallow recess in the top wall (lead)
+ant_t = 0.2;             // mm, FPC and adhesive thickness (estimate)
 ant_rim_keep = 1.0;      // mm, pocket rim kept in front of the antenna (design)
 ant_feed_dx = 3;         // mm, coax exit from the antenna's -X end (estimate)
 ant_metal_keepout = 10;  // mm, nothing metallic closer than this (spec)
-coax_d = 1.13;           // mm, antenna coax (spec)
-coax_len = 80;           // mm, antenna coax (spec)
+coax_d = 1.37;           // mm, antenna coax (FXP831)
+coax_len = 100;          // mm, antenna coax (FXP831)
 coax_notch = 3;          // mm, notch width and depth in ribs for the coax (spec)
+coax_z = 7.0;            // mm, coax height where it crosses the carrier (design: between the parts and the panel)
 
 /* [Battery: LiPo pouch] */
 bat_size = [100, 60, 6]; // mm, L x W x T in landscape: 6060100 5000 mAh (spec); 105080: [80, 50, 10]
 bat_pos = [56, 0];       // mm, cell centre (spec)
 bat_clear = 1.0;         // mm per side (spec)
-bat_wall_h = 2.5;        // mm, cradle wall height (spec)
+bat_floor = 0.6;         // mm, back plate left under the cell's recess (lead)
+bat_foam_t = 0.5;        // mm, foam pad under the cell (lead)
+bat_wall_h = 2.5;        // mm, cradle wall height above the plate (design)
 bat_wall_t = 1.2;        // mm, cradle wall thickness (design)
-bat_foam_t = 1.0;        // mm, foam pad under the cell (spec)
 bat_lead_slot = 20;      // mm, slot in the cradle's -X wall for the lead (design)
-bat_air_min = 1.0;       // mm, minimum gap from the cell to the panel side ribs (design)
+bat_air_min = 1.0;       // mm, minimum gap from the cell to the rib tops and panel (design)
 
-/* [Front buttons] */
+/* [Front buttons: Omron B3F-4000] */
 btn_x = [-26, 0, 26];    // mm, button centres (spec)
 btn_y = -89;             // mm, button centres (design: below the flex relief, strip clears the bottom wall)
 sw_size = 12;            // mm, 12 x 12 tactile switch body (spec)
-sw_h = 7.3;              // mm, switch height incl. plunger (spec)
-sw_body_h = 3.5;         // mm, body without plunger (typical 12 x 12 x 7.3 switch)
-sw_plunger_d = 7;        // mm (spec)
+sw_h = 4.3;              // mm, height incl. the flat plunger (Omron B3F-4000, lead)
+sw_body_h = 3.5;         // mm, body without plunger (B3F-4000, estimate)
+sw_plunger_d = 3.5;      // mm, flat plunger (B3F-4000, estimate)
+sw_legs = [12.5, 5];     // mm, leg pattern, X x Y (lead)
 strip_clear = 0.3;       // mm, strip to bottom wall (design)
 strip_size = [84, 20];   // mm, protoboard strip W x H (spec)
 strip_t = 1.6;           // mm, protoboard thickness
-strip_solder_h = 2;      // mm, joints behind the strip (design)
+strip_solder_h = 2.0;    // mm, joints and screw heads behind the strip (design)
+strip_joint_clear = 0.3; // mm, joints to the recess floor under the strip (design)
 strip_screw_x = [-38, 38]; // mm, M2.5 insert bosses on the bezel (spec)
 strip_boss_d = 6;        // mm (design)
 cap_d = 11;              // mm, cap face and stem (spec)
@@ -154,77 +179,80 @@ cap_proud = 0.5;         // mm, cap face in front of the bezel face (spec 0 to 0
 cap_flange_d = 13.4;     // mm, retaining flange behind the front face (design)
 cap_flange_t = 0.8;      // mm, flange cylinder behind its 45 deg cone (design)
 cap_preload = -0.2;      // mm, plunger pre-travel at rest; negative = free gap above the plunger (lead: -0.2)
-sw_travel = 0.25;        // mm, switch travel to the click (Omron B3F type 12 x 12)
+sw_travel = 0.25;        // mm, switch travel to the click (Omron B3F)
 cap_gap_max = 0.5;       // mm, largest free gap allowed before the cap feels loose (design)
 sleeve_od = 14.6;        // mm, guide sleeve behind the front face (design)
-sleeve_len = 2.0;        // mm, guide sleeve length incl. the conical seat (design)
+sleeve_len = 1.2;        // mm, guide sleeve length incl. the conical seat (design: shortened for the thin case)
 key_size = [1.2, 1.0];   // mm, anti-rotation key on the stem, width x radial height (design)
 key_clear = 0.2;         // mm, key to keyway clearance (design)
 key_boss_wall = 1.2;     // mm, sleeve wall around the keyway (design)
 symbol_depth = 0.6;      // mm, engraved symbol depth (spec)
 symbol_size = 5.0;       // mm, symbol size (design)
 
-/* [Magnets: supermagnete ITNG-22] */
-mag_d = 22;              // mm, rubber-coated pot magnet (supermagnete ITNG-22)
-mag_h = 6.0;             // mm, height incl. rubber (ITNG-22)
-mag_pos = [[-90, 65], [90, 65], [-90, -65], [90, -65]]; // mm, centres; count = number of entries (lead: +-90/+-65; no 5th/6th spot meets the rules)
-mag_proud = 0.5;         // mm, rubber face in front of the back surface (spec)
+/* [Magnets: N52 discs, sealed in] */
+mag_d = 20;              // mm, N52 disc magnet (lead)
+mag_h = 3;               // mm (lead)
+steel_disc = [20, 1.5];  // mm, steel backing disc on each magnet, D x T (lead)
+mag_pos = [[-90, 65], [90, 65], [-90, -65], [90, -65]]; // mm, centres; count = number of entries (lead: +-90/+-65)
+mag_skin = 0.6;          // mm, back plate left over the magnet on the outside face (lead)
 mag_clear = 0.3;         // mm, pocket diametral clearance (design)
-mag_wall = 2.0;          // mm, radial wall around the pocket (design)
-mag_floor = 2.0;         // mm, back wall between the pocket and the screw head (design)
-mag_screw_len = 6;       // mm, M4 x 6 A2 screw from inside (spec)
-mag_screw_d = 4.0;       // mm, M4 (spec)
-mag_screw_hole = 4.3;    // mm (spec)
-mag_screw_head = [8, 2.8]; // mm, M4 pan/button head D x H (ISO 7045 / 7380, clearance only)
-mag_tool_clear = 3;      // mm, free space around the screw head for the screwdriver (design)
-mag_thread_depth = 5.0;  // mm, usable thread depth from the magnet's back (spec: through thread)
-mag_min_engage = 3.0;    // mm, minimum thread engagement (>= 4 threads at 0.7 pitch)
-mag_face_skin = 1.0;     // mm, minimum between the screw tip and the magnet's front face (design)
+mag_wall = 1.6;          // mm, radial wall around the pocket (design)
+mag_epoxy = 0.3;         // mm, epoxy over the steel disc (design); the pocket's tube runs on up to the rib tops and carries foam
+pad = [25, 1.0];         // mm, self-adhesive rubber pad over each pocket, outside, D x T (lead)
 mag_keep_board = 36;     // mm, magnet centre to driver/carrier board edge, >= 25 mm from the magnet's edge (lead: < 5 mT)
 mag_keep_ant = 35;       // mm, magnet centre to antenna reservation (spec rule)
 
+/* [Steel rods] */
+rod_d = 3;               // mm, steel rod (lead)
+rod_slot = 3.4;          // mm, channel width (lead)
+rod_back_y = [45.5, -35.3]; // mm, back cover rods (lead ~46 / ~-35.5; 45.5 keeps 8 mm to the magnets, -35.3 centres it in its gap)
+rod_back_x = 103;        // mm, back cover rods run from -X to +X (design: clear of the side bosses)
+rod_back_sink = 1.0;     // mm, back cover rods sit this far into the plate (design)
+rod_wall_t = 1.0;        // mm, channel walls on the back cover (design)
+rod_skin = 1.0;          // mm, bezel wall left outside the rod grooves (design)
+rod_web = 1.0;           // mm, minimum bezel web between a groove and the pocket (design)
+rod_legs = [[40, 40], [40, 40], [40, 48], [40, 48]]; // mm, bezel L-rods top-left, top-right, bottom-left, bottom-right: straight length along the top or bottom wall, along the side wall (lead ~40; bottom side legs longer to reach past the joint)
+rod_end_clear = 1.0;     // mm, groove longer than its rod at each end (design)
+rod_mag_clear = 8;       // mm, rod surface to magnet edge (lead)
+recess_floor_min = 0.6;  // mm, thinnest back plate allowed under a recess (lead: battery 0.6)
+rod_ant_clear = 10;      // mm, rod to antenna reservation (lead)
+
 /* [Screws and inserts] */
-m3_insert = [4.0, 5.0];  // mm, M3 heat-set insert hole D x depth (spec)
+m3_insert = [4.0, 4.0];  // mm, M3 heat-set insert hole D x depth (4 mm long insert)
 m3_clear_d = 3.4;        // mm, M3 clearance hole (ISO 273 medium)
 m3_csk_d = 6.8;          // mm, countersink for M3 flat head (ISO 10642 / DIN 7991)
-m3_screw_len = 8;        // mm, M3 x 8 countersunk (spec)
+m3_screw_len = 6;        // mm, M3 x 6 countersunk (design for the thin case)
 m3_tip_clear = 0.5;      // mm, clearance beyond the screw tip (design)
 m3_boss_d = 7.2;         // mm (design)
-m3_boss_inset = 5.8;     // mm, boss centre from the outer edge (design)
-m3_side_y = 40;          // mm, Y of the two side-wall bosses (design)
-m3_bottom_x = 60;        // mm, |X| of the two bottom-wall bosses (design)
+m3_boss_inset = 5.0;     // mm, boss centre from the outer edge (design: keeps the insert below the 45 deg boss caps)
+m3_side_y = [40, -40];   // mm, Y of the side-rail bosses, both sides (lead)
+m3_bottom_x = 60;        // mm, |X| of the two bottom-wall bosses (lead)
+m3_chin_corner = [101.5, -89.5]; // mm, [|X|, Y] of the chin's corner bosses, moved inside the L-rods (design)
+m3_top_x = [-60];        // mm, X of the top-rail bosses (design: the rods take the corners; none right: antenna keep-out)
 boss_floor = 1.0;        // mm, solid end beyond blind holes (design)
+boss_panel_clear = 0.3;  // mm, boss fronts behind the panel's back (design)
 m25_insert = [3.6, 4.2]; // mm, M2.5 heat-set insert hole D x depth (typical 4 mm insert)
 m25_clear_d = 2.9;       // mm, M2.5 clearance hole (ISO 273 medium)
-m25_head_h = 2.0;        // mm, M2.5 pan head height (ISO 7045, for the antenna metal check)
+m25_csk_d = 5.0;         // mm, countersink for M2.5 flat head (ISO 10642)
+m25_nut = [5.0, 2.0];    // mm, M2.5 nut across flats x height (ISO 4032)
 
 /* [Panel support ribs] */
 rib_t = 1.6;             // mm, rib web thickness (design)
 rib_pad = 4.0;           // mm, rib top pad for the foam strips (design)
 rib_pad_t = 0.8;         // mm, pad thickness above the 45 deg flare (design)
-rib_inset = 0.55;        // mm, perimeter rib centre inside the panel edge (design: keeps 1 mm to the battery)
-rib_mid_y = [36, -35];   // mm, Y of the two horizontal interior ribs (design)
+rib_inset = 2.7;         // mm, perimeter rib centre inside the panel edge (design: pads keep rib_keep from the bezel's rod blocks)
+rib_mid_y = 36;          // mm, Y of the horizontal interior rib (design; the lower rod replaces the one at -35)
 rib_mid_x = [-45, 45];   // mm, X of the two vertical ribs in the upper corners (design)
-rib_gap_ffc = [-60, -10]; // mm, X range left open in the lower interior rib for the FFC and wires (design)
-rib_gap_wire = 10;       // mm, gap in the upper interior rib where the wires pass (design)
-rib_keep = 1.0;          // mm, rib clearance around bosses and modules (design)
+rib_gap_wire = 10;       // mm, gap in the interior rib where the wires pass (design)
+rib_keep = 1.0;          // mm, rib clearance around bosses, rods and modules (design)
 
 /* [Wire route] */
-wire_x = -34;            // mm, button wires run up the back cover here, between driver and battery (spec)
-wire_ties_y = [-90, -25, 15, 52]; // mm, zip-tie points (design: none inside the FPC zone)
+wire_x = -30;            // mm, button wires run up the back cover here, between driver and battery (lead: >= 4 mm from the back seam)
+wire_ties_y = [-25, 15, 52]; // mm, zip-tie points (design: none inside the FPC zone or the strip recess)
 tie_size = [8, 5, 4];    // mm, tie block X x Y x Z (design)
 tie_slot = [3.2, 1.8];   // mm, tunnel for a 2.5 mm zip tie, Y x Z (design)
 
-/* [Wall hanging and desk stand] */
-keyholes = true;         // two keyholes in the back cover
-keyhole_pos = [[-60, 56], [60, 56]]; // mm, head-hole centres; the screw rests keyhole_travel higher (design)
-keyhole_head_d = 8.5;    // mm, for screw heads up to 8 mm (design)
-keyhole_slot_w = 4.2;    // mm, for 4 mm screws (design)
-keyhole_travel = 10;     // mm (design)
-keyhole_cavity_h = 3.5;  // mm, head pocket behind the plate (design)
-keyhole_wall = 1.6;      // mm (design)
-keyhole_roof = 1.2;      // mm (design)
-keyhole_track_clear = 0.3; // mm, head pocket wider than the head hole (design)
+/* [Desk stand] */
 stand_tilt = 15;         // deg, frame leans back from vertical (spec ~15)
 stand_w = 100;           // mm, stand width (design)
 stand_t = 4;             // mm, back rest and lip thickness (design)
@@ -239,15 +267,17 @@ stand_clear = 0.6;       // mm, seat width beyond the frame depth (design)
 logo_text = "brwr-trmnl"; // engraved on the back cover (spec)
 logo_size = 7;           // mm (design)
 logo_depth = 0.4;        // mm (design)
-logo_pos = [0, -88];     // mm, centre, front-view coordinates (design)
+logo_pos = [0, -58];     // mm, centre, front-view coordinates (design: on full-thickness plate)
 text_font = "Liberation Sans:style=Bold"; // any installed font
 
 /* [Rendering] */
-use_stl = false;         // import stl/bezel.stl and stl/back.stl instead of rebuilding them (fast previews)
+use_stl = false;         // import the STLs in stl/ instead of rebuilding them (fast previews)
 upright = false;         // stand the scene up (+Y becomes +Z) for PNG cameras
-explode_gap = 60;        // mm, layer spacing in the exploded view
+explode_gap = 40;        // mm, layer spacing in the exploded view
+explode_side = 30;       // mm, how far split pieces move apart sideways in the exploded view
 show_labels = true;      // module names in the inside and fit_check views
-layer_h = 0.2;           // mm, print layer height (for the bridged screw holes)
+show_rods = true;        // steel rods in the assembly views
+layer_h = 0.2;           // mm, print layer height
 $fa = 4;
 $fs = 0.4;
 
@@ -259,16 +289,21 @@ fn_button = 96;          // segments for all coaxial button circles (bore, seat,
 fn_screw = 32;           // segments for countersinks and their clearance holes
 clash_shrink = 0.05;     // mm, envelopes pulled in so parts that only touch do not count as clashes
 cut_over = 1;            // mm, how far cutting tools reach past the surface they cut
+rod_arc_segments = 24;   // segments of a bezel rod groove's 90 deg bend
+boss_cap_reach = 20;     // mm, how far the 45 deg boss caps reach into the pocket outline
+face_step = 0.2;         // mm, boss caps and rod blocks stop this far outside the pocket edge (no faces shared with the pocket)
+face_stagger = 0.02;     // mm, and each one a little further (features ending on one line make the exporter emit zero-area triangles)
 
 // illustration only (renders and fit check), not used for printed geometry
 sym_tri_base = 0.4;      // triangle symbol: base position, fraction of symbol_size
 sym_dot = 0.8;           // circle symbol: diameter, fraction of symbol_size
 drv_chip = [14, 14, 1.4];            // mm, IT8951 package on the driver HAT
 car_modules = [                      // [X centre, Y below top edge, size, colour]
-  [usb_x[1], 13, [17, 26, 1.2], "#2c6e4f"],     // TP4056 USB-C charger module
-  [-24.5, 25, [11.5, 18, 3], "#26282b"],        // MiniBoost 5 V
-  [-11, 27, [11, 8, 8], "#2d4f8a"]];            // 220 uF capacitor lying down
+  [usb_x[1], 13, [17, 26, 1.6], "#2c6e4f"],     // TP4056 USB-C charger module, soldered flat
+  [-24.5, 25, [11.5, 18, 1.6], "#26282b"],      // MiniBoost 5 V, flat
+  [-11, 27, [3.2, 1.6, 1.6], "#8a6d3b"]];       // ceramic capacitor
 xiao_shield = [12, 11, 2.2];         // mm, XIAO RF shield can
+coax_via = [[36, 90], [5, 82]];      // mm, where the coax runs over the carrier (builder's choice)
 fpc_fold_h = 18;                     // mm, folded flex visible behind the panel
 fpc_adapter_x = -25;                 // mm, adapter board centre X in the flex zone
 mock_margin = 8;                     // mm, screen mock inset from the window
@@ -277,8 +312,11 @@ mock_ink = [                         // [x, y, w, h] as fractions of the mock ar
 mock_grey = [                        // same, mid grey
   [0.40, 0.66, 0.60, 0.07], [0.40, 0.54, 0.48, 0.07], [0.40, 0.42, 0.54, 0.07],
   [0, 0, 0.32, 0.27], [0.34, 0, 0.32, 0.27], [0.68, 0, 0.32, 0.27]];
-explode_z = [-0.6, 0, 1.0, 1.0, 1.6, 2.3];   // x explode_gap: magnets, back, panel, strip, caps, bezel
+explode_z = [-0.6, 0, 0.5, 1.2, 1.2, 1.8, 2.5];   // x explode_gap: pads, back, magnets, panel, strip, caps, bezel
 img_label = 5;                       // mm, text size of module labels
+plate_label = 8;                     // mm, text size of part names in the plates view
+plate_narrow = 40;                   // mm, parts narrower (or lower) than this get their name turned (or below)
+plate_spacing = 50;                  // mm, gap between bed outlines in the plates view
 ring_w = 0.8;                        // mm, width of the magnet keep-out rings
 
 // ---- Z levels --------------------------------------------------------
@@ -288,6 +326,7 @@ z_panel_front = z_lip - gasket_t;
 z_panel_back = z_panel_front - panel_t;
 z_pocket = z_lip - pocket_depth;                 // pocket floor, seen from behind
 z_rib_top = z_panel_back - (back_foam_t - back_foam_squeeze);
+z_boss_cap = z_panel_back - boss_panel_clear;    // boss fronts where they reach under the panel
 
 // ---- outline and panel -----------------------------------------------
 in_w = outer_w - 2 * wall_t;
@@ -298,8 +337,11 @@ panel_c = [0, (panel_top + panel_bot) / 2];
 pocket_size = [panel_w + 2 * pocket_clear, panel_h + 2 * pocket_clear];
 pocket_top = panel_top + pocket_clear;
 pocket_bot = panel_bot - pocket_clear;
+pocket_edge = panel_c + pocket_size / 2;          // +X and +Y pocket edges, as pocket_rect() computes them
 win_size = [panel_w - 2 * border_side, panel_h - border_side - border_bottom];
 win_c = [0, (panel_top - border_side + panel_bot + border_bottom) / 2];
+win_top = win_c[1] + win_size[1] / 2;            // the rail joints run level with the window's
+win_bot = win_c[1] - win_size[1] / 2;            // top and bottom edges
 chin_h = panel_bot + outer_h / 2;
 
 // ---- driver board ----------------------------------------------------
@@ -309,37 +351,38 @@ drv_lo = drv_pos - drv_size / 2;
 drv_hi = drv_pos + drv_size / 2;
 drv_holes = [for (sx = [-1, 1], sy = [-1, 1])
   drv_pos + [sx * (drv_size[0] / 2 - drv_hole_inset), sy * (drv_size[1] / 2 - drv_hole_inset)]];
-drv_header_y = drv_pos[1] + drv_header_side * (drv_size[1] / 2 - drv_hole_inset);
+drv_stub_y = drv_pos[1] + drv_size[1] / 2 - drv_hole_inset;   // the old header row
+z_drv_nut = z_drv_pcb + drv_pcb_t + m25_nut[1];
 
 // ---- carrier board ---------------------------------------------------
 car_top = in_h / 2;                              // top edge against the top wall
 car_lo = [-car_size[0] / 2, car_top - car_size[1]];
 car_hi = [car_size[0] / 2, car_top];
-z_car_pcb = z_in + car_standoff_h;
+z_car_pcb = car_floor + car_ledge_h;             // board underside
 z_car_top = z_car_pcb + car_pcb_t;
-z_usb = z_car_top + usb_zc;
+z_usb = [for (z = usb_zc) z_car_top + z];        // receptacle and slot centres
 car_screw_pos = [for (s = car_screws) [s[0], car_lo[1] + s[1]]];
 car_tray_x = car_size[0] / 2 + car_clear + car_tray_wall;
+car_rec_lo = [car_lo[0] - car_clear, car_lo[1] - car_clear];   // recess under the board
+car_rec_hi = [car_hi[0] + car_clear, car_top];
 ufl_pos = [usb_x[0], car_top - ufl_from_top];
 z_ufl = z_car_top + xiao_t + ufl_plug_h;
 
-z_label = (z_usb + usb_slot[1] / 2 + depth - front_chamfer) / 2;   // USB labels, between slot and chamfer
-
 // ---- antenna ---------------------------------------------------------
-z_ant = [z_lip - ant_h, z_lip];                  // front edge on the front plate
+z_ant = [z_lip - ant_h, z_lip];                  // front edge against the front plate
 ant_lo = [ant_x[0], in_h / 2 + ant_recess - ant_t, z_ant[0]];   // the FPC itself, on the recess floor
 ant_hi = [ant_x[1], in_h / 2 + ant_recess, z_ant[1]];
 ant_res_lo = [ant_x[0], in_h / 2, z_ant[0]];                       // reservation: the whole recess,
 ant_res_hi = ant_hi;                                               // measured from the wall's inner face
-coax_path = [
-  [ant_x[0] + ant_feed_dx, in_h / 2 + ant_recess - ant_t - coax_d / 2, (z_ant[0] + z_ant[1]) / 2],
-  [ant_x[0] - coax_notch, in_h / 2 - coax_notch, z_car_top + car_comp_h + coax_notch / 2],   // over the carrier
-  [ufl_pos[0], ufl_pos[1], z_ufl]];
+coax_path = concat(
+  [[ant_x[0] + ant_feed_dx, ant_lo[1] - coax_d / 2, (z_ant[0] + z_ant[1]) / 2]],
+  [for (v = coax_via) [v[0], v[1], coax_z]],
+  [[ufl_pos[0], ufl_pos[1], z_ufl]]);
 
 // ---- battery ---------------------------------------------------------
 bat_in = [bat_size[0] + 2 * bat_clear, bat_size[1] + 2 * bat_clear];
 bat_out = bat_in + 2 * [bat_wall_t, bat_wall_t];
-z_bat = [z_in + bat_foam_t, z_in + bat_foam_t + bat_size[2]];
+z_bat = [bat_floor + bat_foam_t, bat_floor + bat_foam_t + bat_size[2]];
 
 // ---- buttons ---------------------------------------------------------
 z_sleeve_end = z_lip - sleeve_len;
@@ -351,52 +394,137 @@ z_plunger_top = z_cap_back + cap_preload;        // free (uncompressed) plunger 
 cap_stroke = max(-cap_preload, 0) + sw_travel;   // cap travel to the click
 z_strip_front = z_plunger_top - sw_h;
 z_strip_back = z_strip_front - strip_t;
+z_strip_joints = z_strip_back - strip_solder_h;
+z_strip_floor = min(z_in, z_strip_joints - strip_joint_clear);   // back plate under the strip
+strip_lo = [-strip_size[0] / 2, btn_y - strip_size[1] / 2];
+strip_hi = [strip_size[0] / 2, btn_y + strip_size[1] / 2];
 
 // ---- magnets ---------------------------------------------------------
 mag_pocket_d = mag_d + mag_clear;
 mag_boss_d = mag_pocket_d + 2 * mag_wall;
-z_mag_seat = mag_h - mag_proud;                  // pocket floor = magnet back face
-z_mag_boss = z_mag_seat + mag_floor;             // screw head seat
-mag_engage = mag_screw_len - mag_floor;          // thread length inside the magnet
-z_screw_tip = z_mag_boss - mag_screw_len;
+z_mag = [mag_skin, mag_skin + mag_h];
+z_steel = [z_mag[1], z_mag[1] + steel_disc[1]];
+z_mag_epoxy = z_steel[1] + mag_epoxy;            // epoxy fill level in the pocket
+z_mag_boss = z_rib_top;                          // the pocket's tube carries a foam pad under the panel
+
+function face_off(k) = face_step + k * face_stagger;   // k: boss index, then len(m3_pos) + rod corner index
 
 // ---- M3 bosses (bezel) ------------------------------------------------
 m3_cx = outer_w / 2 - m3_boss_inset;
 m3_cy = outer_h / 2 - m3_boss_inset;
 m3_pos = [
-  [-m3_cx, m3_cy], [m3_cx, m3_cy], [-m3_cx, -m3_cy], [m3_cx, -m3_cy],   // corners
-  [-m3_cx, m3_side_y], [m3_cx, m3_side_y],                              // side walls
-  [-m3_bottom_x, -m3_cy], [m3_bottom_x, -m3_cy]];                      // bottom wall
-z_m3_hole = m3_screw_len + m3_tip_clear;
-z_m3_boss = z_m3_hole + boss_floor;
+  each [for (y = m3_side_y, s = [-1, 1]) [s * m3_cx, y]],                  // side rails
+  [-m3_bottom_x, -m3_cy], [m3_bottom_x, -m3_cy],                          // chin, bottom wall
+  [-m3_chin_corner[0], m3_chin_corner[1]], [m3_chin_corner[0], m3_chin_corner[1]],   // chin corners
+  each [for (x = m3_top_x) [x, m3_cy]]];                                 // top rail
+z_m3_hole = max(z_in + m3_insert[1], m3_screw_len + m3_tip_clear);
+z_m3_floor = z_m3_hole + boss_floor;
 
 // ---- ribs --------------------------------------------------------------
 rib_px = panel_w / 2 - rib_inset;
 rib_ty = panel_top - rib_inset;
 rib_by = panel_bot + rib_inset;
 rib_car_x = car_tray_x + rib_keep;
-rib_fpc_x = fpc_zone[0] / 2 + rib_keep;
 rib_segments = [
-  [[-rib_px, rib_by], [-rib_px, rib_ty]],                  // left edge
-  [[rib_px, rib_by], [rib_px, rib_ty]],                    // right edge (outer wall of the battery cradle)
+  [[-rib_px, rib_by], [-rib_px, rib_ty]],                  // left edge (the bottom edge is left to the magnet tubes)
+  [[rib_px, rib_by], [rib_px, rib_ty]],                    // right edge
   [[-rib_px, rib_ty], [-rib_car_x, rib_ty]],               // top edge, left of the carrier
   [[rib_car_x, rib_ty], [rib_px, rib_ty]],                 // top edge, right of the carrier
-  [[-rib_px, rib_by], [-rib_fpc_x, rib_by]],               // bottom edge, left of the flex
-  [[rib_fpc_x, rib_by], [rib_px, rib_by]],                 // bottom edge, right of the flex
-  [[-rib_px, rib_mid_y[0]], [rib_px, rib_mid_y[0]]],       // above driver board and battery
-  [[-rib_px, rib_mid_y[1]], [rib_px, rib_mid_y[1]]],       // below driver board and battery
-  [[rib_mid_x[0], rib_mid_y[0]], [rib_mid_x[0], rib_ty]],  // upper left
-  [[rib_mid_x[1], rib_mid_y[0]], [rib_mid_x[1], rib_ty]]]; // upper right
-coax_notch_x = rib_car_x + coax_notch;                    // where the coax crosses the top rib
+  [[-rib_px, rib_mid_y], [rib_px, rib_mid_y]],             // above driver board and battery
+  [[rib_mid_x[0], rib_mid_y], [rib_mid_x[0], rib_ty]],     // upper left
+  [[rib_mid_x[1], rib_mid_y], [rib_mid_x[1], rib_ty]]];    // upper right
+// the coax crosses the top rib where its first leg crosses rib_ty
+coax_notch_x = let(a = coax_path[0], b = coax_path[1]) a[0] + (b[0] - a[0]) * (a[1] - rib_ty) / (a[1] - b[1]);
+coax_notch_z = let(a = coax_path[0], b = coax_path[1]) a[2] + (b[2] - a[2]) * (a[1] - rib_ty) / (a[1] - b[1]);
+
+// ---- steel rods ----------------------------------------------------------
+rod_cc = [outer_w / 2 - corner_r, outer_h / 2 - corner_r];   // outline corner centre, +X +Y corner
+rod_R = corner_r - rod_skin - rod_slot / 2;       // bend radius of the bezel rods (centreline)
+rod_sx = rod_cc[0] + rod_R;                       // side legs: centreline |X|
+rod_ty = rod_cc[1] + rod_R;                       // top and bottom legs: centreline |Y|
+rod_z = [z_lip - rod_slot, z_lip];                // bezel grooves: rod block from rod_z[0], floor at rod_z[1]
+rod_zc = z_lip - rod_slot / 2;                    // bezel rods: centreline Z
+rod_corners = [[-1, 1], [1, 1], [-1, -1], [1, -1]];   // same order as rod_legs
+rod_back_zc = z_in - rod_back_sink + rod_d / 2;   // back cover rods: centreline Z
+// straight leg lengths [along the top or bottom wall, along the side wall];
+// a rod on the antenna side stops rod_ant_clear short of the antenna
+function rod_leg(i) = let(s = rod_corners[i])
+  [s[1] > 0 && s[0] * (ant_x[0] + ant_x[1]) > 0 ? min(rod_legs[i][0], rod_cc[0] - max(abs(ant_x[0]), abs(ant_x[1])) - rod_ant_clear)
+                                                 : rod_legs[i][0], rod_legs[i][1]];
+function rod_len(i) = rod_leg(i)[0] + rod_leg(i)[1] + PI / 2 * rod_R;   // developed length
+
+// ---- split ------------------------------------------------------------
+lip_gap_x0 = split ? min(-rib_car_x, back_split_x) : -rib_car_x;   // top lip gap starts here
+wall_mid_x = in_w / 2 + wall_t / 2;              // |X| where the wall half-lap changes sides
+back_seam_out = back_split_x - (back_t - 2 * scarf_land);   // back cover seam on its outside face
+caps_span = len(btn_x) * cap_flange_d + (len(btn_x) - 1) * print_gap;
+side_in_x = min(win_size[0] / 2, m3_cx - m3_boss_d / 2);   // inner edge of a side rail
+function stand_profile() =
+  // desk stand cross-section (u = forward, v = up); the frame sits on s0..s1
+  let(u = [-sin(stand_tilt), cos(stand_tilt)], v = [cos(stand_tilt), sin(stand_tilt)],
+      s0 = [0, stand_seat_h], s1 = s0 + (depth + pad[1] + stand_clear) * v, s2 = s1 + stand_lip_h * u,
+      s3 = s2 + stand_t * v, s4 = s1 + stand_t * v, f = [s4[0] + s4[1], 0],
+      r0 = s0 + stand_rest_h * u, r1 = r0 - stand_t * v,
+      k = r1 - ((r1[1] - stand_brace_h) / cos(stand_tilt)) * u, b = [-stand_foot, 0])
+  [b, f, s4, s3, s2, s1, s0, r0, r1, k];
+stand_y = [min([for (p = stand_profile()) p[0]]), max([for (p = stand_profile()) p[0]])];
+stand_h = max([for (p = stand_profile()) p[1]]);
+
+// ---- print layout --------------------------------------------------------
+function rot2(a, p) = [p[0] * cos(a) - p[1] * sin(a), p[0] * sin(a) + p[1] * cos(a)];
+function is_bezel_part(name) = name == "bezel" || name == "bezel_top" || name == "bezel_bottom" ||
+                               name == "bezel_left" || name == "bezel_right";
+function part_angle(name) = (name == "bezel_top" || name == "bezel_bottom") ? rail_angle : 0;
+function box_pts(lo, hi) = [lo, [hi[0], lo[1]], hi, [lo[0], hi[1]]];
+function model_footprint(name) =
+  // front-view points whose convex hull holds the part's footprint
+  let(arcs = rrect_pts([outer_w, outer_h], corner_r))
+  name == "bezel_top" ? concat([for (p = arcs) if (p[1] >= win_top) p],
+      [[-outer_w / 2, win_top], [outer_w / 2, win_top], [-wall_mid_x, win_top - bezel_lap], [wall_mid_x, win_top - bezel_lap]]) :
+  name == "bezel_bottom" ? concat([for (p = arcs) if (p[1] <= win_bot) p],
+      [[-outer_w / 2, win_bot], [outer_w / 2, win_bot], [-wall_mid_x, win_bot + bezel_lap], [wall_mid_x, win_bot + bezel_lap]]) :
+  name == "bezel_left" ? box_pts([-outer_w / 2, win_bot], [-side_in_x, win_top]) :
+  name == "bezel_right" ? box_pts([side_in_x, win_bot], [outer_w / 2, win_top]) :
+  name == "back_left" ? box_pts([-outer_w / 2, -outer_h / 2], [back_split_x + back_tab[0], outer_h / 2]) :
+  name == "back_right" ? box_pts([back_seam_out, -outer_h / 2], [outer_w / 2, outer_h / 2]) :
+  name == "button_caps" ? box_pts([-caps_span / 2, -cap_flange_d / 2], [caps_span / 2, cap_flange_d / 2]) :
+  name == "stand" ? box_pts([-stand_w / 2, stand_y[0]], [stand_w / 2, stand_y[1]]) :
+  box_pts([-outer_w / 2, -outer_h / 2], [outer_w / 2, outer_h / 2]);          // one-piece bezel and back
+// the same points as the part lies in its STL (bezel parts face-down, turned by part_angle)
+function print_pts(name) = [for (p = model_footprint(name)) rot2(part_angle(name), is_bezel_part(name) ? [-p[0], p[1]] : p)];
+function pts_bbox(pts) = [[min([for (p = pts) p[0]]), min([for (p = pts) p[1]])],
+                          [max([for (p = pts) p[0]]), max([for (p = pts) p[1]])]];
+function print_bbox(name) = pts_bbox(print_pts(name));
+function fp(name) = print_bbox(name)[1] - print_bbox(name)[0];
+printed_parts = split ? ["bezel_top", "bezel_bottom", "bezel_left", "bezel_right", "back_left", "back_right", "button_caps", "stand"]
+                      : ["bezel", "back", "button_caps", "stand"];
+function plate_layout(j) =
+  // print jobs on the bed: [part, lower-left corner of its footprint inside the usable area]
+  let(u = bed_size - 2 * [bed_margin, bed_margin], g = plate_gap)
+  j == 0 ? [["bezel_bottom", (u - fp("bezel_bottom")) / 2], ["button_caps", [u[0] - fp("button_caps")[0], 0]]] :
+  j == 1 ? [["bezel_top", (u - fp("bezel_top")) / 2], ["bezel_left", [0, u[1] - fp("bezel_left")[1]]],
+            ["bezel_right", [u[0] - fp("bezel_right")[0], 0]]] :
+  j == 2 ? [["back_right", (u - fp("back_right")) / 2]] :
+  let(w = fp("back_left")[0] + g + fp("stand")[0], x0 = (u[0] - w) / 2)
+    [["back_left", [x0, (u[1] - fp("back_left")[1]) / 2]], ["stand", [x0 + fp("back_left")[0] + g, (u[1] - fp("stand")[1]) / 2]]];
+plate_titles = ["Print 1: bezel_bottom + button caps", "Print 2: bezel_top + side rails", "Print 3: back_right", "Print 4: back_left + stand"];
+function placed_pts(q) = let(bb = print_bbox(q[0])) [for (p = print_pts(q[0])) p - bb[0] + q[1]];
+function proj(pts, a) = [for (p = pts) p[0] * cos(a) + p[1] * sin(a)];
+function axis_gap(A, B, a) = let(pa = proj(A, a), pb = proj(B, a)) max(min(pb) - max(pa), min(pa) - max(pb));
+function sep_gap(A, B) = max([for (a = [0, 45, 90, 135]) axis_gap(A, B, a)]);   // lower bound on the distance
 
 // ---- colours -------------------------------------------------------------
 c_bezel = "#34383d";
+c_bezel_side = "#484e56";                               // render-only tint so the joints read
 c_back = "#6f7882";
+c_back_left = "#838d97";                                // render-only tint
 c_cap = "#e7e3db";
 c_panel = "#dedcd4";
 c_ink = "#3e3f42";
 c_ink2 = "#9d9a92";
-c_magnet = "#161616";
+c_magnet = "#b9bdc2";
+c_pad = "#161616";
+c_rod = "#9aa1a8";
 c_drv = "#2c6e4f";
 c_car = "#c8a468";
 c_bat = "#b8c2cc";
@@ -409,6 +537,8 @@ c_stand = "#8f949a";
 c_car_env = "#3b6fb6";
 c_strip_env = "#8e44ad";
 c_keepout = "#c0392b";
+c_bed = "#9aa0a6";
+c_bed_fill = "#eeeeec";
 
 // =====================================================================
 // Top level
@@ -423,11 +553,8 @@ module main() {
   else if (part == "inside") scene_inside();
   else if (part == "fit_check") scene_fit_check();
   else if (part == "clash") scene_clash();
-  else if (part == "bezel") bezel_print();
-  else if (part == "back") back_print();
-  else if (part == "button_caps") caps_print();
-  else if (part == "stand") stand();
-  else assert(false, str("unknown part: ", part));
+  else if (part == "plates") scene_plates();
+  else print_part(part);
 }
 
 // =====================================================================
@@ -454,12 +581,18 @@ module slab(inset, z0, z1) {
   translate([0, 0, z0]) linear_extrude(z1 - z0) outline(inset);
 }
 
+module slab_down(inset, z0, z1) {
+  // the same, built down from z1 so its top face lies exactly on z1
+  translate([0, 0, z1]) mirror([0, 0, 1]) linear_extrude(z1 - z0) outline(inset);
+}
+
 module chamfered_body(z0, z1, c_bot, c_top) {
-  // outline prism with 45 deg chamfers on its bottom and top outer edges
+  // outline prism with 45 deg chamfers on its bottom and top outer edges; its
+  // faces lie exactly on z0 and z1, so parts that meet there only touch
   hull() {
     slab(c_bot, z0, z0 + eps);
     slab(0, z0 + c_bot, z1 - c_top);
-    slab(c_top, z1 - eps, z1);
+    slab_down(c_top, z1 - eps, z1);
   }
 }
 
@@ -491,13 +624,17 @@ module rib(a, b) {
       linear_extrude(abs(b[1] - a[1])) rib_profile();
 }
 
-module label(txt, size, h = 2 * eps) {
+module label(txt, size, h = 2 * eps, halign = "center") {
   // flat text, readable from the front (+Z)
-  linear_extrude(h) text(txt, size = size, font = text_font, halign = "center", valign = "center");
+  linear_extrude(h) text(txt, size = size, font = text_font, halign = halign, valign = "center");
+}
+
+module pocket_rect(shrink = 0) {
+  translate(panel_c) square(pocket_size - 2 * [shrink, shrink], center = true);
 }
 
 // =====================================================================
-// Bezel: front face, window, panel pocket, walls, bosses
+// Bezel: front face, window, panel pocket, walls, bosses, rod grooves
 // =====================================================================
 module bezel() {
   difference() {
@@ -507,6 +644,7 @@ module bezel() {
       button_sleeves();
       strip_bosses();
       m3_bosses();
+      rod_blocks();
     }
     window_cut();
     pocket_cut();
@@ -517,6 +655,7 @@ module bezel() {
     m3_insert_holes();
     usb_notches();
     usb_labels();
+    rod_grooves();
   }
 }
 
@@ -541,11 +680,9 @@ module window_cut() {
 }
 
 module pocket_2d() {
-  translate(panel_c) {
-    square(pocket_size, center = true);
-    for (sx = [-1, 1], sy = [-1, 1])
-      translate([sx * pocket_size[0] / 2, sy * pocket_size[1] / 2]) circle(d = pocket_relief_d);
-  }
+  pocket_rect();
+  translate(panel_c) for (sx = [-1, 1], sy = [-1, 1])
+    translate([sx * pocket_size[0] / 2, sy * pocket_size[1] / 2]) circle(d = pocket_relief_d);
 }
 
 module pocket_rim() {
@@ -568,7 +705,7 @@ module flex_relief_cut() {
 }
 
 module antenna_cuts() {
-  // 0.6 mm recess on the inside of the top wall, and the pocket rim cut back in front of it
+  // shallow recess on the inside of the top wall, and the pocket rim cut back in front of it
   box([ant_x[0], in_h / 2 - eps, z_ant[0] - eps], [ant_x[1], in_h / 2 + ant_recess, z_ant[1]]);
   box([ant_x[0] - rib_keep, pocket_top + ant_rim_keep, z_pocket - eps], [ant_x[1] + rib_keep, in_h / 2, z_lip]);
 }
@@ -605,25 +742,21 @@ module strip_insert_holes() {
     cylinder(d = m25_insert[0], h = m25_insert[1] + eps);
 }
 
-module wall_ring_2d() {
-  difference() { outline(0); outline(wall_t); }
-}
-
-module m3_anchor_2d(p) {
-  // the piece of wall a boss hangs from
-  intersection() { wall_ring_2d(); translate(p) square(m3_boss_d, center = true); }
-}
-
 module m3_boss_2d(p) {
-  // footprint of a boss and its gusset (used for clearances on the back cover)
-  hull() { translate(p) circle(d = m3_boss_d); m3_anchor_2d(p); }
+  // footprint of a bezel boss (used for clearances on the back cover)
+  translate(p) circle(d = m3_boss_d);
 }
 
 module m3_bosses() {
-  // insert boss hanging from the wall, with a 45 deg gusset so it prints face-down
-  for (p = m3_pos) hull() {
-    translate([p[0], p[1], z_in]) cylinder(d = m3_boss_d, h = z_m3_boss - z_in);
-    translate([0, 0, z_in]) linear_extrude(z_m3_boss - z_in + m3_boss_d) m3_anchor_2d(p);
+  // columns from the back edge to the front plate; where one reaches under
+  // the panel its front drops at 45 deg from boss_panel_clear behind the
+  // panel, so it prints face-down without supports
+  for (k = [0 : len(m3_pos) - 1]) difference() {
+    translate([m3_pos[k][0], m3_pos[k][1], z_in]) cylinder(d = m3_boss_d, h = z_lip - z_in + eps);
+    hull() {
+      translate([0, 0, z_boss_cap]) linear_extrude(depth - z_boss_cap) pocket_rect(-face_off(k));
+      translate([0, 0, z_boss_cap - boss_cap_reach]) linear_extrude(eps) pocket_rect(boss_cap_reach - face_off(k));
+    }
   }
 }
 
@@ -634,51 +767,100 @@ module m3_insert_holes() {
   }
 }
 
-module usb_slot_2d(x, grow = 0) {
-  translate([x, z_usb]) offset(r = grow) rrect(usb_slot, usb_slot_r);
+module usb_slot_2d(i, grow = 0) {
+  translate([usb_x[i], z_usb[i]]) offset(r = grow) rrect(usb_slot, usb_slot_r);
 }
 
 module usb_notches() {
   // slot for each plug, open toward the back edge so the carrier can drop in
-  // with the back cover; the back cover's tongue closes the lower half
-  for (x = usb_x) through_top_wall() {
-    usb_slot_2d(x);
-    translate([x - usb_slot[0] / 2, z_in - cut_over]) square([usb_slot[0], z_usb - z_in + cut_over]);
+  // with the back cover; the back cover's tongue closes the lower part
+  for (i = [0 : len(usb_x) - 1]) through_top_wall() {
+    usb_slot_2d(i);
+    translate([usb_x[i] - usb_slot[0] / 2, z_in - cut_over]) square([usb_slot[0], z_usb[i] - z_in + cut_over]);
   }
 }
 
 module usb_labels() {
-  // engraved in the top wall, read from above with the front toward you
-  // (each label on its own baseline: collinear baselines across labels make
-  //  the exporter emit zero-area triangles)
-  for (i = [0 : len(usb_x) - 1])
-    translate([usb_x[i], outer_h / 2 - label_depth, z_label + i * label_stagger]) rotate([-90, 0, 0])
+  // engraved in the top wall beside the slots, read from above with the front
+  // toward you (each label on its own baseline: collinear baselines across
+  // labels make the exporter emit zero-area triangles)
+  for (i = [0 : len(usb_x) - 1]) {
+    x = usb_x[i] + (i == 0 ? -1 : 1) * (usb_slot[0] / 2 + label_gap);
+    translate([x, outer_h / 2 - label_depth, z_usb[i] + i * label_stagger]) rotate([-90, 0, 0])
       linear_extrude(label_depth + cut_over)
-        text(usb_label[i], size = label_size, font = text_font, halign = "center", valign = "center");
+        text(usb_label[i], size = label_size, font = text_font, halign = i == 0 ? "right" : "left", valign = "center");
+  }
+}
+
+// ---- bezel rod grooves: an L-rod in each corner, along the top or bottom
+// wall and the side wall, across the rail joint. Canonical shapes are drawn
+// for the +X +Y corner and mirrored.
+function rod_groove_pts(l) =
+  // groove outline around the rod centreline, rod_end_clear longer at both ends
+  let(h = rod_slot / 2, n = rod_arc_segments, y_end = rod_cc[1] - l[1] - rod_end_clear, x_end = rod_cc[0] - l[0] - rod_end_clear)
+  [[rod_sx + h, y_end],
+   for (k = [0 : n]) rod_cc + (rod_R + h) * [cos(90 * k / n), sin(90 * k / n)],
+   [x_end, rod_ty + h], [x_end, rod_ty - h],
+   for (k = [n : -1 : 0]) rod_cc + (rod_R - h) * [cos(90 * k / n), sin(90 * k / n)],
+   [rod_sx - h, y_end]];
+
+module corner_mirror(s) {
+  mirror([s[0] < 0 ? 1 : 0, 0, 0]) mirror([0, s[1] < 0 ? 1 : 0, 0]) children();
+}
+
+module rod_blocks() {
+  // the strip between the pocket (or its line) and the wall, filled from the
+  // rod groove's back to the front plate along each rod; the groove is cut
+  // into it and into the wall, open toward the back
+  for (i = [0 : len(rod_corners) - 1]) corner_mirror(rod_corners[i]) {
+    l = rod_leg(i);
+    web_end = rod_end_clear + rod_web;
+    y0 = rod_cc[1] - l[1] - web_end;
+    x0 = rod_cc[0] - l[0] - web_end;
+    f = face_off(len(m3_pos) + i);
+    // inner edges a little outside the pocket's edges, each block its own offset
+    translate([0, 0, rod_z[0]]) linear_extrude(z_lip - rod_z[0] + eps) {
+      translate([pocket_edge[0] + f, y0]) square([in_w / 2 + eps - pocket_edge[0] - f, in_h / 2 + eps - y0]);
+      translate([x0, pocket_edge[1] + f]) square([in_w / 2 + eps - x0, in_h / 2 + eps - pocket_edge[1] - f]);
+    }
+  }
+}
+
+module rod_grooves() {
+  for (i = [0 : len(rod_corners) - 1]) corner_mirror(rod_corners[i])
+    translate([0, 0, z_in - cut_over]) linear_extrude(rod_z[1] - z_in + cut_over) polygon(rod_groove_pts(rod_leg(i)));
 }
 
 // =====================================================================
-// Back cover: plate, magnet pockets, standoffs, cradle, tray, ribs
+// Back cover: plate, recesses, magnet tubes, standoffs, tray, ribs, rods
 // =====================================================================
 module back_cover() {
   difference() {
     union() {
-      chamfered_body(0, back_t, back_chamfer, seam_chamfer);
-      locating_lip();
-      usb_tongues();
-      driver_standoffs();
-      carrier_tray();
-      battery_cradle();
-      magnet_bosses();
-      if (keyholes) keyhole_housings();
-      wire_ties();
-      ribs();
+      difference() {
+        union() {
+          chamfered_body(0, back_t, back_chamfer, seam_chamfer);
+          locating_lip();
+          usb_tongues();
+          driver_standoffs();
+          carrier_tray_rim();
+          battery_cradle();
+          magnet_bosses();
+          rod_channel_walls();
+          wire_ties();
+          ribs();
+        }
+        carrier_recess();
+        battery_recess();
+        strip_recess();
+      }
+      carrier_ledges();
     }
     magnet_pockets();
     m3_screw_holes();
-    driver_insert_holes();
-    carrier_insert_holes();
-    if (keyholes) keyhole_cuts();
+    csk_holes([for (h = drv_holes) h], z_drv_pcb);
+    csk_holes(car_screw_pos, z_car_pcb);
+    rod_back_grooves();
     back_logo();
   }
 }
@@ -689,18 +871,21 @@ module locating_lip() {
       outline(wall_t + lip_clear);
       outline(wall_t + lip_clear + lip_t);
       for (p = m3_pos) offset(delta = lip_clear) m3_boss_2d(p);
-      // the carrier and the antenna sit against the top wall
-      translate([-rib_car_x, in_h / 2 - 2 * lip_t - wall_t]) square([rib_car_x + ant_x[1] + rib_keep, 3 * wall_t]);
+      // the carrier and the antenna sit against the top wall (with a split
+      // back, the gap starts at the seam so no stub of lip is left), the
+      // button strip against the bottom wall
+      translate([lip_gap_x0, in_h / 2 - 2 * lip_t - wall_t]) square([ant_x[1] + rib_keep - lip_gap_x0, 3 * wall_t]);
+      translate([strip_lo[0] - rib_keep, -outer_h / 2 - eps]) square([strip_size[0] + 2 * rib_keep, 3 * wall_t]);
     }
 }
 
 module usb_tongues() {
-  // fills the lower half of each USB notch in the bezel's top wall
-  for (x = usb_x) through_top_wall(in_h / 2 + lip_clear, outer_h / 2)
+  // fills the lower part of each USB notch in the bezel's top wall
+  for (i = [0 : len(usb_x) - 1]) through_top_wall(in_h / 2 + lip_clear, outer_h / 2)
     difference() {
-      translate([x - usb_slot[0] / 2 + lip_clear, back_t - seam_chamfer])
-        square([usb_slot[0] - 2 * lip_clear, z_usb - back_t + seam_chamfer]);
-      usb_slot_2d(x, lip_clear);
+      translate([usb_x[i] - usb_slot[0] / 2 + lip_clear, back_t - seam_chamfer])
+        square([usb_slot[0] - 2 * lip_clear, z_usb[i] - back_t + seam_chamfer]);
+      usb_slot_2d(i, lip_clear);
     }
 }
 
@@ -709,29 +894,36 @@ module driver_standoffs() {
     cylinder(d = drv_standoff_d, h = drv_standoff_h + eps);
 }
 
-module driver_insert_holes() {
-  for (h = drv_holes) translate([h[0], h[1], z_drv_pcb - m25_insert[1]])
-    cylinder(d = m25_insert[0], h = m25_insert[1] + eps);
+module csk_holes(list, z_top) {
+  // M2.5 countersunk from the outside (90 deg), through to z_top
+  for (p = list) translate([p[0], p[1], 0]) {
+    translate([0, 0, -cut_over]) cylinder(d = m25_clear_d, h = z_top + 2 * cut_over, $fn = fn_screw);
+    cylinder(d1 = m25_csk_d, d2 = m25_clear_d, h = (m25_csk_d - m25_clear_d) / 2, $fn = fn_screw);
+  }
 }
 
-module carrier_tray() {
-  for (p = car_screw_pos) translate([p[0], p[1], back_t - eps])
-    cylinder(d = car_boss_d, h = car_standoff_h + eps);
+module carrier_tray_rim() {
   // rim on the left, right and bottom edges; the top edge rests against the top wall
-  translate([0, 0, back_t - eps]) linear_extrude(car_standoff_h + car_tray_rim + eps)
+  translate([0, 0, back_t - eps]) linear_extrude(z_car_pcb + car_tray_rim - back_t + eps)
     difference() {
-      translate([-car_tray_x, car_lo[1] - car_clear - car_tray_wall])
-        square([2 * car_tray_x, car_size[1] + car_clear + car_tray_wall - lip_clear]);
-      translate([-car_tray_x + car_tray_wall, car_lo[1] - car_clear])
-        square([2 * (car_tray_x - car_tray_wall), car_size[1] + car_clear + cut_over]);
-      translate([car_wire_gap[0] - car_wire_gap[1] / 2, car_lo[1] - car_clear - car_tray_wall - eps])
+      translate([-car_tray_x, car_rec_lo[1] - car_tray_wall])
+        square([2 * car_tray_x, car_top - lip_clear - (car_rec_lo[1] - car_tray_wall)]);
+      translate(car_rec_lo) square([car_rec_hi[0] - car_rec_lo[0], car_top - car_rec_lo[1] + cut_over]);
+      translate([car_wire_gap[0] - car_wire_gap[1] / 2, car_rec_lo[1] - car_tray_wall - eps])
         square([car_wire_gap[1], car_tray_wall + 2 * eps]);
     }
 }
 
-module carrier_insert_holes() {
-  for (p = car_screw_pos) translate([p[0], p[1], z_car_pcb - m25_insert[1]])
-    cylinder(d = m25_insert[0], h = m25_insert[1] + eps);
+module carrier_recess() {
+  // the plate drops to car_floor under the board, for its solder joints
+  box([car_rec_lo[0], car_rec_lo[1], car_floor], [car_rec_hi[0], car_rec_hi[1], back_t + eps]);
+}
+
+module carrier_ledges() {
+  // the board rests on ledges along its left and right edges and on the two screw bosses
+  for (s = [-1, 1]) mirror([s < 0 ? 1 : 0, 0, 0])
+    box([car_hi[0] - car_ledge_w, car_rec_lo[1], car_floor - eps], [car_rec_hi[0], car_rec_hi[1], z_car_pcb]);
+  for (p = car_screw_pos) translate([p[0], p[1], car_floor - eps]) cylinder(d = car_boss_d, h = z_car_pcb - car_floor + eps);
 }
 
 module battery_cradle() {
@@ -744,22 +936,27 @@ module battery_cradle() {
     }
 }
 
+module battery_recess() {
+  translate([bat_pos[0], bat_pos[1], bat_floor]) linear_extrude(back_t - bat_floor + eps) rrect(bat_in, bat_clear);
+}
+
+module strip_recess() {
+  // room for the switch legs, wire joints and screw heads behind the button strip
+  if (z_strip_floor < back_t)
+    box([strip_lo[0] - strip_clear, max(strip_lo[1] - strip_clear, -in_h / 2), z_strip_floor],
+        [strip_hi[0] + strip_clear, strip_hi[1] + strip_clear, back_t + eps]);
+}
+
 module magnet_bosses() {
+  // tubes around the magnet pockets, up to the rib tops (they carry foam too)
   for (p = mag_pos) translate([p[0], p[1], back_t - eps])
     cylinder(d = mag_boss_d, h = z_mag_boss - back_t + eps);
 }
 
 module magnet_pockets() {
-  // pocket open to the outside; the screw hole is bridged in two layers
-  // (slot, then square) so the pocket ceiling prints without supports
-  for (p = mag_pos) translate([p[0], p[1], 0]) {
-    translate([0, 0, -eps]) cylinder(d = mag_pocket_d, h = z_mag_seat + eps);
-    translate([0, 0, z_mag_seat - eps]) {
-      translate([-mag_pocket_d / 2, -mag_screw_hole / 2, 0]) cube([mag_pocket_d, mag_screw_hole, layer_h + eps]);
-      translate([-mag_screw_hole / 2, -mag_screw_hole / 2, 0]) cube([mag_screw_hole, mag_screw_hole, 2 * layer_h + eps]);
-      cylinder(d = mag_screw_hole, h = mag_floor + 2 * eps);
-    }
-  }
+  // open to the inside, mag_skin short of the outside face: magnet, steel
+  // disc, then epoxy; nothing metal shows outside
+  for (p = mag_pos) translate([p[0], p[1], mag_skin]) cylinder(d = mag_pocket_d, h = z_mag_boss - mag_skin + cut_over);
 }
 
 module m3_screw_holes() {
@@ -770,26 +967,18 @@ module m3_screw_holes() {
   }
 }
 
-module keyhole_2d() {
-  circle(d = keyhole_head_d);
-  hull() { circle(d = keyhole_slot_w); translate([0, keyhole_travel]) circle(d = keyhole_slot_w); }
+module rod_channel_walls() {
+  // two low walls along each back cover rod; the rod lies in a groove
+  // rod_back_sink deep in the plate between them
+  x1 = rod_back_x + rod_end_clear;
+  for (y = rod_back_y, s = [-1, 1])
+    box([-x1, y + (s > 0 ? rod_slot / 2 : -rod_slot / 2 - rod_wall_t), back_t - eps],
+        [x1, y + (s > 0 ? rod_slot / 2 + rod_wall_t : -rod_slot / 2), back_t - rod_back_sink + rod_d]);
 }
 
-module keyhole_track_2d() {
-  // head pocket behind the plate, a little wider than the keyhole
-  hull() for (y = [0, keyhole_travel]) translate([0, y]) circle(d = keyhole_head_d + 2 * keyhole_track_clear);
-}
-
-module keyhole_housings() {
-  for (p = keyhole_pos) translate([p[0], p[1], back_t - eps])
-    linear_extrude(keyhole_cavity_h + keyhole_roof + eps) offset(r = keyhole_wall) keyhole_track_2d();
-}
-
-module keyhole_cuts() {
-  for (p = keyhole_pos) translate([p[0], p[1], 0]) {
-    translate([0, 0, -eps]) linear_extrude(back_t + 2 * eps) keyhole_2d();
-    translate([0, 0, back_t - eps]) linear_extrude(keyhole_cavity_h + eps) keyhole_track_2d();
-  }
+module rod_back_grooves() {
+  x1 = rod_back_x + rod_end_clear;
+  for (y = rod_back_y) box([-x1, y - rod_slot / 2, back_t - rod_back_sink], [x1, y + rod_slot / 2, depth]);
 }
 
 module wire_ties() {
@@ -816,20 +1005,24 @@ module ribs() {
 module rib_keepouts() {
   h = depth + 2 * cut_over;
   for (p = m3_pos) translate([0, 0, -cut_over]) linear_extrude(h) offset(delta = rib_keep) m3_boss_2d(p);
-  // ribs may merge with a magnet boss, but keep the screw head reachable
-  for (p = mag_pos) translate([p[0], p[1], -cut_over]) cylinder(r = mag_screw_head[0] / 2 + mag_tool_clear, h = h);
-  if (keyholes) for (p = keyhole_pos) translate([p[0], p[1], -cut_over]) linear_extrude(h)
-    offset(r = keyhole_wall + rib_keep) keyhole_track_2d();
+  // ribs may merge with a magnet tube, but the pocket stays open
+  for (p = mag_pos) translate([p[0], p[1], -cut_over]) cylinder(d = mag_pocket_d + 2 * rib_keep, h = h);
   // flex zone and relief (nothing but foam there)
   box([-fpc_zone[0] / 2 - rib_keep, pocket_bot - fpc_relief_d, -cut_over],
       [fpc_zone[0] / 2 + rib_keep, panel_bot + fpc_zone[1] + rib_keep, depth + cut_over]);
-  // carrier tray, driver board, battery (up to the cell top)
-  box([-rib_car_x, car_lo[1] - car_clear - car_tray_wall - rib_keep, -cut_over], [rib_car_x, outer_h, depth + cut_over]);
-  box([drv_lo[0] - rib_keep, drv_lo[1] - rib_keep, -cut_over], [drv_hi[0] + rib_keep, drv_hi[1] + rib_keep, z_drv_top + drv_air_min]);
-  translate([bat_pos[0], bat_pos[1], -cut_over]) linear_extrude(z_bat[1] + cut_over + rib_keep) rrect(bat_in, bat_clear);
-  // wire and FFC passages, coax notch
-  box([wire_x - rib_gap_wire / 2, rib_mid_y[0] - rib_pad, -cut_over], [wire_x + rib_gap_wire / 2, rib_mid_y[0] + rib_pad, depth + cut_over]);
-  box([rib_gap_ffc[0], rib_mid_y[1] - rib_pad, -cut_over], [rib_gap_ffc[1], rib_mid_y[1] + rib_pad, depth + cut_over]);
+  // carrier tray, driver board, battery: in a thin case the ribs stop at the modules
+  box([-rib_car_x, car_rec_lo[1] - car_tray_wall - rib_keep, -cut_over], [rib_car_x, outer_h, depth + cut_over]);
+  box([drv_lo[0] - rib_keep, drv_lo[1] - rib_keep, -cut_over], [drv_hi[0] + rib_keep, drv_hi[1] + rib_keep, depth + cut_over]);
+  translate([bat_pos[0], bat_pos[1], -cut_over]) linear_extrude(h) rrect(bat_in, bat_clear);
+  // rods: the channels stay open from above
+  for (y = rod_back_y) box([-outer_w, y - rod_slot / 2 - rod_wall_t - rib_keep, -cut_over],
+                           [outer_w, y + rod_slot / 2 + rod_wall_t + rib_keep, depth + cut_over]);
+  // wire passage; with a split back it runs on to the seam band so no stub is left
+  wire_gap_x0 = split ? min(wire_x - rib_gap_wire / 2, back_split_x + rib_seam_clear) : wire_x - rib_gap_wire / 2;
+  box([wire_gap_x0, rib_mid_y - rib_pad, -cut_over], [wire_x + rib_gap_wire / 2, rib_mid_y + rib_pad, depth + cut_over]);
+  // ribs end short of the back cover seam
+  if (split) box([back_seam_out - rib_seam_clear, -outer_h, -cut_over], [back_split_x + rib_seam_clear, outer_h, depth + cut_over]);
+  // coax notch in the top rib
   box([coax_notch_x - coax_notch / 2, rib_ty - rib_pad, z_rib_top - coax_notch], [coax_notch_x + coax_notch / 2, rib_ty + rib_pad, depth + cut_over]);
 }
 
@@ -877,43 +1070,162 @@ module cap(i) {
 // Desk stand: the frame leans back into it at stand_tilt
 // =====================================================================
 module stand() {
-  u = [-sin(stand_tilt), cos(stand_tilt)];        // up along the back rest
-  v = [cos(stand_tilt), sin(stand_tilt)];         // forward along the seat
-  s0 = [0, stand_seat_h];                         // seat, back corner
-  s1 = s0 + (depth + stand_clear) * v;            // seat, front corner
-  s2 = s1 + stand_lip_h * u;
-  s3 = s2 + stand_t * v;
-  s4 = s1 + stand_t * v;
-  f = [s4[0] + s4[1], 0];                         // 45 deg down to the table
-  r0 = s0 + stand_rest_h * u;
-  r1 = r0 - stand_t * v;
-  k = r1 - ((r1[1] - stand_brace_h) / cos(stand_tilt)) * u;
-  b = [-stand_foot, 0];
   color(c_stand) translate([-stand_w / 2, 0, 0]) rotate([90, 0, 90]) linear_extrude(stand_w)
-    polygon([b, f, s4, s3, s2, s1, s0, r0, r1, k]);
+    polygon(stand_profile());
 }
+
+// =====================================================================
+// Split for small beds: the bezel in four rails with joints at the window
+// corners, the back cover at back_split_x
+// =====================================================================
+module diamond_2d(g) {
+  // square turned 45 deg with exact corners: centred on a surface line it
+  // cuts a 90 deg V-groove of depth g
+  polygon([[g, 0], [0, g], [-g, 0], [0, -g]]);
+}
+
+module hull_pts(pts) {
+  // convex hull of 8 points (two diamonds); every corner is an exact number
+  hull() polyhedron(points = pts, faces = [[0, 1, 2], [0, 3, 1], [4, 5, 6], [4, 7, 5]]);
+}
+
+module joint_grooves() {
+  // V-grooves on the four rail joints: across the side border of the front
+  // face (starting inside the window opening), over the front chamfer and
+  // down the side wall. The three pieces meet exactly on the chamfer's edges
+  g = seam_chamfer;
+  xw = win_size[0] / 2 - window_r - window_chamfer;   // inside the window opening
+  xf = outer_w / 2 - front_chamfer;                    // front face ends, chamfer starts
+  xo = outer_w / 2;
+  zc = depth - front_chamfer;                          // chamfer ends on the wall
+  for (y = [win_top, win_bot], s = [-1, 1]) {
+    hull_pts(concat(diamond_yz(s * xw, y, depth, g), diamond_yz(s * xf, y, depth, g)));
+    hull_pts(concat(diamond_yz(s * xf, y, depth, g), diamond_xy(s * xo, y, zc, g)));
+    hull_pts(concat(diamond_xy(s * xo, y, z_in - cut_over, g), diamond_xy(s * xo, y, zc, g)));
+  }
+}
+
+// a diamond of half-diagonal g in a plane of constant X (yz) or Z (xy)
+function diamond_yz(x, y, z, g) = [[x, y - g, z], [x, y + g, z], [x, y, z - g], [x, y, z + g]];
+function diamond_xy(x, y, z, g) = [[x - g, y, z], [x + g, y, z], [x, y - g, z], [x, y + g, z]];
+
+module bezel_finished() {
+  // the bezel as printed: one piece, or with the joint grooves when split
+  if (split) difference() { bezel(); joint_grooves(); } else bezel();
+}
+
+module side_region(s) {
+  // side rail s (-1 left, 1 right): everything between the two joints on that
+  // side. Outer half of the side wall: cut straight at the window's top and
+  // bottom edges. Front plate and inner half: a 45 deg scarf from those lines
+  // at the front face, bezel_lap into the rail at the back (a half-lap), so
+  // every rail prints face-down without supports
+  big = outer_w;
+  mirror([s < 0 ? 1 : 0, 0, 0]) {
+    rotate([90, 0, 90]) linear_extrude(big) polygon([
+      [win_bot, depth + cut_over], [win_bot, depth], [win_bot + bezel_lap, depth - bezel_lap], [win_bot + bezel_lap, -cut_over],
+      [win_top - bezel_lap, -cut_over], [win_top - bezel_lap, depth - bezel_lap], [win_top, depth], [win_top, depth + cut_over]]);
+    translate([wall_mid_x, win_bot, -cut_over]) cube([big - wall_mid_x, win_top - win_bot, depth + 2 * cut_over]);
+  }
+}
+
+module lower_half() {
+  translate([-outer_w, -outer_h, -cut_over]) cube([2 * outer_w, outer_h + win_c[1], depth + 2 * cut_over]);
+}
+
+module bezel_rail(name) {
+  if (name == "bezel_left") intersection() { bezel_finished(); side_region(-1); }
+  else if (name == "bezel_right") intersection() { bezel_finished(); side_region(1); }
+  else difference() {
+    if (name == "bezel_bottom") intersection() { bezel_finished(); lower_half(); }
+    else difference() { bezel_finished(); lower_half(); }
+    side_region(-1);
+    side_region(1);
+  }
+}
+
+module back_left_region() {
+  // everything left of the back cover seam: a 45 deg scarf through the plate
+  // with short lands (no knife edges), vertical above the plate. At each tab
+  // the cut is vertical and back_left keeps a tongue on the bed side
+  big = outer_w;
+  translate([0, big, 0]) rotate([90, 0, 0]) linear_extrude(2 * big)
+    polygon([[-big, -cut_over], [back_seam_out, -cut_over], [back_seam_out, scarf_land],
+             [back_split_x, back_t - scarf_land], [back_split_x, depth + cut_over], [-big, depth + cut_over]]);
+  for (y = back_tab_y) {
+    translate([-big, y - back_tab[1] / 2 - tab_clear, -cut_over])
+      cube([big + back_split_x, back_tab[1] + 2 * tab_clear, depth + 2 * cut_over]);
+    translate([back_split_x - cut_over, y - back_tab[1] / 2, -cut_over])
+      cube([back_tab[0] + cut_over, back_tab[1], back_tab[2] + cut_over]);
+  }
+}
+
+module back_tab_pockets() {
+  // room for back_left's tongues under back_right's plate (bridged roof)
+  for (y = back_tab_y) translate([back_split_x - cut_over, y - back_tab[1] / 2 - tab_clear, -cut_over])
+    cube([back_tab[0] + tab_clear + cut_over, back_tab[1] + 2 * tab_clear, back_tab[2] + tab_clear + cut_over]);
+}
+
+module back_left() { intersection() { back_cover(); back_left_region(); } }
+module back_right() { difference() { back_cover(); back_left_region(); back_tab_pockets(); } }
 
 // =====================================================================
 // Print layouts (STL orientation)
 // =====================================================================
-module bezel_print() { translate([0, 0, depth]) rotate([0, 180, 0]) bezel(); }
-module back_print() { back_cover(); }
+module face_down() { translate([0, 0, depth]) rotate([0, 180, 0]) children(); }
+module face_down_inverse() { rotate([0, 180, 0]) translate([0, 0, -depth]) children(); }
+
+module print_part(name) {
+  // a printable part in its print orientation (bezel parts face-down, the
+  // long rails turned by rail_angle, back cover parts outside face down),
+  // from its STL when use_stl is set
+  if (use_stl) import(stl_path(name));
+  else rotate([0, 0, part_angle(name)]) {
+    if (name == "bezel_top" || name == "bezel_bottom" || name == "bezel_left" || name == "bezel_right") face_down() bezel_rail(name);
+    else if (name == "back_left") back_left();
+    else if (name == "back_right") back_right();
+    else if (name == "bezel") face_down() bezel();
+    else if (name == "back") back_cover();
+    else if (name == "button_caps") caps_print();
+    else if (name == "stand") stand();
+    else assert(false, str("unknown part: ", name));
+  }
+}
+
+function stl_path(name) = (name == "bezel" || name == "back") ? str("stl/one-piece/", name, ".stl") : str("stl/", name, ".stl");
+
 module caps_print() {
   for (i = [0 : len(btn_x) - 1]) translate([(i - 1) * (cap_flange_d + print_gap), 0, cap_len])
     rotate([180, 0, 0]) cap_local(i);
 }
 
-// Parts in assembled position, optionally from pre-rendered STLs
-module bezel_part() {
-  if (use_stl) rotate([0, 180, 0]) translate([0, 0, -depth]) import("stl/bezel.stl");
-  else bezel();
+// Enclosure parts in assembled position (from the STLs when use_stl is set)
+module assembled(name) {
+  if (is_bezel_part(name)) face_down_inverse() rotate([0, 0, -part_angle(name)]) print_part(name);
+  else rotate([0, 0, -part_angle(name)]) print_part(name);
 }
-module back_part() {
-  if (use_stl) import("stl/back.stl"); else back_cover();
+
+module bezel_parts(alpha = 1, shift = 0) {
+  // split: top rail and chin in the bezel colour, side rails tinted and moved
+  // out by shift (exploded view)
+  if (split) {
+    color(c_bezel, alpha) { assembled("bezel_top"); assembled("bezel_bottom"); }
+    color(c_bezel_side, alpha) {
+      translate([-shift, 0, 0]) assembled("bezel_left");
+      translate([shift, 0, 0]) assembled("bezel_right");
+    }
+  } else color(c_bezel, alpha) assembled("bezel");
+}
+
+module back_parts(alpha = 1, shift = 0) {
+  if (split) {
+    color(c_back, alpha) assembled("back_right");
+    color(c_back_left, alpha) translate([-shift, 0, 0]) assembled("back_left");
+  } else color(c_back, alpha) assembled("back");
 }
 
 // =====================================================================
-// Bought parts and module envelopes (assembled position)
+// Bought parts, rods and module envelopes (assembled position)
 // =====================================================================
 module panel_model() {
   color(c_panel) panel_env();
@@ -947,6 +1259,11 @@ module flex_model() {
                           z_panel_back - fpc_t - fpc_adapter[2]]) cube(fpc_adapter);
 }
 
+module nut(h) {
+  // hex nut, across flats m25_nut[0]
+  cylinder(d = m25_nut[0] / cos(30), h = h, $fn = 6);
+}
+
 module driver_model() {
   translate([drv_pos[0], drv_pos[1], z_drv_pcb]) {
     color(c_drv) difference() {
@@ -954,11 +1271,12 @@ module driver_model() {
       for (h = drv_holes) translate([h[0] - drv_pos[0], h[1] - drv_pos[1], -cut_over])
         cylinder(d = drv_hole_d, h = drv_pcb_t + 2 * cut_over);
     }
-    color(c_switch) translate([-drv_header_size[0] / 2, drv_header_y - drv_pos[1] - drv_header_size[1] / 2, -drv_header_h])
-      cube([drv_header_size[0], drv_header_size[1], drv_header_h]);
+    color(c_metal) translate([-drv_stub_size[0] / 2, drv_stub_y - drv_pos[1] - drv_stub_size[1] / 2, -drv_stub_h])
+      cube([drv_stub_size[0], drv_stub_size[1], drv_stub_h]);
     color(c_switch) translate([-drv_chip[0] / 2, -drv_chip[1] / 2, drv_pcb_t]) cube(drv_chip);
     color(c_metal) translate([drv_size[0] / 2 - drv_ffc_socket[0], -drv_ffc_socket[1] / 2, drv_pcb_t])
       cube(drv_ffc_socket);
+    color(c_metal) for (h = drv_holes) translate([h[0] - drv_pos[0], h[1] - drv_pos[1], drv_pcb_t]) nut(m25_nut[1]);
   }
 }
 
@@ -969,45 +1287,47 @@ module sbox(lo, hi, s) {
 
 module driver_env(s = 0) {
   sbox([drv_lo[0], drv_lo[1], z_drv_pcb], [drv_hi[0], drv_hi[1], z_drv_top], s);
-  sbox([drv_pos[0] - drv_header_size[0] / 2, drv_header_y - drv_header_size[1] / 2, z_drv_pcb - drv_header_h],
-       [drv_pos[0] + drv_header_size[0] / 2, drv_header_y + drv_header_size[1] / 2, z_drv_pcb], s);
+  sbox([drv_pos[0] - drv_stub_size[0] / 2, drv_stub_y - drv_stub_size[1] / 2, z_drv_pcb - drv_stub_h],
+       [drv_pos[0] + drv_stub_size[0] / 2, drv_stub_y + drv_stub_size[1] / 2, z_drv_pcb], s);
 }
 
 module carrier_model() {
   color(c_car) box([car_lo[0], car_lo[1], z_car_pcb], [car_hi[0], car_hi[1], z_car_top]);
-  // XIAO at the top edge, the other modules where they fit (illustration)
+  // XIAO flat at the top edge, the other modules where they fit (illustration)
   color(c_switch) translate([usb_x[0] - xiao_size[0] / 2, car_top - xiao_size[1], z_car_top])
     cube([xiao_size[0], xiao_size[1], xiao_t]);
   color(c_metal) translate([usb_x[0] - xiao_shield[0] / 2, car_top - (xiao_size[1] + xiao_shield[1]) / 2, z_car_top + xiao_t])
     cube(xiao_shield);
   for (m = car_modules) color(m[3]) translate([m[0] - m[2][0] / 2, car_top - m[1] - m[2][1] / 2, z_car_top]) cube(m[2]);
-  color(c_metal) for (x = usb_x) usb_receptacle(x);
+  color(c_metal) for (i = [0 : len(usb_x) - 1]) usb_receptacle(i);
   color(c_metal) translate([ufl_pos[0], ufl_pos[1], z_car_top + xiao_t]) cylinder(d = 2 * coax_d, h = ufl_plug_h);
+  color(c_metal) for (p = car_screw_pos) translate([p[0], p[1], z_car_top]) nut(m25_nut[1]);
 }
 
-module usb_receptacle(x) {
-  translate([x, car_top + usb_overhang - usb_len / 2, z_usb]) rotate([90, 0, 0])
+module usb_receptacle(i) {
+  translate([usb_x[i], car_top + usb_overhang - usb_len / 2, z_usb[i]]) rotate([90, 0, 0])
     linear_extrude(usb_len, center = true) rrect(usb_size, usb_size[1] / 2 - eps);
 }
 
 module carrier_env(s = 0) {
   sbox([car_lo[0], car_lo[1], z_car_pcb], [car_hi[0], car_hi[1], z_car_top + car_comp_h], s);
+  // solder joints: not over the ledges, not around the two screw bosses
   difference() {
-    sbox([car_lo[0], car_lo[1], z_car_pcb - car_solder_h], [car_hi[0], car_hi[1], z_car_pcb], s);
-    // keep solder joints away from the two screw bosses
+    sbox([car_lo[0] + car_ledge_w, car_lo[1], z_car_pcb - car_ledge_h], [car_hi[0] - car_ledge_w, car_hi[1], z_car_pcb], s);
     for (p = car_screw_pos) translate([p[0], p[1], 0]) cylinder(d = car_boss_d + 2 * car_clear, h = depth);
   }
-  for (x = usb_x) sbox([x - usb_size[0] / 2, car_top + usb_overhang - usb_len, z_usb - usb_size[1] / 2],
-                       [x + usb_size[0] / 2, car_top + usb_overhang, z_usb + usb_size[1] / 2], s);
+  for (i = [0 : len(usb_x) - 1])
+    sbox([usb_x[i] - usb_size[0] / 2, car_top + usb_overhang - usb_len, z_usb[i] - usb_size[1] / 2],
+         [usb_x[i] + usb_size[0] / 2, car_top + usb_overhang, z_usb[i] + usb_size[1] / 2], s);
 }
 
 module battery_model() {
-  color(c_foam) translate([bat_pos[0], bat_pos[1], z_in]) linear_extrude(bat_foam_t) rrect([bat_size[0], bat_size[1]], bat_clear);
+  color(c_foam) translate([bat_pos[0], bat_pos[1], bat_floor]) linear_extrude(bat_foam_t) rrect([bat_size[0], bat_size[1]], bat_clear);
   color(c_bat) translate([bat_pos[0], bat_pos[1], z_bat[0]]) linear_extrude(bat_size[2]) rrect([bat_size[0], bat_size[1]], bat_clear);
 }
 
 module battery_env(s = 0) {
-  sbox([bat_pos[0] - bat_size[0] / 2, bat_pos[1] - bat_size[1] / 2, z_in],
+  sbox([bat_pos[0] - bat_size[0] / 2, bat_pos[1] - bat_size[1] / 2, bat_floor],
        [bat_pos[0] + bat_size[0] / 2, bat_pos[1] + bat_size[1] / 2, z_bat[1]], s);
 }
 
@@ -1024,34 +1344,40 @@ module coax_model() {
 }
 
 module strip_model() {
-  color(c_car) box([-strip_size[0] / 2, btn_y - strip_size[1] / 2, z_strip_back], [strip_size[0] / 2, btn_y + strip_size[1] / 2, z_strip_front]);
+  color(c_car) box([strip_lo[0], strip_lo[1], z_strip_back], [strip_hi[0], strip_hi[1], z_strip_front]);
   for (x = btn_x) translate([x, btn_y, z_strip_front]) {
     color(c_switch) translate([-sw_size / 2, -sw_size / 2, 0]) cube([sw_size, sw_size, sw_body_h]);
-    // plunger at its free height, or pressed by the cap if preloaded
-    color(c_switch) cylinder(d = sw_plunger_d, h = sw_h - max(cap_preload, 0));
+    // flat plunger at its free height, or pressed by the cap if preloaded
+    color(c_metal) cylinder(d = sw_plunger_d, h = sw_h - max(cap_preload, 0));
   }
 }
 
 module strip_env(s = 0) {
   difference() {
-    sbox([-strip_size[0] / 2, btn_y - strip_size[1] / 2, z_strip_back - strip_solder_h],
-         [strip_size[0] / 2, btn_y + strip_size[1] / 2, z_strip_front], s);
+    sbox([strip_lo[0], strip_lo[1], z_strip_joints], [strip_hi[0], strip_hi[1], z_strip_front], s);
     // screw heads only behind the two bosses
     for (x = strip_screw_x) translate([x, btn_y, 0]) cylinder(d = strip_boss_d, h = depth);
   }
   for (x = btn_x) sbox([x - sw_size / 2, btn_y - sw_size / 2, z_strip_front], [x + sw_size / 2, btn_y + sw_size / 2, z_strip_front + sw_body_h], s);
 }
 
-module magnets_model() {
-  for (p = mag_pos) translate([p[0], p[1], 0]) {
-    color(c_magnet) translate([0, 0, -mag_proud]) cylinder(d = mag_d, h = mag_h);
-    color(c_metal) translate([0, 0, z_screw_tip]) cylinder(d = mag_screw_d, h = mag_screw_len);
-    color(c_metal) translate([0, 0, z_mag_boss]) cylinder(d = mag_screw_head[0], h = mag_screw_head[1]);
+module magnets_model() { magnets_at(mag_pos); pads_at(mag_pos); }
+
+module magnets_at(list) {
+  // magnet, steel disc and epoxy in the pocket
+  for (p = list) translate([p[0], p[1], 0]) {
+    color(c_magnet) translate([0, 0, z_mag[0]]) cylinder(d = mag_d, h = mag_h);
+    color(c_metal) translate([0, 0, z_steel[0]]) cylinder(d = steel_disc[0], h = steel_disc[1]);
   }
 }
 
+module pads_at(list) {
+  // rubber pads on the outside face, over the pockets
+  color(c_pad) for (p = list) translate([p[0], p[1], -pad[1]]) cylinder(d = pad[0], h = pad[1]);
+}
+
 module magnets_env(s = 0) {
-  for (p = mag_pos) translate([p[0], p[1], -mag_proud + s]) cylinder(d = mag_d - 2 * s, h = mag_h - 2 * s);
+  for (p = mag_pos) translate([p[0], p[1], z_mag[0] + s]) cylinder(d = mag_d - 2 * s, h = z_steel[1] - z_mag[0] - 2 * s);
 }
 
 module fpc_zone_env(s = 0) {
@@ -1060,6 +1386,21 @@ module fpc_zone_env(s = 0) {
 
 module panel_env(s = 0) {
   sbox([panel_c[0] - panel_w / 2, panel_c[1] - panel_h / 2, z_panel_back], [panel_c[0] + panel_w / 2, panel_c[1] + panel_h / 2, z_panel_front], s);
+}
+
+module bezel_rods(s = 0) {
+  // L-rods in the bezel corners (s > 0: pulled in for the clash check)
+  for (i = [0 : len(rod_corners) - 1]) corner_mirror(rod_corners[i]) {
+    l = rod_leg(i);
+    translate([rod_sx, rod_cc[1] - l[1] + s, rod_zc]) rotate([-90, 0, 0]) cylinder(d = rod_d - 2 * s, h = l[1] - s + eps);
+    translate([rod_cc[0] - l[0] + s, rod_ty, rod_zc]) rotate([0, 90, 0]) cylinder(d = rod_d - 2 * s, h = l[0] - s + eps);
+    translate([rod_cc[0], rod_cc[1], rod_zc]) rotate_extrude(angle = 90) translate([rod_R, 0]) circle(d = rod_d - 2 * s);
+  }
+}
+
+module back_rods(s = 0) {
+  for (y = rod_back_y) translate([-rod_back_x + s, y, rod_back_zc]) rotate([0, 90, 0])
+    cylinder(d = rod_d - 2 * s, h = 2 * (rod_back_x - s));
 }
 
 module internals() {
@@ -1071,6 +1412,7 @@ module internals() {
   battery_model();
   antenna_model();
   strip_model();
+  if (show_rods) color(c_rod) { bezel_rods(); back_rods(); }
 }
 
 module caps_inked() {
@@ -1080,39 +1422,67 @@ module caps_inked() {
     translate([btn_x[i], btn_y, z_cap_face - symbol_depth + eps]) linear_extrude(eps) cap_symbol_2d(i);
 }
 
+module all_envelopes(s = 0) {
+  driver_env(s);
+  carrier_env(s);
+  battery_env(s);
+  fpc_zone_env(s);
+  sbox(ant_lo, ant_hi, s);
+  strip_env(s);
+  magnets_env(s);
+  panel_env(s);
+  bezel_rods(s);
+  back_rods(s);
+}
+
 // =====================================================================
 // Scenes
 // =====================================================================
 module scene_assembly() {
-  color(c_bezel) bezel_part();
-  color(c_back) back_part();
+  bezel_parts();
+  back_parts();
   caps_inked();
   magnets_model();
   internals();
 }
 
 module scene_exploded() {
-  // layers pulled apart along Z in assembly order, explode_z[i] x explode_gap
-  function dz(i) = [0, 0, explode_z[i] * explode_gap];
-  translate(dz(0)) magnets_model();
-  translate(dz(1)) { color(c_back) back_part(); driver_model(); carrier_model(); battery_model(); }
-  translate(dz(2)) { panel_model(); flex_model(); }
-  translate(dz(3)) strip_model();
-  translate(dz(4)) caps_inked();
-  translate(dz(5)) { color(c_bezel) bezel_part(); color(c_ant) box(ant_lo, ant_hi); gasket_model(); }
+  // layers pulled apart along Z in assembly order (explode_z[i] x explode_gap):
+  // pads, back cover, magnets, panel, strip, caps, bezel. Split pieces also
+  // move sideways by explode_side; the rods stay put and show the splices
+  side = split ? explode_side : 0;
+  dz = [for (e = explode_z) [0, 0, e * explode_gap]];
+  translate(dz[0]) for (p = mag_pos) translate([p[0] < back_split_x ? -side : 0, 0, 0]) pads_at([p]);
+  translate(dz[1]) {
+    back_parts(shift = side);
+    translate([-side, 0, 0]) driver_model();
+    carrier_model();
+    battery_model();
+    if (show_rods) color(c_rod) back_rods();
+  }
+  translate(dz[2]) for (p = mag_pos) translate([p[0] < back_split_x ? -side : 0, 0, 0]) magnets_at([p]);
+  translate(dz[3]) { panel_model(); flex_model(); }
+  translate(dz[4]) strip_model();
+  translate(dz[5]) caps_inked();
+  translate(dz[6]) {
+    bezel_parts(shift = side);
+    antenna_model();
+    gasket_model();
+    if (show_rods) color(c_rod) bezel_rods();
+  }
 }
 
 module scene_inside() {
   // back cover removed, seen from behind: where each module sits, with the
-  // magnets (on the back cover) as ghosts and their board keep-out circles
-  color(c_bezel) bezel_part();
+  // magnets (in the back cover) as ghosts and their board keep-out circles
+  bezel_parts();
   caps_inked();
   internals();
   color(c_fpc, 0.35) fpc_zone_env();
   color(c_ant, 0.3) antenna_keepout();                       // antenna edge-on from behind: show its zone
   for (p = mag_pos) translate([p[0], p[1], 0]) {
-    color(c_magnet, 0.8) translate([0, 0, -mag_proud]) cylinder(d = mag_d, h = mag_h);
-    color(c_keepout, 0.5) linear_extrude(ring_w) difference() {
+    color(c_magnet, 0.8) translate([0, 0, z_mag[0]]) cylinder(d = mag_d, h = z_steel[1] - z_mag[0]);
+    color(c_keepout, 0.5) translate([0, 0, z_steel[1]]) linear_extrude(ring_w) difference() {
       circle(r = mag_keep_board);
       circle(r = mag_keep_board - ring_w);
     }
@@ -1123,12 +1493,12 @@ module scene_inside() {
 module inside_labels() {
   // read from behind: mirrored, just behind the back face of each module
   lbl = [
-    ["DRIVER HAT", drv_pos, z_drv_pcb],
-    ["CARRIER", [0, car_top - car_size[1] / 2], z_car_pcb - car_solder_h],
-    ["BATTERY", bat_pos, z_in],
+    ["DRIVER HAT", drv_pos, z_drv_pcb - drv_stub_h],
+    ["CARRIER", [0, car_top - car_size[1] / 2], z_car_pcb - car_ledge_h],
+    ["BATTERY", bat_pos, bat_floor],
     ["FPC ZONE", [0, panel_bot + fpc_zone[1] / 2], z_in],
     ["ANTENNA", [(ant_x[0] + ant_x[1]) / 2, in_h / 2 - ant_metal_keepout - img_label], z_in],
-    ["BUTTONS", [0, btn_y], z_strip_back - strip_solder_h]];
+    ["BUTTONS", [0, btn_y], z_strip_joints]];
   for (l = lbl) color(c_switch) translate([l[1][0], l[1][1], l[2] - 2 * eps]) mirror([1, 0, 0]) label(l[0], img_label);
 }
 
@@ -1141,14 +1511,15 @@ module scene_fit_check() {
   color(c_ant) box(ant_lo, ant_hi);
   color(c_strip_env) strip_env();
   color(c_magnet) magnets_env();
+  color(c_rod) { bezel_rods(); back_rods(); }
   color(c_switch) coax_model();
   color(c_cap) for (i = [0 : len(btn_x) - 1]) cap(i);
   if (show_labels) fit_labels();
   color(c_fpc, 0.4) fpc_zone_env();
   color(c_keepout, 0.15) antenna_keepout();
   color(c_panel, 0.25) panel_env();
-  color(c_back, 0.2) back_part();
-  color(c_bezel, 0.15) bezel_part();
+  back_parts(alpha = 0.2);
+  bezel_parts(alpha = 0.15);
 }
 
 module antenna_keepout() {
@@ -1171,23 +1542,50 @@ module fit_labels() {
 }
 
 module scene_clash() {
-  // everything rendered here is a collision: the result must be empty
+  // everything rendered here is a collision: the result must be empty.
+  // The split pieces partition the same solids, so the one-piece shapes
+  // (with the joint grooves) stand in for them here. The back cover moves
+  // clash_shrink back, so the faces that only touch at the seam do not count
   color(c_keepout) {
-    intersection() { bezel(); back_cover(); }
-    intersection() { union() { bezel(); back_cover(); } all_envelopes(clash_shrink); }
+    intersection() { bezel_finished(); translate([0, 0, -clash_shrink]) back_cover(); }
+    intersection() { union() { bezel_finished(); back_cover(); } all_envelopes(clash_shrink); }
   }
 }
 
-module all_envelopes(s = 0) {
-  driver_env(s);
-  carrier_env(s);
-  battery_env(s);
-  fpc_zone_env(s);
-  sbox(ant_lo, ant_hi, s);
-  strip_env(s);
-  magnets_env(s);
-  panel_env(s);
+module scene_plates() {
+  // one bed outline per print job (two by two), parts in print orientation, labelled
+  u = bed_size - 2 * [bed_margin, bed_margin];
+  top = max(depth, stand_h) + cut_over;           // labels float above the tallest part
+  for (j = [0 : len(plate_titles) - 1])
+    translate([(j % 2) * (bed_size[0] + plate_spacing), -floor(j / 2) * (bed_size[1] + plate_spacing), 0]) {
+      color(c_bed_fill) translate([0, 0, -2 * cut_over]) cube([bed_size[0], bed_size[1], cut_over]);
+      color(c_bed) linear_extrude(2 * eps) difference() {
+        square(bed_size);
+        translate([1, 1]) square(bed_size - [2, 2]);
+      }
+      color(c_bed, 0.5) linear_extrude(2 * eps) difference() {
+        translate([bed_margin, bed_margin]) square(u);
+        translate([bed_margin + 0.5, bed_margin + 0.5]) square(u - [1, 1]);
+      }
+      color(c_switch) translate([bed_size[0] / 2, bed_size[1] + plate_gap, 0]) label(plate_titles[j], plate_label * 1.3);
+      for (q = plate_layout(j)) {
+        bb = print_bbox(q[0]);
+        at = [bed_margin, bed_margin] + q[1];
+        color(plate_colour(q[0])) translate([at[0] - bb[0][0], at[1] - bb[0][1], 0]) print_part(q[0]);
+        // names run along the rails, along narrow parts, and under small ones
+        f = fp(q[0]);
+        a = part_angle(q[0]) != 0 ? part_angle(q[0]) : f[0] < plate_narrow ? 90 : 0;
+        small = f[1] < plate_narrow && part_angle(q[0]) == 0;
+        color(c_keepout) translate([at[0] + f[0] / 2, small ? at[1] - plate_label : at[1] + f[1] / 2, top])
+          rotate([0, 0, a]) label(q[0], plate_label);
+      }
+    }
 }
+
+function plate_colour(name) =
+  name == "bezel_top" || name == "bezel_bottom" ? c_bezel : name == "bezel_left" || name == "bezel_right" ? c_bezel_side :
+  name == "back_left" ? c_back_left : name == "back_right" ? c_back :
+  name == "button_caps" ? c_cap : c_stand;
 
 // =====================================================================
 // Design rules: asserts and a placement report (see the console)
@@ -1197,6 +1595,24 @@ function rect_dist(p, lo, hi) = norm([p[0] - clampv(p[0], lo[0], hi[0]), p[1] - 
 function box_dist(lo1, hi1, lo2, hi2) = norm([for (i = [0 : len(lo1) - 1]) max(0, lo1[i] - hi2[i], lo2[i] - hi1[i])]);
 function path_len(p) = len(p) < 2 ? 0 : norm(p[1] - p[0]) + path_len([for (i = [1 : len(p) - 1]) p[i]]);
 function r2(x) = round(x * 100) / 100;
+function seg_dist(p, a, b) = let(ab = b - a, t = clampv((p - a) * ab / (ab * ab), 0, 1)) norm(p - (a + t * ab));
+function gap1d(a, b) = max(0, b[0] - a[1], a[0] - b[1]);   // distance between intervals a and b
+function mirror_box(s, b) = [[s[0] < 0 ? -b[1][0] : b[0][0], s[1] < 0 ? -b[1][1] : b[0][1], b[0][2]],
+                             [s[0] < 0 ? -b[0][0] : b[1][0], s[1] < 0 ? -b[0][1] : b[1][1], b[1][2]]];
+// bounding boxes of the rods (legs exact, bends as their whole corner box)
+function bezel_rod_boxes(i) = let(l = rod_leg(i), s = rod_corners[i], z = [rod_zc - rod_d / 2, rod_zc + rod_d / 2]) [
+  mirror_box(s, [[rod_sx - rod_d / 2, rod_cc[1] - l[1], z[0]], [rod_sx + rod_d / 2, rod_cc[1], z[1]]]),
+  mirror_box(s, [[rod_cc[0] - l[0], rod_ty - rod_d / 2, z[0]], [rod_cc[0], rod_ty + rod_d / 2, z[1]]]),
+  mirror_box(s, [[rod_cc[0], rod_cc[1], z[0]], [rod_sx + rod_d / 2, rod_ty + rod_d / 2, z[1]]])];
+rod_boxes = concat(
+  [for (i = [0 : len(rod_corners) - 1]) each bezel_rod_boxes(i)],
+  [for (y = rod_back_y) [[-rod_back_x, y - rod_d / 2, rod_back_zc - rod_d / 2], [rod_back_x, y + rod_d / 2, rod_back_zc + rod_d / 2]]]);
+// how far a boss's insert hole reaches into the pocket outline (0 if it stays outside)
+function hole_reach(p, f) = let(r = m3_insert[0] / 2, lo = panel_c - pocket_size / 2 - [1, 1] * f, hi = panel_c + pocket_size / 2 + [1, 1] * f)
+  max(0, min(p[0] + r - lo[0], hi[0] - p[0] + r, p[1] + r - lo[1], hi[1] - p[1] + r));
+stack_front = front_t + gasket_t + panel_t;      // front face to the panel's back
+foam_gap = back_foam_t - back_foam_squeeze;      // rib tops to the panel's back
+corner_names = ["top-left", "top-right", "bottom-left", "bottom-right"];
 
 module design_checks() {
   ant_lo2 = [ant_res_lo[0], ant_res_lo[1]];
@@ -1206,27 +1622,74 @@ module design_checks() {
   cradle_lo = bat_pos - bat_out / 2;
   cradle_hi = bat_pos + bat_out / 2;
 
-  // enclosure and bed
-  assert(outer_w <= bed_size[0] && outer_h <= bed_size[1], str("bezel does not fit the ", bed_size, " mm bed"));
-  assert(window_land + window_chamfer <= front_t, "window chamfer deeper than the front face");
+  // print bed: every printed part of this configuration, in its print
+  // orientation (turned 90 deg if that helps), inside the bed margins
+  usable = bed_size - 2 * [bed_margin, bed_margin];
+  for (n = printed_parts) {
+    f = fp(n);
+    echo(str("PART ", n, " footprint ", r2(f[0]), " x ", r2(f[1]), " mm", part_angle(n) != 0 ? str(" (turned ", part_angle(n), " deg)") : ""));
+    assert((f[0] <= usable[0] && f[1] <= usable[1]) || (f[1] <= usable[0] && f[0] <= usable[1]),
+      str(n, " (", r2(f[0]), " x ", r2(f[1]), " mm) does not fit a ", bed_size, " mm bed with ", bed_margin,
+          " mm margins", split ? "" : "; one-piece parts need a 250 x 210 bed, or set split = true"));
+  }
+  if (split) {
+    for (j = [0 : len(plate_titles) - 1]) {
+      jobs = plate_layout(j);
+      for (q = jobs)
+        assert(q[1][0] >= -eps && q[1][1] >= -eps && q[1][0] + fp(q[0])[0] <= usable[0] + eps && q[1][1] + fp(q[0])[1] <= usable[1] + eps,
+          str(q[0], " does not fit print job ", j + 1));
+      for (a = [0 : len(jobs) - 1], b = [0 : len(jobs) - 1]) if (a < b) {
+        g = sep_gap(placed_pts(jobs[a]), placed_pts(jobs[b]));
+        echo(str("PLATE ", j + 1, ": ", jobs[a][0], " to ", jobs[b][0], " at least ", r2(g), " mm"));
+        assert(g >= plate_gap - eps, str(jobs[a][0], " and ", jobs[b][0], " are closer than plate_gap on print job ", j + 1));
+      }
+    }
+    assert(bezel_lap >= front_t, "rail half-lap shorter than the front face: the lap would overhang");
+    split_checks();
+  }
+  assert(window_land + window_chamfer <= front_t + eps, "window chamfer deeper than the front face");
   assert(chin_h > 0, "panel does not fit the outline height");
 
-  // driver board clearances
-  assert(z_drv_pcb - drv_header_h >= z_in + drv_header_clear, "driver header too close to the back cover");
-  assert(z_panel_back - z_drv_top >= drv_air_min, str("driver board air gap ", z_panel_back - z_drv_top, " < ", drv_air_min));
+  // ---- depth: every stack that has to fit between the plates ----------
+  reach = max([for (k = [0 : len(m3_pos) - 1]) hole_reach(m3_pos[k], face_off(k))]);
+  need = [
+    ["carrier: board on its ledges, charger USB-C, air", z_car_top + car_comp_h + car_air_min + stack_front],
+    ["driver HAT: standoffs, board, 3 mm parts, air", z_drv_top + drv_air_min + stack_front],
+    ["driver HAT: screw tips, air", drv_screw_len + drv_air_min + stack_front],
+    ["battery: floor, foam, cell, air to the rib tops", z_bat[1] + bat_air_min + foam_gap + stack_front],
+    ["buttons: cap, gap, switch, strip, joints, recess floor", depth - (z_strip_joints - strip_joint_clear) + recess_floor_min],
+    ["USB slots below the front chamfer", max([for (z = z_usb) z + usb_slot[1] / 2]) + front_chamfer],
+    ["antenna on the top wall", z_in + ant_h + front_t],
+    ["M3 inserts under the 45 deg boss caps", z_m3_floor + reach + boss_panel_clear + stack_front],
+    ["magnet pockets under the rib tops", z_mag_epoxy + foam_gap + stack_front],
+    ["bezel rod grooves", z_in + rod_slot + front_t]];
+  min_depth = max([for (n = need) n[1]]);
+  for (n = need) echo(str("DEPTH needs ", r2(n[1]), " mm: ", n[0]));
+  echo(str("DEPTH ", depth, " mm; the smallest that closes is ", r2(min_depth), " mm"));
+  assert(depth >= min_depth - eps, str("depth ", depth, " mm does not close; it needs ", r2(min_depth), " mm (see the DEPTH lines)"));
+
+  // driver board
+  assert(drv_standoff_h > drv_stub_h, "HAT standoffs do not clear the clipped header pins");
+  assert(m25_nut[1] <= drv_comp_h, "HAT nuts taller than the component zone");
+  assert(drv_screw_len >= z_drv_pcb + drv_pcb_t + m25_nut[1], "HAT screws too short for the nuts");
   // carrier
-  assert(z_car_top + car_comp_h <= z_panel_back - car_air_min, "carrier components too close to the panel");
-  assert(car_standoff_h >= car_solder_h, "carrier solder joints hit the back cover");
+  assert(car_floor >= recess_floor_min, "carrier recess floor too thin");
+  assert(car_screw_len >= z_car_top + m25_nut[1], "carrier screws too short for the nuts");
+  assert((m25_csk_d - m25_clear_d) / 2 <= min(back_t, z_car_pcb), "M2.5 countersink deeper than the plate");
   // battery
-  assert(z_bat[1] <= z_rib_top - bat_air_min, "battery too thick for the enclosure depth");
-  // antenna on the top wall, front edge on the front plate
-  assert(z_ant[0] >= z_in - eps, str("antenna (", ant_h, " mm) taller than the inside of the top wall (", z_lip - z_in, " mm): raise depth"));
+  assert(bat_floor >= recess_floor_min, "battery recess floor too thin");
+  // antenna and coax
+  assert(z_ant[0] >= z_in - eps, str("antenna (", ant_h, " mm) taller than the inside of the top wall (", z_lip - z_in, " mm)"));
   assert(path_len(coax_path) <= coax_len, "coax too short for the route to the U.FL");
+  assert(coax_z + coax_d / 2 <= z_panel_back - car_air_min, "coax too close to the panel");
+  assert(coax_z - coax_d / 2 >= z_car_top + max([for (m = car_modules) m[2][2]]), "coax on the carrier's modules");
+  assert(coax_notch_z - coax_d / 2 >= z_rib_top - coax_notch, "coax notch in the top rib too shallow");
   // buttons
   assert(btn_y - strip_size[1] / 2 >= -in_h / 2 + strip_clear, "button strip hits the bottom wall");
   assert(btn_y + strip_size[1] / 2 <= panel_bot, "button strip reaches into the flex zone");
   assert(btn_y + cap_flange_d / 2 <= pocket_bot - fpc_relief_d, "cap flange reaches the flex relief");
-  assert(z_strip_back - strip_solder_h >= z_in + lip_h, "button strip too deep");
+  assert(sleeve_len >= seat_h, "sleeve shorter than the cap seat");
+  assert(z_strip_floor >= recess_floor_min - eps, str("strip recess floor ", r2(z_strip_floor), " mm is too thin"));
   // caps: a preload must stay below the switch travel, a gap must stay small;
   // either way the flange seat (not the switch) holds the cap in place
   assert(cap_preload < sw_travel, "cap preload would keep the switch pressed");
@@ -1234,14 +1697,15 @@ module design_checks() {
   assert(cap_flange_d > cap_hole_d, "cap flange cannot retain the cap");
   assert(z_cap_back - cap_stroke > z_strip_front + sw_body_h, "cap would hit the switch body before the click");
   assert(fpc_bend <= fpc_relief_d, "flex bend does not fit the relief slot");
+  // screws
+  assert((m3_csk_d - m3_clear_d) / 2 <= back_t, "M3 countersink deeper than the back plate");
+  for (k = [0 : len(m3_pos) - 1]) assert(z_boss_cap - hole_reach(m3_pos[k], face_off(k)) >= z_m3_floor - eps,
+    str("M3 boss ", m3_pos[k], ": insert breaks through its 45 deg cap"));
+  assert(outer_w / 2 - corner_r + rod_R - rod_slot / 2 - pocket_edge[0] - face_off(len(m3_pos) + len(rod_corners) - 1) >= rod_web - eps,
+    "rod groove web to the pocket too thin");
 
-  // magnet screw: must engage the thread, must not reach the magnet's front face
-  assert(mag_engage >= mag_min_engage, str("M4 screw engages only ", mag_engage, " mm"));
-  assert(mag_engage <= mag_thread_depth, "M4 screw longer than the magnet's thread");
-  assert(mag_screw_len <= mag_floor + mag_h - mag_face_skin,
-    str("M4 screw tip ", z_screw_tip + mag_proud, " mm from the magnet face, needs ", mag_face_skin));
-
-  // magnet placement rules
+  // magnets: sealed pocket, placement rules
+  assert(mag_skin > 0 && z_mag_epoxy <= z_mag_boss, "magnet pocket does not hold magnet, disc and epoxy");
   for (p = mag_pos) {
     d_drv = rect_dist(p, drv_lo, drv_hi);
     d_car = rect_dist(p, car_lo, car_hi);
@@ -1259,34 +1723,137 @@ module design_checks() {
       str("magnet ", p, " too close to the wall"));
   }
 
-  // metal near the antenna (inserts, screws, magnets, USB shells)
+  // steel rods: away from the magnets, the antenna and the flex zone
+  d_rm = min([for (b = rod_boxes, m = mag_pos) rect_dist(m, [b[0][0], b[0][1]], [b[1][0], b[1][1]]) - mag_d / 2]);
+  d_ra = min([for (b = rod_boxes) box_dist(b[0], b[1], ant_res_lo, ant_res_hi)]);
+  d_rf = min([for (b = rod_boxes) box_dist(b[0], b[1], [fpc_lo[0], fpc_lo[1], z_in], [fpc_hi[0], fpc_hi[1], z_panel_back])]);
+  echo(str("RODS: nearest magnet edge ", r2(d_rm), " mm, antenna ", r2(d_ra), " mm, flex zone ", r2(d_rf), " mm"));
+  assert(d_rm >= rod_mag_clear - eps, str("a rod is only ", d_rm, " mm from a magnet"));
+  assert(d_ra >= rod_ant_clear - eps, str("a rod is only ", d_ra, " mm from the antenna"));
+  assert(d_rf > 0, "a rod runs through the flex zone");
+  for (i = [0 : len(rod_corners) - 1]) let(l = rod_leg(i))
+    echo(str("CUT bezel rod ", corner_names[i], ": L-shape, ", r2(l[0]), " mm along the ", rod_corners[i][1] > 0 ? "top" : "bottom",
+             " wall + ", r2(l[1]), " mm down the side wall (straight parts), bend ", r2(rod_R), " mm centre radius (",
+             r2(rod_R - rod_d / 2), " inside), cut ", r2(rod_len(i)), " mm"));
+  for (y = rod_back_y) echo(str("CUT back rod at Y ", y, ": straight, ", 2 * rod_back_x, " mm, X -", rod_back_x, " to ", rod_back_x));
+
+  // metal near the antenna (inserts, nuts, magnets and discs, USB shells; rods above)
   metal = concat(
     [for (p = m3_pos) [[p[0] - m3_insert[0] / 2, p[1] - m3_insert[0] / 2, 0], [p[0] + m3_insert[0] / 2, p[1] + m3_insert[0] / 2, z_m3_hole]]],
-    [for (p = car_screw_pos) [[p[0] - m25_insert[0] / 2, p[1] - m25_insert[0] / 2, z_car_pcb - m25_insert[1]],
-                              [p[0] + m25_insert[0] / 2, p[1] + m25_insert[0] / 2, z_car_top + m25_head_h]]],
-    [for (p = mag_pos) [[p[0] - mag_d / 2, p[1] - mag_d / 2, -mag_proud], [p[0] + mag_d / 2, p[1] + mag_d / 2, z_mag_boss + mag_screw_head[1]]]],
-    [for (x = usb_x) [[x - usb_size[0] / 2, car_top + usb_overhang - usb_len, z_usb - usb_size[1] / 2], [x + usb_size[0] / 2, car_top + usb_overhang, z_usb + usb_size[1] / 2]]]);
+    [for (p = car_screw_pos) [[p[0] - m25_nut[0], p[1] - m25_nut[0], 0], [p[0] + m25_nut[0], p[1] + m25_nut[0], z_car_top + m25_nut[1]]]],
+    [for (p = mag_pos) [[p[0] - mag_d / 2, p[1] - mag_d / 2, z_mag[0]], [p[0] + mag_d / 2, p[1] + mag_d / 2, z_steel[1]]]],
+    [for (i = [0 : len(usb_x) - 1]) [[usb_x[i] - usb_size[0] / 2, car_top + usb_overhang - usb_len, z_usb[i] - usb_size[1] / 2],
+                                     [usb_x[i] + usb_size[0] / 2, car_top + usb_overhang, z_usb[i] + usb_size[1] / 2]]]);
   metal_d = min([for (m = metal) box_dist(m[0], m[1], ant_res_lo, ant_res_hi)]);
   assert(metal_d >= ant_metal_keepout, str("metal ", metal_d, " mm from the antenna"));
 
   // placement report (front-view X/Y, Z from the back face)
-  echo(str("OUTER W x H x D = ", outer_w, " x ", outer_h, " x ", depth, " mm (caps +", cap_proud,
-           ", magnets +", mag_proud, ")"));
+  echo(str("OUTER W x H x D = ", outer_w, " x ", outer_h, " x ", depth, " mm (caps +", cap_proud, ", rubber pads +", pad[1], ")"));
   echo(str("PANEL centre ", panel_c, ", window ", r2(win_size[0]), " x ", r2(win_size[1]),
-           " at ", [0, r2(win_c[1])], ", chin ", r2(chin_h), " mm"));
-  echo(str("DRIVER board centre ", drv_pos, ", ", drv_size[0], " x ", drv_size[1], ", PCB at Z ", z_drv_pcb,
-           ", air gap to panel ", r2(z_panel_back - z_drv_top), " mm"));
-  echo(str("CARRIER board centre ", [0, car_top - car_size[1] / 2], ", ", car_size[0], " x ", car_size[1],
-           ", PCB at Z ", z_car_pcb, ", screws ", car_screw_pos));
-  echo(str("USB slots at X ", usb_x, ", centre Z ", z_usb));
-  echo(str("ANTENNA X ", ant_x, " on the top wall, Z ", z_ant, ", coax route ", r2(path_len(coax_path)),
-           " of ", coax_len, " mm, nearest metal ", r2(metal_d), " mm"));
+           " at ", [0, r2(win_c[1])], ", chin ", r2(chin_h), " mm; rail joints at Y ", r2(win_top), " and ", r2(win_bot)));
+  echo(str("STACK panel: front plate ", r2(z_lip), "-", depth, ", gasket ", r2(z_panel_front), "-", r2(z_lip), ", panel ",
+           r2(z_panel_back), "-", r2(z_panel_front), ", rib tops ", r2(z_rib_top), " (+", foam_gap, " foam)"));
+  echo(str("STACK carrier: floor 0-", car_floor, ", joints ", car_floor, "-", r2(z_car_pcb), ", board ", r2(z_car_pcb), "-", r2(z_car_top),
+           ", parts to ", r2(z_car_top + car_comp_h), ", panel back ", r2(z_panel_back), " (air ", r2(z_panel_back - z_car_top - car_comp_h), ")"));
+  echo(str("STACK driver HAT: plate 0-", back_t, ", stubs ", r2(z_drv_pcb - drv_stub_h), "-", r2(z_drv_pcb), ", board ", r2(z_drv_pcb), "-",
+           r2(z_drv_pcb + drv_pcb_t), ", parts and nuts to ", r2(z_drv_top), ", screw tips ", drv_screw_len, ", panel back ",
+           r2(z_panel_back), " (air ", r2(z_panel_back - z_drv_top), ")"));
+  echo(str("STACK battery: floor 0-", bat_floor, ", foam ", bat_floor, "-", r2(z_bat[0]), ", cell ", r2(z_bat[0]), "-", r2(z_bat[1]),
+           ", rib tops ", r2(z_rib_top), " (air ", r2(z_rib_top - z_bat[1]), ")"));
+  echo(str("STACK buttons: recess floor 0-", r2(z_strip_floor), ", joints ", r2(z_strip_joints), "-", r2(z_strip_back), ", strip ",
+           r2(z_strip_back), "-", r2(z_strip_front), ", switch body to ", r2(z_strip_front + sw_body_h), ", plunger to ",
+           r2(z_plunger_top), ", gap ", -cap_preload, ", cap ", r2(z_cap_back), "-", r2(z_cap_face), ", sleeve ", r2(z_sleeve_end), "-", r2(z_lip),
+           "; clicks after ", r2(cap_stroke), " mm with the face ", r2(cap_proud - cap_stroke), " mm proud"));
+  echo(str("STACK magnets: skin 0-", mag_skin, ", magnet ", r2(z_mag[0]), "-", r2(z_mag[1]), ", steel ", r2(z_steel[0]), "-", r2(z_steel[1]),
+           ", epoxy to ", r2(z_mag_epoxy), ", tube to ", r2(z_mag_boss), "; rubber pad -", pad[1], "-0"));
+  echo(str("STACK USB slots: XIAO centre ", r2(z_usb[0]), " (slot ", r2(z_usb[0] - usb_slot[1] / 2), "-", r2(z_usb[0] + usb_slot[1] / 2),
+           "), charger centre ", r2(z_usb[1]), " (slot ", r2(z_usb[1] - usb_slot[1] / 2), "-", r2(z_usb[1] + usb_slot[1] / 2),
+           "), front chamfer from ", depth - front_chamfer));
+  echo(str("STACK antenna: ", r2(z_ant[0]), "-", r2(z_ant[1]), " on the top wall in a ", ant_recess, " mm recess, X ", ant_x,
+           "; coax route ", r2(path_len(coax_path)), " of ", coax_len, " mm, nearest metal ", r2(metal_d), " mm"));
+  echo(str("STACK rods: bezel rods ", r2(rod_zc - rod_d / 2), "-", r2(rod_zc + rod_d / 2), " in grooves ", r2(rod_z[0]), "-", r2(rod_z[1]),
+           ", back rods ", r2(rod_back_zc - rod_d / 2), "-", r2(rod_back_zc + rod_d / 2), " at Y ", rod_back_y));
+  echo(str("DRIVER board centre ", drv_pos, ", ", drv_size[0], " x ", drv_size[1], ", M2.5 x ", drv_screw_len,
+           " countersunk from outside at ", drv_holes));
+  echo(str("CARRIER board centre ", [0, car_top - car_size[1] / 2], ", ", car_size[0], " x ", car_size[1], ", M2.5 x ",
+           car_screw_len, " countersunk at ", car_screw_pos));
+  echo(str("M3 bosses (", len(m3_pos), "): ", m3_pos));
+  echo(str("MAGNETS ", mag_pos, ": N52 ", mag_d, " x ", mag_h, " + steel ", steel_disc[0], " x ", steel_disc[1], ", ", mag_skin, " mm skin"));
   echo(str("CARRIER board edge to antenna ", r2(ant_x[0] - car_hi[0]), " mm (protoboard copper, keep it sparse there)"));
-  echo(str("BATTERY centre ", bat_pos, ", cell ", bat_size, ", Z ", z_bat));
   echo(str("FPC zone X +-", fpc_zone[0] / 2, ", Y ", r2(panel_bot), " to ", r2(panel_bot + fpc_zone[1])));
-  echo(str("BUTTONS at X ", btn_x, ", Y ", btn_y, ", strip Z ", r2(z_strip_back), " to ", r2(z_strip_front),
-           "; cap ", cap_preload < 0 ? str(-cap_preload, " mm above the plunger") : str(cap_preload, " mm preload"),
-           ", clicks after ", r2(cap_stroke), " mm with the face ", r2(cap_proud - cap_stroke), " mm proud"));
-  echo(str("MAGNETS ", mag_pos, ", screw engagement ", mag_engage, " mm, tip ", z_screw_tip + mag_proud,
-           " mm behind the magnet face"));
+  boss_report();
+}
+
+module boss_report() {
+  // clearances around the bezel bosses that moved or are new in the thin case
+  rc = bat_wall_t + bat_clear;
+  r = m3_boss_d / 2;
+  for (p = m3_pos) if (p[1] != -m3_cy || abs(p[0]) != m3_bottom_x) {
+    d_bat = rect_dist(p, bat_pos - bat_out / 2 + [rc, rc], bat_pos + bat_out / 2 - [rc, rc]) - rc - r;
+    d_mag = min([for (m = mag_pos) norm(p - m)]) - mag_boss_d / 2 - r;
+    d_hat = min([for (h = drv_holes) norm(p - h)]) - drv_standoff_d / 2 - r;
+    d_rib = min([for (s = rib_segments) seg_dist(p, s[0], s[1])]) - rib_pad / 2 - r;
+    d_fpc = rect_dist(p, [-fpc_zone[0] / 2, panel_bot], [fpc_zone[0] / 2, panel_bot + fpc_zone[1]]) - r;
+    d_rod = min([for (b = rod_boxes) rect_dist(p, [b[0][0], b[0][1]], [b[1][0], b[1][1]])]) - r;
+    echo(str("BOSS ", p, ": battery cradle ", r2(d_bat), ", magnet tube ", r2(d_mag), ", HAT standoff ", r2(d_hat),
+             ", rib pad ", r2(d_rib), d_rib < rib_keep ? " (rib cut back to rib_keep)" : "", ", flex zone ", r2(d_fpc), ", rod ", r2(d_rod), " mm"));
+  }
+}
+
+module split_checks() {
+  // back cover seam: features stand on the plate, where the seam is vertical
+  // at back_split_x; the scarf below them runs back to back_seam_out
+  seam = [back_seam_out, back_split_x];
+  near_hole = max([for (h = drv_holes) h[0]]);
+  back_items = [
+    ["HAT standoffs", [near_hole - drv_standoff_d / 2, near_hole + drv_standoff_d / 2]],
+    ["HAT board edge", [drv_lo[0], drv_hi[0]]],
+    ["carrier tray rim", [-car_tray_x, car_tray_x]],
+    ["vertical rib", [rib_mid_x[0] - rib_pad / 2, rib_mid_x[0] + rib_pad / 2]],
+    ["M3 bosses at X -60", [-m3_bottom_x - m3_boss_d / 2, -m3_bottom_x + m3_boss_d / 2]],
+    ["left magnet tubes", [mag_pos[0][0] - mag_boss_d / 2, mag_pos[0][0] + mag_boss_d / 2]]];
+  for (it = back_items) {
+    d = gap1d(it[1], [back_split_x, back_split_x]);
+    echo(str("BACK SEAM X ", back_split_x, " to ", it[0], ": ", r2(d), " mm"));
+    assert(d >= seam_clear_min, str(it[0], " only ", d, " mm from the back cover seam"));
+  }
+  d_csk = gap1d([near_hole - m25_csk_d / 2, near_hole + m25_csk_d / 2], [back_seam_out, back_seam_out]);
+  echo(str("BACK SEAM outside face X ", r2(back_seam_out), " to the HAT countersinks: ", r2(d_csk), " mm"));
+  assert(d_csk >= seam_clear_min, "HAT countersinks too close to the back cover seam");
+  d_tie = gap1d([wire_x - tie_size[0] / 2, wire_x + tie_size[0] / 2], seam);
+  echo(str("BACK SEAM to tie blocks: ", r2(d_tie), " mm; rib ends ", rib_seam_clear, " mm; both rods cross it"));
+  assert(d_tie >= tie_seam_min, str("tie blocks only ", d_tie, " mm from the back cover seam"));
+  // tabs and their pockets stay clear of the tray, standoffs, ties and rod channels
+  for (y = back_tab_y) {
+    lo = [back_split_x, y - back_tab[1] / 2 - tab_clear, 0];
+    hi = [back_split_x + back_tab[0] + tab_clear, y + back_tab[1] / 2 + tab_clear, 1];
+    d = min(concat(
+      [box_dist(lo, hi, [-car_tray_x, car_rec_lo[1] - car_tray_wall, 0], [car_tray_x, car_top, 1])],
+      [for (h = drv_holes) box_dist(lo, hi, [h[0] - drv_standoff_d / 2, h[1] - drv_standoff_d / 2, 0],
+                                            [h[0] + drv_standoff_d / 2, h[1] + drv_standoff_d / 2, 1])],
+      [for (t = wire_ties_y) box_dist(lo, hi, [wire_x - tie_size[0] / 2, t - tie_size[1] / 2, 0],
+                                              [wire_x + tie_size[0] / 2, t + tie_size[1] / 2, 1])],
+      [for (r = rod_back_y) box_dist(lo, hi, [-outer_w, r - rod_slot / 2 - rod_wall_t, 0], [outer_w, r + rod_slot / 2 + rod_wall_t, 1])]));
+    echo(str("BACK TAB at Y ", y, ": ", r2(d), " mm to the nearest feature"));
+    assert(d >= seam_clear_min, str("back cover tab at Y ", y, " only ", d, " mm from a feature"));
+  }
+  // bezel rail joints: where they cut material (the side border and wall),
+  // nothing else may come close; the rods are meant to cross them
+  jx = [win_size[0] / 2 - window_r - window_chamfer, outer_w / 2];
+  bands = [[win_top - bezel_lap, win_top], [win_bot, win_bot + bezel_lap]];
+  items = concat(
+    [for (p = m3_pos) [str("M3 boss ", p), p - [1, 1] * m3_boss_d / 2, p + [1, 1] * m3_boss_d / 2]],
+    [for (sx = [-1, 1], y = [pocket_top, pocket_bot]) ["pocket corner relief", [sx * pocket_edge[0], y] - [1, 1] * pocket_relief_d / 2,
+                                                                                  [sx * pocket_edge[0], y] + [1, 1] * pocket_relief_d / 2]],
+    [for (x = btn_x) ["button sleeve", [x, btn_y] - [1, 1] * sleeve_od / 2, [x, btn_y] + [1, 1] * sleeve_od / 2]],
+    [["flex relief", [-fpc_relief_w / 2, pocket_bot - fpc_relief_d], [fpc_relief_w / 2, pocket_bot]],
+     ["antenna recess", [ant_x[0], in_h / 2], [ant_x[1], in_h / 2 + ant_recess]]]);
+  d_joint = min([for (it = items, s = [-1, 1], b = bands)
+    box_dist([it[1][0], it[1][1], 0], [it[2][0], it[2][1], 0],
+                                                  [s > 0 ? jx[0] : -jx[1], b[0], 0], [s > 0 ? jx[1] : -jx[0], b[1], 0])]);
+  for (it = items, s = [-1, 1], b = bands) {
+    d = box_dist([it[1][0], it[1][1], 0], [it[2][0], it[2][1], 0], [s > 0 ? jx[0] : -jx[1], b[0], 0], [s > 0 ? jx[1] : -jx[0], b[1], 0]);
+    assert(d >= seam_clear_min, str(it[0], " only ", d, " mm from a rail joint"));
+  }
+  echo(str("RAIL JOINTS at Y ", r2(win_top), " and ", r2(win_bot), " (half-lap ", bezel_lap, " mm): nearest feature ", r2(d_joint), " mm"));
 }
