@@ -200,7 +200,7 @@ def build() -> str:
     # ---- 5V_EPD to the HAT
     X5 = 1170
     s.line(1050, RAIL, X5, RAIL, stroke=COL["v5"], width=3)
-    s.line(X5, RAIL, X5, 410, stroke=COL["v5"], width=3)
+    s.line(X5, RAIL, X5, 430, stroke=COL["v5"], width=3)
     s.label_box(1110, RAIL - 18, "5V_EPD", "v5", size=12.5)
     s.text(1110, RAIL + 22, "5.2 V, off in sleep", size=11.5, anchor="middle", fill=COL["text2"])
     s.dot(X5, 372, COL["v5"], 4.5)
