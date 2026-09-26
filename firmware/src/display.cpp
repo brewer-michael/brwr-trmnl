@@ -11,6 +11,9 @@
 #include "messages.h"
 #include "config.h"
 #include "battery.h"
+#ifdef BOARD_BRWR_TRMNL
+#include <brwr/brwr.h>
+#endif
 #define MAX_BIT_DEPTH 8
 TRMNL_DEVICE *pDevice = NULL;
 #ifdef PARALLEL_EPD
@@ -37,6 +40,7 @@ const TRMNL_DEVICE device_list[] =
   "m5_papers3",   BB_PANEL_M5PAPERS3,   BB_PANEL_NONE,         0xff,  0xff,  0xff,  3,    0xff,   BATT_ADC,
   "sensoria_c5",  BB_PANEL_SENSORIA_C5, BB_PANEL_NONE,         7,     6,     0,     0xff, 0xff,   BATT_ADC,
   "lilygo_t5pro", BB_PANEL_EPDIY_V7,    BBEP_DISPLAY_ED047TC1, 39,    40,    0,     0xff, 0xff,   BATT_BQ27220,
+  "brwr_trmnl",   BB_PANEL_IT8951,      BBEP_DISPLAY_ED103TC2, 0xff,  0xff,  2,     PIN_BATTERY, 0xff, BATT_ADC,
   NULL, 0, 0, 0, 0, 0, 0, 0, 0,
 }; // Parallel Eink device list
 
@@ -288,9 +292,12 @@ void display_init(void)
         bbep.begin(dpList[pDevice->panel_set][0].OneBit);
     }
 #else // Parallel eink devices
-#if defined (BOARD_SEEED_RETERMINAL_E1003)
+#if defined (BOARD_SEEED_RETERMINAL_E1003) || defined(BOARD_BRWR_TRMNL)
     bbep.initIT8951(EPD_MOSI_PIN, EPD_MISO_PIN, EPD_SCK_PIN, EPD_CS_PIN, EPD_BUSY_PIN, EPD_RST_PIN, EPD_EN_PIN, EPD_VCC_EN);
     bbep.setPanelSize(BBEP_DISPLAY_ED103TC2);
+#ifdef BOARD_BRWR_TRMNL
+    brwr::panel_after_init(); // this panel's VCOM, SPI clock for hand wiring
+#endif
 #else // normal parallel eink devices
     bbep.initPanel(pDevice->iBoardType);
     if (pDevice->iPanelSize != BB_PANEL_NONE) {
@@ -2858,5 +2865,8 @@ void display_sleep(void)
 #else
     bbep.einkPower(0);
     bbep.deInit();
+#ifdef BOARD_BRWR_TRMNL
+    brwr::panel_release_lines(); // don't feed the unpowered HAT through its pins
+#endif
 #endif
 }

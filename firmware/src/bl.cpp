@@ -57,6 +57,9 @@
 #include "messages.h"
 #include "displayed_image.h"
 #include <globals.h>
+#ifdef BOARD_BRWR_TRMNL
+#include <brwr/brwr.h>
+#endif
 
 static float vBatt;
 static https_request_err_e downloadAndShow(); // download and show the image
@@ -365,6 +368,8 @@ bool check_corners_gesture()
   return slider_event == IQS323_GESTURE_HOLD && left && right;
 }
 
+#endif // BOARD_TRMNL_X
+#if defined(BOARD_TRMNL_X) || defined(BOARD_BRWR_TRMNL)
 static void update_playlist_order(const char *new_path, const char *prev_path) {
   String order = preferences.getString(PREFERENCES_PLAYLIST_ORDER_KEY, "");
   String newStr = String(new_path);
@@ -418,6 +423,8 @@ static void update_playlist_order(const char *new_path, const char *prev_path) {
   if (!inserted) result2 += (result2.isEmpty() ? "" : "|") + newStr;
   preferences.putString(PREFERENCES_PLAYLIST_ORDER_KEY, result2);
 }
+#endif // BOARD_TRMNL_X || BOARD_BRWR_TRMNL
+#ifdef BOARD_TRMNL_X
 
 static void show_cached_image_by_offset(int offset) {
   String order = preferences.getString(PREFERENCES_PLAYLIST_ORDER_KEY, "");
@@ -699,6 +706,9 @@ void bl_init(void)
   Log.begin(LOG_LEVEL_VERBOSE, &Serial);
 #endif
   Log_info("BL init success");
+#ifdef BOARD_BRWR_TRMNL
+  brwr::early_init(); // RTC state, settings, panel supply off, buttons
+#endif
 
   WifiCaptivePortal.setHostname(getWifiClientHostname());
 
@@ -759,6 +769,29 @@ void bl_init(void)
   Log_info("preferences end");
   #ifndef BOARD_TRMNL_X
   bool double_click = false;
+#ifdef BOARD_BRWR_TRMNL
+  brwr::Button brwr_button;
+  brwr::Press brwr_press;
+  if (brwr::button_wake(&brwr_button, &brwr_press))
+  {
+    switch (brwr::handle_button(brwr_button, brwr_press))
+    {
+    case brwr::ButtonAction::WifiSetup:
+      Log_info("WiFi reset");
+      WifiCaptivePortal.resetSettings();
+      break;
+    case brwr::ButtonAction::FactoryReset:
+      resetDeviceCredentials();
+      break;
+    case brwr::ButtonAction::SpecialFunction:
+      double_click = true;
+      break;
+    case brwr::ButtonAction::None:
+      break;
+    }
+  }
+  else
+#endif // BOARD_BRWR_TRMNL
   if (gpio_wakeup)
   {
     Log_info("GPIO wakeup detected (%d)", wakeup_reason);
@@ -900,6 +933,9 @@ void bl_init(void)
 
   // Mount SPIFFS
   filesystem_init();
+#ifdef BOARD_BRWR_TRMNL
+  brwr::after_display_init(vBatt); // battery-empty screen, Back through cached screens
+#endif
 #endif // !BOARD_TRMNL_X
 
 #ifdef BOARD_TRMNL_X
@@ -914,7 +950,11 @@ void bl_init(void)
   vBatt = battery().readVoltage(); // Read the battery voltage BEFORE WiFi is turned on
 #endif // BOARD_TRMNL_X
 
+#ifdef BOARD_BRWR_TRMNL
+  if (brwr::wants_boot_logo())
+#else
   if (wakeup_reason != ESP_SLEEP_WAKEUP_TIMER)
+#endif
   {
     Log.info("%s [%d]: Display TRMNL logo start\r\n", __FILE__, __LINE__);
 
@@ -1126,6 +1166,15 @@ void bl_init(void)
 
   Log.info("%s [%d]: Time since last sleep: %d\r\n", __FILE__, __LINE__, time_since_sleep);
 
+#ifdef BOARD_BRWR_TRMNL
+  // Home Assistant: MQTT state, retained settings and commands. Then draw
+  // whatever Home Assistant asked for; otherwise fall through to the TRMNL server.
+  brwr::ha_begin(vBatt);
+  https_request_err_e request_result = HTTPS_NO_ERR;
+  bool brwr_drew = brwr::display_takeover(&request_result) || !brwr::uses_trmnl_server();
+  if (!brwr_drew)
+  {
+#endif
   if (preferences.isKey(PREFERENCES_API_KEY) && preferences.isKey(PREFERENCES_FRIENDLY_ID))
   {
     Log.info("%s [%d]: API key and friendly ID saved\r\n", __FILE__, __LINE__);
@@ -1170,7 +1219,13 @@ void bl_init(void)
   log_retry = true;
 
   // OTA checking, image checking and drawing
+#ifdef BOARD_BRWR_TRMNL
+  request_result = downloadAndShow();
+  brwr::note_server_image(request_result, filename);
+  }
+#else
   https_request_err_e request_result = downloadAndShow();
+#endif
   Log.info("%s [%d]: request result - %s\r\n", __FILE__, __LINE__, https_request_err_str(request_result));
 
   if (request_result == HTTPS_IMAGE_FILE_TOO_BIG)
@@ -1243,9 +1298,15 @@ void bl_init(void)
   }
 
   // OTA update checking
+#ifdef BOARD_BRWR_TRMNL
+  // Never take firmware from the server: this board reports itself as a
+  // TRMNL X to get 16-gray screens, and TRMNL X firmware would brick it.
+  if (false)
+#else
   if (firmwareUpdateService.isUpdateDue(
           apiDisplayResult.response.update_firmware,
           apiDisplayResult.response.firmware_url))
+#endif
   {
     showMessageWithLogo(FW_UPDATE);
     FirmwareUpdateResult firmwareUpdateResult = firmwareUpdateService.performUpdate();
@@ -1321,6 +1382,9 @@ void bl_init(void)
 
   // display go to sleep
   Log_info("%s [%d]: BL done, going to sleep...", __FILE__, __LINE__);
+#ifdef BOARD_BRWR_TRMNL
+  brwr::ha_report(request_result);
+#endif
   display_sleep();
   goToSleep();
 } /* bl_init() */
@@ -1384,7 +1448,7 @@ ApiDisplayInputs loadApiDisplayInputs(Preferences &preferences)
   inputs.firmwareCommit = String(FW_COMMIT);
   inputs.displayWidth = display_width();
   inputs.displayHeight = display_height();
-  inputs.model = DEVICE_MODEL;
+  inputs.model = API_DEVICE_MODEL;
   inputs.panelId = display_panel_rev_string();
   inputs.specialFunction = special_function;
   inputs.imageCached = bUsedCachedImage;
@@ -1489,7 +1553,7 @@ static https_request_err_e downloadAndShow()
       if (!_curPath.isEmpty() && (_curPath != String(szTemp) || _lastPath.isEmpty()))
         preferences.putString(PREFERENCES_LAST_PATH_KEY, _curPath);
       preferences.putString(PREFERENCES_CURRENT_PATH_KEY, String(szTemp));
-      #ifdef BOARD_TRMNL_X
+      #if defined(BOARD_TRMNL_X) || defined(BOARD_BRWR_TRMNL)
       update_playlist_order(szTemp, _curPath.c_str());
       #endif
       preferences.putString(PREFERENCES_BROWSE_PATH_KEY, String(szTemp));
@@ -1538,8 +1602,10 @@ static https_request_err_e downloadAndShow()
 
   submitStoredLogs();
 
+#ifndef BOARD_BRWR_TRMNL // brwr still needs Wi-Fi: Home Assistant state, always-ready idle
   WiFi.disconnect(true); // no need for WiFi, save power starting here
   Log.info("%s [%d]: Received successfully; WiFi off.\r\n", __FILE__, __LINE__);
+#endif
 
   bool image_reverse = false;
   if (isPNG || isJPEG)
@@ -1558,7 +1624,7 @@ static https_request_err_e downloadAndShow()
     if (!_curPath.isEmpty() && (_curPath != String(szTemp) || _lastPath.isEmpty()))
       preferences.putString(PREFERENCES_LAST_PATH_KEY, _curPath);
     preferences.putString(PREFERENCES_CURRENT_PATH_KEY, String(szTemp));
-    #ifdef BOARD_TRMNL_X
+    #if defined(BOARD_TRMNL_X) || defined(BOARD_BRWR_TRMNL)
     update_playlist_order(szTemp, _curPath.c_str());
     #endif
     preferences.putString(PREFERENCES_BROWSE_PATH_KEY, String(szTemp));
@@ -2288,11 +2354,17 @@ void goToSleep(void)
 
   filesystem_deinit();
   uint32_t time_to_sleep = refreshInterval.seconds();
+#ifdef BOARD_BRWR_TRMNL
+  time_to_sleep = brwr::sleep_seconds(time_to_sleep); // Home Assistant refresh setting, holds
+#endif
   iPrevWakeTime = millis() - startup_time; // save for statistics
   Log.info("%s [%d]: total awake time - %d ms\r\n", __FILE__, __LINE__, iPrevWakeTime); 
   Log.info("%s [%d]: time to sleep - %d\r\n", __FILE__, __LINE__, time_to_sleep);
   preferences.putUInt(PREFERENCES_LAST_SLEEP_TIME, systemClock().getTime());
   preferences.end();
+#ifdef BOARD_BRWR_TRMNL
+  brwr::sleep(time_to_sleep); // always-ready idle, or deep sleep with all three buttons as wake sources
+#endif
   esp_sleep_enable_timer_wakeup((uint64_t)time_to_sleep * SLEEP_uS_TO_S_FACTOR);
   // Configure GPIO pin for wakeup
 #if CONFIG_IDF_TARGET_ESP32
@@ -2328,6 +2400,11 @@ void goToSleep(void)
 
 static void goToSleepButtonOnly(void)
 {
+#ifdef BOARD_BRWR_TRMNL
+  filesystem_deinit();
+  preferences.end();
+  brwr::sleep(0);
+#endif
   submitStoredLogs();
   if (WiFi.status() == WL_CONNECTED) {
     WiFi.disconnect();
@@ -2457,6 +2534,9 @@ bool storeLogString(const char *log_buffer)
 
 static void submitStoredLogs(void)
 {
+#ifdef BOARD_BRWR_TRMNL
+  if (!brwr::uses_trmnl_server()) return; // Home Assistant screens only: nothing to upload to
+#endif
   if (WiFi.isConnected() == false)
   {
     Log_info("WiFi not connected; not submitting stored logs.");

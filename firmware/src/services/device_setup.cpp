@@ -42,7 +42,7 @@ void DeviceSetup::performApiSetup() {
   inputs.baseUrl = _persistence.readString(PREFERENCES_API_URL, API_BASE_URL);
   inputs.macAddress = device_mac_address();
   inputs.firmwareVersion = FW_VERSION_STRING;
-  inputs.model = String(DEVICE_MODEL);
+  inputs.model = String(API_DEVICE_MODEL);
   inputs.panelId = display_panel_rev_string();
 
   Log.info("%s [%d]: [HTTPS] begin /api/setup ...\r\n", __FILE__, __LINE__);

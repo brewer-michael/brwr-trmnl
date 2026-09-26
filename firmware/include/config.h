@@ -97,10 +97,14 @@
 #define DEVICE_MODEL  "seeed_esp32s3"
 #define PIN_INTERRUPT 0 // the boot button on the XIAO ESP32-S3, this button works as regular wakeup button
 #define FAKE_BATTERY_VOLTAGE
+#elif defined(BOARD_BRWR_TRMNL)
+#define PIN_INTERRUPT 2 // centre (refresh) button; the other two are in brwr/board.h
 #endif
 
 // DHCP hostname prefix (hyphens instead of spaces).
-#if defined(PARALLEL_EPD)
+#if defined(BOARD_BRWR_TRMNL)
+#define WIFI_CLIENT_HOSTNAME_PREFIX "brwr-trmnl"
+#elif defined(PARALLEL_EPD)
 #define WIFI_CLIENT_HOSTNAME_PREFIX "TRMNL-X"
 #elif defined(BOARD_TRMNL) || defined(BOARD_TRMNL_GEN2)
 #define WIFI_CLIENT_HOSTNAME_PREFIX "TRMNL-OG"
@@ -115,6 +119,8 @@
 #define PIN_BATTERY 1
 #elif defined(BOARD_XTEINK_X4)
 #define PIN_BATTERY 0
+#elif defined(BOARD_BRWR_TRMNL)
+#define PIN_BATTERY 4 // D3, 220k/220k divider from the battery
 #else
 #define PIN_BATTERY 3
 #endif
@@ -192,6 +198,26 @@ enum {
 #define UBYTE   uint8_t
 #define UWORD   uint16_t
 #define UDOUBLE uint32_t
+
+// Model name sent to the server in the Model header. Terminus maps "x" to the
+// TRMNL X model (1872x1404, 16 grays), which matches the 10.3" panel.
+#if defined(BOARD_BRWR_TRMNL)
+#define API_DEVICE_MODEL "x"
+#else
+#define API_DEVICE_MODEL DEVICE_MODEL
+#endif
+
+#if defined(BOARD_BRWR_TRMNL)
+// XIAO ESP32-S3 to the Waveshare 10.3" e-Paper HAT (IT8951, SPI). See hardware/wiring.md.
+#define EPD_SCK_PIN  7  // D8
+#define EPD_MISO_PIN 8  // D9
+#define EPD_MOSI_PIN 9  // D10
+#define EPD_CS_PIN   5  // D4
+#define EPD_RST_PIN  43 // D6, through 1 kOhm (UART0 TX at boot, before the HAT is powered)
+#define EPD_BUSY_PIN 44 // D7, HAT HRDY
+#define EPD_EN_PIN   6  // D5, MiniBoost EN: 5 V for the HAT
+#define EPD_VCC_EN   6  // same switch
+#endif
 
 #if defined(BOARD_SEEED_RETERMINAL_E1003)
 #define EPD_SCK_PIN  7
