@@ -76,13 +76,25 @@ layout shows them.
 
 ## 4. Build the button strip
 
-Cut protoboard to 84 × 20 mm and drill two 2.7 mm holes at ±38 mm from the
-centre, as in [the button board layout](images/button-board.svg). Solder the
-three 12 × 12 mm switches at −26, 0 and +26 mm, with the plungers facing the
-front. Join one side of all three to a common ground wire, and give each
-switch its own signal wire: **BACK** (left, seen from the front), **REFRESH**
-(middle), **NEXT** (right). About 15 cm of four-wire lead reaches the
-carrier; crimp or solder a 1 × 4 socket to match the carrier's header.
+Follow [the button board drawing](images/button-board.svg).
+
+1. Cut protoboard to 84 × 20 mm. Put the middle switch at the centre, and
+   the other two 10 holes (25.4 mm) either side, plungers facing the front.
+   The caps are 26 mm apart, and their flat backs cover the difference. The
+   legs sit 5 holes by 2 holes apart; bend them in slightly to fit, and press
+   each switch flat before soldering.
+2. Drill two 2.7 mm holes on the centre line, 38 mm either side of the
+   middle switch.
+3. **Ground:** each switch's bottom-right leg (seen from the front) to a bare
+   wire along the bottom row.
+4. **Signals:** each switch's top-left leg, diagonally opposite its ground
+   leg, to its own insulated wire. Diagonal legs are always on opposite
+   sides of the switch, whichever way round it's fitted.
+5. **The lead:** about 15 cm of four wires to a 1 × 4 socket in the order
+   BACK, REFRESH, NEXT, GND, matching the carrier's header J3. From the front,
+   BACK is on the left. Keep the wires clear of the two screw holes.
+6. Check with the meter: each signal wire reads open to ground, and closed
+   while its button is pressed.
 
 ## 5. Check the battery lead
 
