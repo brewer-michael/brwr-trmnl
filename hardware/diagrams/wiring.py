@@ -30,7 +30,7 @@ STRIP = (-42.0, -99.0, 42.0, -79.0)                    # button board, 84 x 20, 
 BTN_X = {"BACK": -26.0, "REFRESH": 0.0, "NEXT": 26.0}
 MAGNETS = [(-90, 65), (90, 65), (-90, -65), (90, -65)]
 ANT = (38.0, 80.0)                                     # X range on the inside of the top wall
-WIRE_X = -34.0                                         # button wires run up the back cover here
+WIRE_X = -30.0                                         # button wires run up the back cover here (clear of its joint at -39)
 
 
 def B(x, y):
@@ -128,7 +128,7 @@ def draw_flex(s: Svg):
     brect(s, FLEX_ZONE, fill="none", stroke="#c28a2c", width=1, stroke_dasharray="6 4")
     brect(s, FLEX, fill="url(#flexfill)", stroke="#b7791f", width=1.2)
     x, y, w, h = brect(s, ADAPTER, fill="#2f6b4f", stroke="#1b4332", width=1.4, rx=3)
-    s.text(x + w / 2, y + h / 2 + 4.5, "adapter", size=12, anchor="middle", fill="#ffffff", weight="bold")
+    s.text(x + 8, y + h / 2 + 4.5, "adapter", size=12, anchor="start", fill="#ffffff", weight="bold")  # clear of the button lead
 
 
 def draw_battery(s: Svg):
@@ -222,7 +222,7 @@ def draw_cables(s: Svg, feed):
     jx = (C.hx(20) + C.hx(21)) / 2
     bat = P([(6.5, 2), (4, 22), (10, 44), (jx, 58), (jx, 65.6)])
     bundle(s, bat, [COL["gnd"], COL["vbat"]], gap=3.4, width=2.6)
-    # button lead: strip -> up the back cover at X = -34 -> under the carrier to J3
+    # button lead: strip -> up the back cover at X = -30 -> under the carrier to J3
     j3 = car(C.hx(5), C.hy(1.5))
     btn_vis = P([(WIRE_X, -79), (WIRE_X, -40), (WIRE_X, 30), (WIRE_X, 52), (-30, 62), (-24.5, CAR_TOP - 35)])
     bundle(s, btn_vis, [COL["btn"], COL["btn"], COL["btn"], COL["gnd"]])
@@ -338,7 +338,7 @@ def annotate(s: Svg, dim_x, dim_y):
     s.text(x0 + 12, y + 22, "Cables", size=13, weight="bold")
     cables = [("PH2.0 8-pin, from the kit:", "carrier J2 → HAT host connector"),
               ("JST-PH 2-pin: battery → J1.", "Check polarity with a meter first."),
-              ("4-wire lead: button board → J3,", "tied up the back cover at X = −34"),
+              ("4-wire lead: button board → J3,", "tied up the back cover at X = −30"),
               ("U.FL coax, 80 mm: antenna → U1,", "over the carrier's parts"),
               ("40-pin FFC: adapter → HAT socket", "on the HAT's +X edge")]
     for i, (a, b) in enumerate(cables):

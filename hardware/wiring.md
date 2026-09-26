@@ -47,7 +47,7 @@ pins), or they can't wake the ESP32-S3.
  LiPo − ──► charger B−          charger OUT− ──► GND                 ├─► MiniBoost VIN ──► 5 V ──► HAT 5V
                                                                      ├─► R1 220k ─┬─ R2 220k ─► GND
                                                                      │            └─► D3, C1 100 nF ─► GND
-                                                                     └─► C3 470 µF ─► GND
+                                                                     └─► C3 2 × 100 µF ─► GND
 ```
 
 - **All grounds go to the charger's `OUT−`,** never to `B−`. The charger
@@ -57,17 +57,22 @@ pins), or they can't wake the ESP32-S3.
   `EN` high (D5), then low again before sleeping. R4 holds it off while the
   ESP32 boots. With `EN` low its output is disconnected from the battery,
   so the HAT gets nothing.
-- **Capacitors:** C3 (470 µF) at the MiniBoost's input and C2 (220 µF) at the
-  HAT's `5V` pin carry the current surge when the panel's power supply
-  starts, so the battery voltage doesn't dip and reset the ESP32. Mind their
-  polarity: the stripe is `−`.
+- **Capacitors:** C3 (2 × 100 µF) at the MiniBoost's input and C2 (2 × 47 µF)
+  at the HAT's `5V` wire carry the current surge when the panel's power
+  supply starts, so the battery voltage doesn't dip and reset the ESP32.
+  They're flat 1210 ceramics, which fit under the panel and have no
+  polarity.
+- **Battery:** through a JST-PH pigtail soldered to the carrier (J1), not a
+  board-mounted socket, which would be too tall.
 - **Wire:** 26 AWG for the battery, `VBAT_SYS`, 5 V and ground runs; 28–30 AWG
   for signals. Keep the 5 V and ground to the HAT short and twisted together.
 - **SW4** (optional) switches everything off for storage. Charging still
   works with it off, because the charger sits before it.
-- **Height:** the case leaves 9 mm above the carrier. Solder the XIAO and
-  the charger flat, lay C2 flat, use a C3 no taller than 8 mm (or lay it
-  flat), and use right-angle pins for J2 and J3.
+- **Height:** the case is 13 mm deep, and the carrier sits in a recess with
+  the panel 1.5 mm above its tallest part. Nothing may stand more than 5 mm
+  above the board (the USB-C connectors are the tallest): solder the XIAO,
+  the charger and the MiniBoost flat, use right-angle pins for J2 and J3,
+  and trim the joints underneath to 1.2 mm.
 - **The HAT's inputs:** while its supply is off, the firmware floats every
   line to the HAT (`panel_release_lines()`), so no pin can power the IT8951
   through its input protection diodes.
@@ -76,10 +81,16 @@ pins), or they can't wake the ESP32-S3.
 
 - **Interface switch: SPI.** The HAT has a small switch or DIP switches for
   SPI, I80 and I²C. Set it to SPI before powering it.
-- **Cable:** the 8-wire PH2.0 cable in the box, with the white plug in the HAT
-  and the separate sockets on the carrier's right-angle 1 × 8 header J2, pin 1
-  at the top: 5V, GND, MISO, MOSI, SCK, CS, RST, HRDY.
-  Match the wire labels on the HAT's silkscreen, not the wire colours.
+- **Low profile:** the 40-pin Raspberry Pi header on its back is cut off
+  (pins clipped to 1 mm or less), and nothing on its front may stand more
+  than 3 mm, so its white 8-pin socket comes off too
+  ([build guide](../docs/build-guide.md#3-prepare-the-driver-hat)). It sits
+  on 1.5 mm standoffs, component side towards the panel.
+- **Wires:** the kit's 8-wire cable with its plug cut off. The bare ends are
+  soldered to the HAT's 5V, GND, MISO, MOSI, SCK, CS, RST and HRDY pads, and
+  the separate sockets at the other end go on the carrier's right-angle
+  1 × 8 header J2, pin 1 at the top, in that order. Go by the HAT's
+  silkscreen, not the wire colours.
 - **Panel:** the 40-pin flat cable goes from the small adapter board to the
   HAT. Lift the connector latch, slide the cable in square, contacts facing
   the right way (check the photos in Waveshare's manual), and close the latch.
@@ -90,9 +101,9 @@ pins), or they can't wake the ESP32-S3.
 ## Checks before the first power-up
 
 1. **Battery polarity.** JST-PH batteries don't all use the same polarity.
-   Measure the plug with a meter: red must reach the socket pin that goes
-   to charger `B+`. Reversed, it destroys the charger module (and possibly
-   more).
+   Measure the plug with a meter: its positive pin must meet the pigtail
+   lead that goes to charger `B+`. Reversed, it destroys the charger module
+   (and possibly more).
 2. **No shorts:** with nothing plugged in, measure resistance between
    `VBAT_SYS` and GND (it should climb slowly as C3 charges from the meter,
    not read 0 Ω), and between the HAT's `5V` and GND.

@@ -1,4 +1,4 @@
-"""The button strip: three 12 x 12 mm tactile switches on an 84 x 20 mm
+"""The button strip: three 12 x 12 x 4.3 mm tactile switches (Omron B3F-4000) on an 84 x 20 mm
 protoboard, behind the bezel's chin. Component side (as seen from the front
 of the display) and solder side (as seen from the back, mirrored), a switch
 pin detail and build notes."""
@@ -150,7 +150,7 @@ def lead(s: Svg, v: View) -> float:
 def switch_detail(s: Svg, x: float, y: float) -> None:
     """One 12 x 12 mm switch from its component side: legs and contacts."""
     k = 9.0   # px per mm
-    s.text(x, y, "One switch (12 × 12 mm), component side", size=15, weight="bold")
+    s.text(x, y, "One switch (12 × 12 × 4.3 mm), component side", size=15, weight="bold")
     cx, cy = x + 190, y + 120
     half = 6 * k
     s.rect(cx - half, cy - half, 2 * half, 2 * half, fill="#2b2e33", stroke="#15171a", width=1.2, rx=4)
@@ -182,8 +182,9 @@ def build() -> str:
             "side seen from the front, and the solder side seen from the back with a ground bus and three signal "
             "wires to a four-wire lead.")
     s.text(40, 44, "brwr-trmnl v1 — button board", size=22, weight="bold")
-    s.text(40, 70, "84 × 20 mm protoboard behind the bezel's chin. Three 12 × 12 mm tactile switches, no "
-                   "resistors (the ESP32-S3's pull-ups). Both views at the same scale.", size=13.5,
+    s.text(40, 70, "84 × 20 mm protoboard behind the bezel's chin. Three Omron B3F-4000 switches (12 × 12 × "
+                   "4.3 mm, flat plunger), no resistors (the ESP32-S3's pull-ups). Both views at the same scale.",
+           size=13.5,
            fill=COL["text2"])
 
     # --- component side ---------------------------------------------------
@@ -230,7 +231,7 @@ def build() -> str:
         "    (25.4 mm) either side. The caps are 26 mm apart; their flat backs",
         "    cover the difference.",
         "② Push each switch flat onto the board; bend the legs in slightly to",
-        "    fit the grid.",
+        "    fit the grid. Trim the legs to 2 mm under the board after soldering.",
         "③ Drill two 2.7 mm holes on the centre line, 38 mm either side of the",
         "    middle switch, for M2.5 screws into the bezel's inserts.",
         "④ Signal: each switch's top-left leg (front view), insulated wire to",

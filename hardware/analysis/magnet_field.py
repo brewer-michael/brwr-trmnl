@@ -1,10 +1,10 @@
 """Magnetic field around a fridge magnet, versus distance: the numbers behind
 docs/magnets.md, drawn as docs/images/magnet-field.svg.
 
-Worst case on purpose: a bare, axially magnetised N42 disc (20 x 5 mm), larger
-than the magnet inside a 22 mm pot magnet, with no steel cup around it. The
-real ITNG-22 is a multipole magnet in a steel cup, whose field falls off
-faster, especially behind and beside it.
+Worst case on purpose: the fridge magnets are N52 discs, 20 x 3 mm, each
+capped inside the case by a steel disc that works like a pot magnet's cup and
+pulls the field in behind and beside it. This models the disc bare, with no
+steel, so the real field at the boards is lower.
 
     pip install magpylib numpy
     python hardware/analysis/magnet_field.py
@@ -19,9 +19,9 @@ import numpy as np
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.normpath(os.path.join(HERE, "..", "..", "docs", "images", "magnet-field.svg"))
 
-DIAMETER_MM, HEIGHT_MM, BR_T = 20.0, 5.0, 1.30  # N42
+DIAMETER_MM, HEIGHT_MM, BR_T = 20.0, 3.0, 1.45  # N52
 LIMIT_MT = 5.0        # design limit at an inductor
-CLEARANCE_MM = float(os.environ.get("CLEARANCE_MM", 25.75))  # tightest magnet-edge-to-board gap in the layout
+CLEARANCE_MM = float(os.environ.get("CLEARANCE_MM", 26.75))  # tightest magnet-edge-to-board gap in the layout
 
 magnet = magpy.magnet.Cylinder(polarization=(0, 0, BR_T), dimension=(DIAMETER_MM / 1000, HEIGHT_MM / 1000))
 
@@ -78,8 +78,8 @@ add = svg.append
 add(f'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 {W} {H}" width="{W}" height="{H}" '
     'role="img" aria-labelledby="t d">')
 add('<title id="t">Magnet field strength versus distance</title>')
-add('<desc id="d">Worst-case field of a bare 20 by 5 mm N42 disc magnet, on a log scale. Sideways, toward '
-    f'the boards, it drops below {LIMIT_MT:g} millitesla by about {SIDEWAYS_OK_MM:g} mm from the magnet\'s edge; '
+add(f'<desc id="d">Worst-case field of a bare {DIAMETER_MM:g} by {HEIGHT_MM:g} mm N52 disc magnet, on a log '
+    f'scale. Sideways, toward the boards, it drops below {LIMIT_MT:g} millitesla by about {SIDEWAYS_OK_MM:g} mm from the magnet\'s edge; '
     f'straight out from the face it takes about {AXIAL_OK_MM:g} mm. The closest board is {CLEARANCE_MM:g} mm from a '
     f'magnet\'s edge, where the field is {sideways(CLEARANCE_MM):.1f} millitesla.</desc>')
 add("""<style>
@@ -100,8 +100,8 @@ add("""<style>
 add('<g class="viz">')
 add(f'<rect width="{W}" height="{H}" fill="var(--surface)"/>')
 add(f'<text class="title" x="{L}" y="28">How far the magnet field reaches</text>')
-add(f'<text class="sub" x="{L}" y="48">Worst case: bare 20 × 5 mm N42 disc, no steel cup. Field strength in mT, '
-    'log scale.</text>')
+add(f'<text class="sub" x="{L}" y="48">Worst case: bare {DIAMETER_MM:g} × {HEIGHT_MM:g} mm N52 disc, without '
+    'its steel backing. Field strength in mT, log scale.</text>')
 
 # grid + y ticks
 for v in Y_TICKS:

@@ -9,17 +9,20 @@
 publishes its [firmware](https://github.com/usetrmnl/trmnl-firmware) and
 [server API](https://docs.trmnl.com/go/diy/byos) so you can build and host
 your own. brwr-trmnl is the large-format version (the TRMNL X's panel size
-and resolution) built from parts you can buy anywhere, in a 3D-printed frame
-that holds onto the fridge with magnets. Its firmware has Home Assistant
+and resolution) built from parts you can buy anywhere, in a 13 mm thin
+3D-printed frame that holds onto the fridge with magnets. Its firmware has Home Assistant
 built in, so everything stays on your own network.
 
 - **10.3", 1872 × 1404, 16 grays.** Sharp enough for small text,
   calendars and graphs at 227 dpi.
 - **Three buttons, no touchscreen:** back, refresh and next, like a TRMNL.
   Presses are also Home Assistant triggers.
-- **Lives on the fridge.** Four rubber-coated magnets on the back, placed
-  and checked so their field stays clear of the electronics
-  ([magnets.md](docs/magnets.md)). Or stand it on a desk.
+- **Lives on the fridge.** Four magnets hidden in the back, steel-backed,
+  placed and checked so their field stays clear of the electronics
+  ([magnets.md](docs/magnets.md)). Or stand it on a desk, or hang it on a
+  steel plate on the wall.
+- **13 mm thin** (the TRMNL X is 12), stiffened by epoxied steel rods, and
+  it prints on a 220 × 220 mm bed.
 - **Home Assistant built in.** One setup page. It appears as an MQTT device
   with its battery, what's on screen, a screen picker and settings.
 - **Voice.** Any Home Assistant voice satellite (the open speaker, a Voice
@@ -29,7 +32,7 @@ built in, so everything stays on your own network.
   [Terminus](https://github.com/usetrmnl/terminus) server. No cloud account.
 - **Weeks to months per charge,** depending on how quickly you want it
   to react ([power.md](docs/power.md)). USB-C charging.
-- **About $235 in parts,** $157 of it the display.
+- **About $240 in parts,** $157 of it the display.
 
 ## How it works
 
@@ -65,7 +68,7 @@ the battery lasts months.
 | [Bill of materials](docs/bom.md) | Parts, suppliers and prices ([CSV](hardware/bom.csv)) |
 | [Build guide](docs/build-guide.md) | Printing, soldering, flashing and assembly, step by step |
 | [Wiring](hardware/wiring.md) | Pin map, [schematic](docs/images/schematic.svg), [wiring](docs/images/wiring.svg), [carrier board](docs/images/carrier-layout.svg) and [button board](docs/images/button-board.svg) layouts |
-| [Enclosure](hardware/enclosure/README.md) | Parametric OpenSCAD frame, 229 × 204 × 25 mm: STLs, print settings, desk stand |
+| [Enclosure](hardware/enclosure/README.md) | Parametric OpenSCAD frame, 229 × 204 × 13 mm, in four print jobs on a 220 × 220 mm bed: STLs, print settings, rod cut list, desk stand |
 | [Magnets](docs/magnets.md) | Holding force, and why the magnets don't disturb the electronics |
 | [Power](docs/power.md) | Battery life, power modes, charging |
 | [Home Assistant](docs/home-assistant.md) | Add-ons, setup, entities, screens, MQTT topics |
@@ -134,14 +137,16 @@ pio run -e brwr_trmnl -t upload
   on hardware yet.
 - The Home Assistant package's templates, and the voice sentences against
   Home Assistant's sentence matcher.
-- The enclosure renders, its parts are manifold, and its clearances are
-  checked by assertions in the OpenSCAD source.
+- The enclosure renders, its parts are manifold and fit a 220 × 220 mm bed,
+  and its clearances (every layer of the 13 mm stack, the magnets, the rods,
+  the antenna's keep-out) are checked by assertions in the OpenSCAD source.
 - The magnetic field numbers come from a model of a bare magnet (worse
-  than the real, steel-cupped one).
+  than the real, steel-backed one).
 
 The battery life, the IT8951's current draw, the magnets' grip on a real
-fridge door and the print tolerances are estimates until someone builds
-one. If you do, please open an issue with what you find.
+fridge door, the print tolerances and the heights of the parts on a real
+HAT and charger module are estimates until someone builds one. If you do,
+please open an issue with what you find.
 
 ## Credits
 
