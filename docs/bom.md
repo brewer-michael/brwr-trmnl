@@ -1,6 +1,6 @@
 # Bill of materials
 
-About **$234** for one display, $157 of it the e-paper panel. The
+About **$233** for one display, $157 of it the e-paper panel. The
 spreadsheet version, with part numbers and links, is
 [`hardware/bom.csv`](../hardware/bom.csv).
 
@@ -32,15 +32,14 @@ more than the per-unit total, and a second one much less.
 | | 1 | Hook-up wire | 26 AWG silicone for power, 28–30 AWG for signals | $5.00 |
 | SW4 | 1 | Slide switch, SPDT (optional) | Power switch for storage | $0.50 |
 
-## Mounting and enclosure — $36.60
+## Mounting and enclosure — $35.60
 
 | Ref | Qty | Part | Notes | Price |
 |---|---|---|---|---|
 | M1–M4 | 4 | [Rubber-coated pot magnet, Ø22 mm, M4 thread](https://www.supermagnete.de/eng/magnet-systems-internal-threads/neodymium-magnet-system-22mm-black-rubber-coated-with-internal-thread_ITNG-22) (supermagnete ITNG-22) | ~5.9 kg pull and ~1.8 kg shear each, on thick steel. Any 22 mm rubber-coated magnet with an M4 female thread works; for another size, change the enclosure parameter | $18.00 (≈ €4.07 each) |
 | | 4 | M4 × 6 mm button-head screw, A2 stainless | Holds each magnet from inside. **No longer than 6 mm** | $1.00 |
-| | 8 | M3 heat-set insert (4.0 mm hole × 5 mm) + M3 × 8 screw | Back cover to bezel ([Adafruit 4255](https://www.adafruit.com/product/4255) or similar) | $2.00 |
-| | 8 | M2.5 heat-set insert + M2.5 screw | Driver board (4), carrier (2), button strip (2) | $1.60 |
-| | 4 | M2.5 × 10 mm standoff | Lifts the driver board | $1.00 |
+| | 8 | M3 heat-set insert (4.0 mm hole × 5 mm) + M3 × 8 **countersunk** screw | Back cover to bezel ([Adafruit 4255](https://www.adafruit.com/product/4255) or similar). Countersunk, so the heads sit flush and don't hold the magnets off the door | $2.00 |
+| | 8 | M2.5 heat-set insert + M2.5 × 6 screw | Driver HAT on the printed standoffs (4), carrier (2), button strip (2) | $1.60 |
 | | 250 g | PETG filament | Bezel, back cover, button caps, stand | $5.00 (at ~$20/kg) |
 | | 1 | Foam tape: 1 mm double-sided, 0.5 mm for the window gasket | Holds the panel flat without point loads | $5.00 |
 | | 1 | [Kapton tape](https://www.adafruit.com/product/3057), 10 mm | Insulates the back of the boards | $3.00 |

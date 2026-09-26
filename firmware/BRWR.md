@@ -22,7 +22,8 @@ pio device monitor -e brwr_trmnl       # logs over USB
 | `brwr_trmnl_arduino` | precompiled Arduino core | Builds without downloading ESP-IDF components. It has no light sleep, so **Always ready** stays fully awake (~25 mA): use it on USB power. |
 
 Each build also writes `.pio/build/<env>/merged_firmware.bin`, a single image
-to flash at offset `0x0` (`esptool.py --chip esp32s3 write_flash 0x0 merged_firmware.bin`).
+to flash at offset `0x0` (`esptool --chip esp32s3 write-flash 0x0 merged_firmware.bin`, or
+[esptool-js](https://espressif.github.io/esptool-js/) in a browser).
 
 ## What changed
 

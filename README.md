@@ -29,7 +29,7 @@ built in, so everything stays on your own network.
   [Terminus](https://github.com/usetrmnl/terminus) server. No cloud account.
 - **Weeks to months per charge,** depending on how quickly you want it
   to react ([power.md](docs/power.md)). USB-C charging.
-- **About $234 in parts,** $157 of it the display.
+- **About $233 in parts,** $157 of it the display.
 
 ## How it works
 
