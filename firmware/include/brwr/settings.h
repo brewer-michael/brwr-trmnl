@@ -70,6 +70,7 @@ namespace brwr {
   void settings_save_behaviour();
   void settings_save_screens(const String &json);
   void settings_save_current_screen();
+  void settings_clear(); // the 15-second reset: back to defaults
 
   // Parses the JSON list Home Assistant publishes:
   // [{"name":"Calendar","path":"fridge-dashboard/calendar"}, ...]

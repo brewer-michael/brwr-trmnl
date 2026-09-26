@@ -321,7 +321,10 @@ namespace brwr {
     w.press = press;
 
     // Setup and reset stay on the REFRESH button whatever the button mode.
-    if (button == BUTTON_REFRESH && press == PRESS_RESET) return ButtonAction::FactoryReset;
+    if (button == BUTTON_REFRESH && press == PRESS_RESET) {
+      settings_clear(); // upstream's reset doesn't know about the Home Assistant settings
+      return ButtonAction::FactoryReset;
+    }
     if (button == BUTTON_REFRESH && press == PRESS_VERY_LONG) return ButtonAction::WifiSetup;
     if (settings().buttons == ButtonMode::HomeAssistantOnly) return ButtonAction::None;
 

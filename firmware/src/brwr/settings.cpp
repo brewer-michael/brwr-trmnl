@@ -99,6 +99,16 @@ namespace brwr {
     p.end();
   }
 
+  void settings_clear() {
+    Preferences p;
+    if (p.begin(NS, false)) {
+      p.clear();
+      p.end();
+    }
+    s_settings = Settings();
+    s_screensJson = "";
+  }
+
   bool settings_parse_screens(const String &json) {
     JsonDocument doc;
     DeserializationError err = deserializeJson(doc, json);
