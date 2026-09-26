@@ -1,0 +1,224 @@
+# brwr-trmnl: Home Assistant package
+#
+# - Publishes your list of screens to every brwr-trmnl display.
+# - Scripts to show a screen, a note or any image on the fridge. Voice
+#   commands (custom_sentences/en/brwr_trmnl.yaml) and automations use them.
+# - Redraws the shopping list when it changes while it's on the fridge.
+#
+# Needs the MQTT integration. Install: docs/home-assistant.md.
+#
+# Everything here talks to brwr-trmnl/all/..., which every display listens
+# to, so there is no device id to fill in. To target one display, publish to
+# brwr-trmnl/<id>/show instead (the id is in the MQTT device's topics).
+
+input_text:
+  brwr_trmnl_note:
+    name: Fridge note
+    icon: mdi:note-text-outline
+    max: 255
+
+script:
+  # ---------------------------------------------------------------------------
+  # Your screens. Edit this list, then run the script (it also runs when Home
+  # Assistant starts).
+  #   name: what you say: "show the calendar on the fridge"
+  #   path: a dashboard path, rendered by the TRMNL HA add-on at 1872x1404 in
+  #         16 grays. ?zoom=2 makes normal dashboards readable at 227 dpi.
+  #         Or a full http(s) URL of a PNG, JPEG or BMP image.
+  # Keep the names in step with custom_sentences/en/brwr_trmnl.yaml.
+  # ---------------------------------------------------------------------------
+  brwr_trmnl_publish_screens:
+    alias: "Fridge display: publish screens"
+    icon: mdi:monitor-dashboard
+    mode: queued
+    variables:
+      screens:
+        - name: Home
+          path: "fridge-display/home?zoom=2"
+        - name: Calendar
+          path: "fridge-display/calendar?zoom=2"
+        - name: Shopping list
+          path: "fridge-display/shopping?zoom=2"
+        - name: Weather
+          path: "fridge-display/weather?zoom=2"
+        - name: Note
+          path: "fridge-display/note?zoom=3"
+    sequence:
+      - action: mqtt.publish
+        data:
+          topic: brwr-trmnl/all/set/screens
+          payload: "{{ screens | to_json }}"
+          retain: true
+
+  brwr_trmnl_show:
+    alias: "Fridge display: show"
+    # The descriptions double as instructions for an LLM voice agent if you
+    # expose the script to it (keep the screen names in step; each field
+    # description must stay under 128 characters).
+    description: >-
+      Show something on the fridge display: a screen by name (Home, Calendar,
+      Shopping list, Weather, Note), a dashboard path or an image URL. It
+      stays up for hold minutes, then the display returns to its schedule.
+    icon: mdi:image-frame
+    mode: queued
+    fields:
+      screen:
+        description: Name of a screen from the list.
+        example: Calendar
+        selector:
+          text:
+      path:
+        description: A dashboard path for the TRMNL HA add-on, instead of a screen name.
+        example: "fridge-display/weather?zoom=2"
+        selector:
+          text:
+      url:
+        description: A full image URL, instead of a screen name.
+        selector:
+          text:
+      name:
+        description: What Home Assistant shows as on screen, for a path or URL.
+        selector:
+          text:
+      # Without a hold, a listed screen becomes the current screen when the
+      # display's source is Home Assistant screens.
+      hold:
+        description: Minutes to keep it on screen. Leave empty for the display's "Hold commanded screen" setting.
+        selector:
+          number:
+            min: 0
+            max: 1440
+            unit_of_measurement: min
+    sequence:
+      - action: mqtt.publish
+        data:
+          topic: brwr-trmnl/all/show
+          retain: true
+          # "ts" lets each display act on this once, and ignore it once stale.
+          payload: >-
+            {"ts": {{ now().timestamp() | int }}
+            {%- if screen | default('') %}, "screen": {{ screen | to_json }}{% endif %}
+            {%- if path | default('') %}, "path": {{ path | to_json }}{% endif %}
+            {%- if url | default('') %}, "url": {{ url | to_json }}{% endif %}
+            {%- if name | default('') %}, "name": {{ name | to_json }}{% endif %}
+            {%- if hold is defined and hold is not none and hold | string | length > 0 %}, "hold": {{ hold | int }}{% endif %}}
+
+  brwr_trmnl_note:
+    alias: "Fridge display: post a note"
+    description: >-
+      Post a short note on the fridge display, such as a reminder or a
+      message for the family. It stays up for 4 hours unless hold says
+      otherwise.
+    icon: mdi:note-edit-outline
+    mode: queued
+    fields:
+      message:
+        description: The note.
+        example: Dinner at 7, back by 6
+        required: true
+        selector:
+          text:
+      hold:
+        description: Minutes to keep the note up.
+        default: 240
+        selector:
+          number:
+            min: 1
+            max: 1440
+            unit_of_measurement: min
+    sequence:
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.brwr_trmnl_note
+        data:
+          value: "{{ message | trim }}"
+      - action: script.brwr_trmnl_show
+        data:
+          screen: Note
+          hold: "{{ hold | default(240) }}"
+
+  brwr_trmnl_command:
+    alias: "Fridge display: next, previous or refresh"
+    description: >-
+      Show the next or previous screen on the fridge display, or refresh it.
+      Refresh also ends a screen that was put up for a while.
+    icon: mdi:gesture-tap-button
+    mode: queued
+    fields:
+      command:
+        description: What to do.
+        required: true
+        selector:
+          select:
+            options:
+              - label: Next screen
+                value: next
+              - label: Previous screen
+                value: back
+              - label: Refresh (and end a held screen)
+                value: refresh
+    sequence:
+      - action: mqtt.publish
+        data:
+          topic: brwr-trmnl/all/cmd
+          retain: true
+          payload: '{"cmd": {{ command | to_json }}, "ts": {{ now().timestamp() | int }}}'
+
+automation:
+  - id: brwr_trmnl_publish_screens_on_start
+    alias: "Fridge display: publish screens when Home Assistant starts"
+    triggers:
+      - trigger: homeassistant
+        event: start
+    actions:
+      - action: script.brwr_trmnl_publish_screens
+
+  - id: brwr_trmnl_refresh_shopping_list
+    alias: "Fridge display: redraw the shopping list when it changes"
+    description: >-
+      Only while a display is showing it. Waits 20 s so a burst of edits
+      becomes one refresh. Change todo.shopping_list if yours is different.
+    mode: restart
+    triggers:
+      - trigger: state
+        entity_id: todo.shopping_list
+    conditions:
+      # Any display's "Showing" sensor (sensor.<device name>_showing, so
+      # renaming the display doesn't break this).
+      - condition: template
+        value_template: >-
+          {{ states.sensor
+             | selectattr('entity_id', 'in', integration_entities('mqtt'))
+             | selectattr('entity_id', 'match', '.*_showing$')
+             | selectattr('state', 'eq', 'Shopping list') | list | count > 0 }}
+    actions:
+      - delay: "00:00:20"
+      - action: script.brwr_trmnl_show
+        data:
+          screen: Shopping list
+
+# Voice: sentences are in custom_sentences/en/brwr_trmnl.yaml.
+intent_script:
+  BrwrTrmnlShowScreen:
+    speech:
+      text: "Okay, {{ screen }} is going on the fridge."
+    action:
+      - action: script.brwr_trmnl_show
+        data:
+          screen: "{{ screen }}"
+
+  BrwrTrmnlNote:
+    speech:
+      text: "Okay, it's on the fridge."
+    action:
+      - action: script.brwr_trmnl_note
+        data:
+          message: "{{ message }}"
+
+  BrwrTrmnlCommand:
+    speech:
+      text: "Okay."
+    action:
+      - action: script.brwr_trmnl_command
+        data:
+          command: "{{ command }}"
