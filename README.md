@@ -44,6 +44,13 @@ built in, so everything stays on your own network.
                    (sleeps between refreshes; the panel's supply is switched off)
 ```
 
+The brain is an ESP32-S3 (a Seeed XIAO ESP32-S3), the same chip as in the
+TRMNL X. The 10.3" panel comes as a kit with Waveshare's IT8951 driver
+board, which is shaped as a Raspberry Pi "HAT", but there's no Pi here: the
+driver is only the panel's controller and power supply, and the ESP32-S3
+talks to it over SPI. (The TRMNL X drives its panel directly from the
+ESP32-S3 on a custom board instead.)
+
 Each refresh, the display wakes, switches on the 5 V supply to the panel's
 IT8951 controller, fetches the current screen, draws it at 16 grays, reports
 to Home Assistant over MQTT and goes back to sleep. In **Always ready** mode

@@ -14,7 +14,7 @@ more than the per-unit total, and a second one much less.
 
 | Ref | Qty | Part | Notes | Price |
 |---|---|---|---|---|
-| U2 | 1 | [Waveshare 10.3inch e-Paper HAT](https://www.waveshare.com/10.3inch-e-paper-hat.htm) (SKU 18434) | 1872 × 1404, 16 grays, IT8951 driver board. The kit includes the panel, adapter board, 40-pin flat cable and the 8-wire PH2.0 cable. Also on Amazon (B08KDMY48R) | $157.00 seen |
+| U2 | 1 | [Waveshare 10.3inch e-Paper HAT](https://www.waveshare.com/10.3inch-e-paper-hat.htm) (SKU 18434) | 1872 × 1404, 16 grays. The kit includes the panel, the IT8951 driver board, the adapter board, the 40-pin flat cable and the 8-wire PH2.0 cable. The driver is shaped as a Raspberry Pi HAT, but no Pi is used: it's only the panel's controller, wired to the XIAO over SPI. Also on Amazon (B08KDMY48R) | $157.00 seen |
 | U1 | 1 | [Seeed Studio XIAO ESP32S3](https://www.seeedstudio.com/XIAO-ESP32S3-p-5627.html) (113991114) | 8 MB flash, 8 MB PSRAM, USB-C, U.FL antenna (included). Not the Sense version | $7.49 seen |
 | U3 | 1 | [Adafruit MiniBoost 5V @ 1A](https://www.adafruit.com/product/4654) (4654) | TPS61023 booster with an enable pin that disconnects the output completely | $3.95 seen |
 | U4 | 1 | TP4056 USB-C charger module with protection | 1 A, DW01A + FS8205A, pads B+/B− and OUT+/OUT−. Search "TP4056 Type-C protection"; 10-packs ~$8–10. Prefer one that lists 5.1k CC resistors | $1.00 typical |
