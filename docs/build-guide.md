@@ -32,7 +32,7 @@ orientation for each part and how to change sizes.
 | `bezel.stl` | 1 | Face down |
 | `back.stl` | 1 | Outside face down |
 | `button_caps.stl` | 1 set of 3 | Face down |
-| `stand.stl` | 1, optional | As exported |
+| `stand.stl` | 1, optional | Base down |
 
 Let the parts cool on the bed so they stay flat.
 
@@ -171,8 +171,8 @@ panel's face with a blower or a soft brush; any dust in there stays there.
 **The bezel** (lying face down):
 
 1. **Button caps.** From inside, drop the three caps into their holes in
-   the chin, faces first, symbols the right way up: ◀ left, ● middle, ▶ right
-   (seen from the front). The key on each stem fits the slot in its hole.
+   the chin, faces first, with the key on each stem towards the bottom so the
+   symbols read ◀ ● ▶ from the front.
 2. **Button strip.** Screw it onto the two M2.5 inserts in the chin, switches
    facing the caps. Press each cap from the front: it should click and
    spring back.
@@ -183,7 +183,7 @@ panel's face with a blower or a soft brush; any dust in there stays there.
    back without creasing it, so the adapter board lies behind the panel's
    bottom centre.
 5. **Antenna.** Peel the FPC antenna and stick it into the shallow recess on
-   the inside of the top wall.
+   the inside of the top wall, its front edge against the front face.
 
 **The back cover** (lying outside face down):
 
@@ -207,8 +207,9 @@ panel's face with a blower or a soft brush; any dust in there stays there.
     connect: the flat cable from the adapter board to the HAT, the HAT's
     8-wire cable to the carrier, the button lead, the antenna's coax to the
     XIAO's U.FL socket (press straight down until it clicks), and last,
-    the battery. Route the wires through the channels so nothing crosses
-    the battery or sits on a rib.
+    the battery. Zip-tie the button wires to the tie blocks up the middle of
+    the back cover, lay a thin piece of foam over the folded flex, and check
+    nothing crosses the battery or sits on a rib.
 12. **Close.** Fold the back cover down onto the bezel, checking that no
     wire is pinched at the edges and the USB-C connectors meet their slots
     in the top wall (**USB** and **CHARGE**). Drive the eight M3 × 8 screws

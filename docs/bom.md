@@ -1,6 +1,6 @@
 # Bill of materials
 
-About **$233** for one display, $157 of it the e-paper panel. The
+About **$235** for one display, $157 of it the e-paper panel. The
 spreadsheet version, with part numbers and links, is
 [`hardware/bom.csv`](../hardware/bom.csv).
 
@@ -32,7 +32,7 @@ more than the per-unit total, and a second one much less.
 | | 1 | Hook-up wire | 26 AWG silicone for power, 28–30 AWG for signals | $5.00 |
 | SW4 | 1 | Slide switch, SPDT (optional) | Power switch for storage | $0.50 |
 
-## Mounting and enclosure — $35.60
+## Mounting and enclosure — $37.80
 
 | Ref | Qty | Part | Notes | Price |
 |---|---|---|---|---|
@@ -40,9 +40,10 @@ more than the per-unit total, and a second one much less.
 | | 4 | M4 × 6 mm button-head screw, A2 stainless | Holds each magnet from inside. **No longer than 6 mm** | $1.00 |
 | | 8 | M3 heat-set insert (4.0 mm hole × 5 mm) + M3 × 8 **countersunk** screw | Back cover to bezel ([Adafruit 4255](https://www.adafruit.com/product/4255) or similar). Countersunk, so the heads sit flush and don't hold the magnets off the door | $2.00 |
 | | 8 | M2.5 heat-set insert + M2.5 × 6 screw | Driver HAT on the printed standoffs (4), carrier (2), button strip (2) | $1.60 |
-| | 250 g | PETG filament | Bezel, back cover, button caps, stand | $5.00 (at ~$20/kg) |
+| | 350 g | PETG filament | Bezel ~95 g, back cover ~172 g, caps ~2 g, desk stand ~78 g | $7.00 (at ~$20/kg) |
 | | 1 | Foam tape: 1 mm double-sided, 0.5 mm for the window gasket | Holds the panel flat without point loads | $5.00 |
 | | 1 | [Kapton tape](https://www.adafruit.com/product/3057), 10 mm | Insulates the back of the boards | $3.00 |
+| | 4 | Zip ties, 2.5 mm | Hold the button wires up the middle of the back cover | $0.20 |
 
 ## Tools
 

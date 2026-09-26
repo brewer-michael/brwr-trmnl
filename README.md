@@ -29,7 +29,7 @@ built in, so everything stays on your own network.
   [Terminus](https://github.com/usetrmnl/terminus) server. No cloud account.
 - **Weeks to months per charge,** depending on how quickly you want it
   to react ([power.md](docs/power.md)). USB-C charging.
-- **About $233 in parts,** $157 of it the display.
+- **About $235 in parts,** $157 of it the display.
 
 ## How it works
 
@@ -58,7 +58,7 @@ the battery lasts months.
 | [Bill of materials](docs/bom.md) | Parts, suppliers and prices ([CSV](hardware/bom.csv)) |
 | [Build guide](docs/build-guide.md) | Printing, soldering, flashing and assembly, step by step |
 | [Wiring](hardware/wiring.md) | Pin map, [schematic](docs/images/schematic.svg), [wiring](docs/images/wiring.svg), [carrier board](docs/images/carrier-layout.svg) and [button board](docs/images/button-board.svg) layouts |
-| [Enclosure](hardware/enclosure/README.md) | Parametric OpenSCAD frame, STLs and print settings |
+| [Enclosure](hardware/enclosure/README.md) | Parametric OpenSCAD frame, 229 × 204 × 25 mm: STLs, print settings, desk stand |
 | [Magnets](docs/magnets.md) | Holding force, and why the magnets don't disturb the electronics |
 | [Power](docs/power.md) | Battery life, power modes, charging |
 | [Home Assistant](docs/home-assistant.md) | Add-ons, setup, entities, screens, MQTT topics |

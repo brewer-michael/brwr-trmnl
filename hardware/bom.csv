@@ -19,7 +19,8 @@ PCB1-PCB2,2,Protoboard,"5 x 7 cm double-sided, 2.54 mm",Amazon,,0.80,1.60,typica
 ,1,Hook-up wire,"26 AWG silicone (power), 28-30 AWG (signals)",Adafruit,2517 / 2513,5.00,5.00,typical,https://www.adafruit.com/product/2517,Leftovers are fine.
 ,8,M3 heat-set insert + M3 x 8 countersunk screw,insert 4.0 mm hole x 5 mm; flat-head screw ISO 10642 / DIN 7991,Adafruit / Amazon,4255,0.25,2.00,typical ($5.95 / 50 inserts),https://www.adafruit.com/product/4255,Back cover to bezel. Countersunk so the heads sit flush: a raised head would hold the magnets off the door.
 ,8,M2.5 heat-set insert + M2.5 x 6 screw,insert 3.6 mm hole x 4.2 mm; pan or button head,Amazon,,0.20,1.60,typical,,"Driver HAT on the printed standoffs (4), carrier (2), button strip (2)."
-,250,PETG filament (g),,Polymaker / Prusament / Elegoo,,0.02,5.00,seen 2026-09-26 (~$19-25/kg),,"Bezel ~120 g, back ~100 g, caps and stand ~30 g."
+,350,PETG filament (g),,Polymaker / Prusament / Elegoo,,0.02,7.00,seen 2026-09-26 (~$19-25/kg),,"Bezel ~95 g, back cover ~172 g, caps ~2 g, desk stand ~78 g (estimates from the STL volumes)."
 ,1,Foam tape,"1 mm double-sided EVA/PE foam, 0.5 mm for the window gasket",Amazon,,5.00,5.00,typical,,Holds the panel flat without point loads.
 ,1,Kapton tape,10 mm,Adafruit,3057,3.00,3.00,typical,https://www.adafruit.com/product/3057,Insulates the back of the boards.
+,4,"Zip tie, 2.5 mm wide",100 mm or longer,Hardware store / Amazon,,0.05,0.20,typical,,Hold the button wires in the tie blocks up the middle of the back cover.
 SW4,1,Slide switch SPDT (optional),panel power switch in series with OUT+,DigiKey / Amazon,,0.50,0.50,typical,,Optional: fully off for storage; charging still works.

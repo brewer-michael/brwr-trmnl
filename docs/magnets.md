@@ -23,10 +23,10 @@ the middle.
 
 | | |
 |---|---|
-| brwr-trmnl, complete | about 0.5 kg (estimate) |
+| brwr-trmnl, complete | about 0.55 kg (estimate: 270 g of printed case, 90 g battery, 80 g panel and HAT, 50 g magnets) |
 | One ITNG-22 on thick steel | ~5.9 kg pull, ~1.8 kg sideways (shear) |
 | Four, on a fridge door | ~8 kg pull and ~2.5 kg shear, allowing for thin door steel and paint (× 0.35) |
-| Margin | ~5 × against sliding down, ~16 × against being pulled off |
+| Margin | ~4.5 × against sliding down, ~15 × against being pulled off |
 
 A fridge door's steel skin is thin (about 0.5 mm) and painted, so a magnet
 grips it far less well than the thick steel plate it's rated on. The 0.35
@@ -112,11 +112,13 @@ more than anything you can do to the display.
 
 ## Changing the magnets
 
-The magnet size, count (4 or 6) and positions are parameters at the top of
-[`hardware/enclosure/brwr-trmnl.scad`](../hardware/enclosure/brwr-trmnl.scad)
-(`mag_d`, `mag_h`, `mag_count`, `mag_pos_4`). The render fails with a
-message if a magnet ends up too close to a board or the antenna, or if the
-M4 screw would reach the magnet's face. If you move a magnet closer to a
+The magnet size and positions are parameters at the top of
+[`hardware/enclosure/brwr-trmnl.scad`](../hardware/enclosure/brwr-trmnl.scad):
+`mag_d`, `mag_h`, and `mag_pos` with one `[X, Y]` per magnet. The render
+fails with a message if a magnet ends up too close to a board or the
+antenna, or if the M4 screw would reach the magnet's face. With the default
+layout there's no room for a fifth or sixth magnet that keeps 25 mm from the
+boards. If you move a magnet closer to a
 board than 25 mm, rerun the field model with the new gap:
 
 ```sh
