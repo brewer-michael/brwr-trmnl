@@ -17,8 +17,9 @@ steel plate on a wall, or leans back 15° in the optional desk stand.
 The whole design is one parametric file, [`brwr-trmnl.scad`](brwr-trmnl.scad).
 Running [`./export.sh`](export.sh) renders the STLs into `stl/` and these
 pictures into `docs/images/`. It stops on any OpenSCAD warning, including a
-failed design-rule check, and on any STL with open edges or zero-area
-triangles.
+failed design-rule check. It also stops on any STL that, once vertices closer
+than 1e-4 mm are merged the way a slicer does, has an edge not shared by
+exactly two triangles or a degenerate triangle.
 
 ## Parts
 

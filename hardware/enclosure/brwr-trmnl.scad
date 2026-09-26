@@ -597,7 +597,12 @@ module chamfered_body(z0, z1, c_bot, c_top) {
 }
 
 module box(lo, hi) {
-  translate(lo) cube(hi - lo);
+  // axis-parallel box with its corners exactly on lo and hi (translate(lo)
+  // cube(hi - lo) can miss hi by a rounding step, and faces that should meet
+  // then end up a hair apart)
+  polyhedron(points = [[lo[0], lo[1], lo[2]], [hi[0], lo[1], lo[2]], [hi[0], hi[1], lo[2]], [lo[0], hi[1], lo[2]],
+                       [lo[0], lo[1], hi[2]], [hi[0], lo[1], hi[2]], [hi[0], hi[1], hi[2]], [lo[0], hi[1], hi[2]]],
+             faces = [[0, 1, 2, 3], [4, 5, 1, 0], [7, 6, 5, 4], [5, 6, 2, 1], [6, 7, 3, 2], [7, 4, 0, 3]]);
 }
 
 module through_top_wall(y0 = in_h / 2 - eps, y1 = outer_h / 2 + eps) {
@@ -711,11 +716,13 @@ module antenna_cuts() {
 }
 
 module button_sleeves() {
-  for (x = btn_x) translate([x, btn_y, z_sleeve_end]) {
-    cylinder(d = sleeve_od, h = sleeve_len + eps, $fn = fn_button);
-    // local thickening around the keyway (at -Y)
-    translate([-(key_size[0] / 2 + key_clear + key_boss_wall), -(keyway_r() + key_boss_wall), 0])
-      cube([key_size[0] + 2 * (key_clear + key_boss_wall), keyway_r() + key_boss_wall - cap_hole_d / 2 + key_boss_wall, sleeve_len + eps]);
+  // sleeve with a local thickening around the keyway (at -Y), as one 2D
+  // outline extruded once: a 3D union of the two left near-duplicate
+  // vertices on the seat circle in the STL
+  for (x = btn_x) translate([x, btn_y, z_sleeve_end]) linear_extrude(sleeve_len + eps) {
+    circle(d = sleeve_od, $fn = fn_button);
+    translate([-(key_size[0] / 2 + key_clear + key_boss_wall), -(keyway_r() + key_boss_wall)])
+      square([key_size[0] + 2 * (key_clear + key_boss_wall), keyway_r() + key_boss_wall - cap_hole_d / 2 + key_boss_wall]);
   }
 }
 
@@ -903,15 +910,17 @@ module csk_holes(list, z_top) {
 }
 
 module carrier_tray_rim() {
-  // rim on the left, right and bottom edges; the top edge rests against the top wall
-  translate([0, 0, back_t - eps]) linear_extrude(z_car_pcb + car_tray_rim - back_t + eps)
-    difference() {
-      translate([-car_tray_x, car_rec_lo[1] - car_tray_wall])
-        square([2 * car_tray_x, car_top - lip_clear - (car_rec_lo[1] - car_tray_wall)]);
-      translate(car_rec_lo) square([car_rec_hi[0] - car_rec_lo[0], car_top - car_rec_lo[1] + cut_over]);
-      translate([car_wire_gap[0] - car_wire_gap[1] / 2, car_rec_lo[1] - car_tray_wall - eps])
-        square([car_wire_gap[1], car_tray_wall + 2 * eps]);
-    }
+  // rim on the left, right and bottom edges; the top edge rests against the top
+  // wall. Built from exact 3D boxes: its inner faces meet the recess and the
+  // ledges, and a 2D outline would round them to a different grid
+  z0 = back_t - eps;
+  z1 = z_car_pcb + car_tray_rim;
+  difference() {
+    box([-car_tray_x, car_rec_lo[1] - car_tray_wall, z0], [car_tray_x, car_top - lip_clear, z1]);
+    box([car_rec_lo[0], car_rec_lo[1], z0 - cut_over], [car_rec_hi[0], car_top + cut_over, z1 + cut_over]);
+    box([car_wire_gap[0] - car_wire_gap[1] / 2, car_rec_lo[1] - car_tray_wall - cut_over, z0 - cut_over],
+        [car_wire_gap[0] + car_wire_gap[1] / 2, car_rec_lo[1] + eps, z1 + cut_over]);
+  }
 }
 
 module carrier_recess() {

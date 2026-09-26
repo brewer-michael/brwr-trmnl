@@ -14,10 +14,11 @@
 #   docs/images/enclosure-plates.png                         (print jobs on the bed)
 #
 # Fails if OpenSCAD reports any warning or error (design-rule asserts, CGAL
-# or "not a valid 2-manifold" messages). If python3 with numpy is available
-# it also checks every STL for open or non-manifold edges and zero-area
-# triangles, and prints sizes and estimated masses. PNG export needs a
-# display; without one the script runs OpenSCAD under xvfb-run.
+# or "not a valid 2-manifold" messages), or if an STL, after merging
+# vertices closer than 1e-4 mm the way a slicer does, has an edge not shared
+# by exactly two triangles or a degenerate triangle (needs python3). Prints
+# sizes and estimated masses. PNG export needs a display; without one the
+# script runs OpenSCAD under xvfb-run.
 set -euo pipefail
 
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -95,37 +96,90 @@ render_png exploded exploded  1600,1200   p     -10,-40,-12,55,0,58,930 -D uprig
 render_png inside   inside    1600,1200   p     0,0,0,82,0,196,660     -D upright=true
 render_png plates   plates    1600,1700   o     245,-12,0,0,0,0,1450
 
-# ---- optional: mesh check, size and mass (python3 with numpy) -----------
-if command -v python3 >/dev/null && python3 -c 'import numpy' 2>/dev/null; then
-  python3 - "$stl_dir" "${parts[@]}" one-piece/bezel one-piece/back <<'PY'
-import sys, struct, numpy as np
+# ---- mesh check, size and mass (python3) ---------------------------------
+# Slicers merge vertices that are closer than about 1e-4 mm. Every STL is
+# checked after the same merge: each edge shared by exactly two triangles
+# (once in each direction) and no degenerate triangles, or the export fails.
+command -v python3 >/dev/null || { echo "the mesh check needs python3" >&2; exit 1; }
+python3 - "$stl_dir" "${parts[@]}" one-piece/bezel one-piece/back <<'PY'
+import sys, struct, math
+TOL = 1e-4                        # mm, vertex merge distance (as a slicer does)
 # PETG 1.27 g/cm3; 1.2 mm solid shell on every surface (3-4 walls, 4-5
 # top/bottom layers at 0.2 mm), 20 % infill inside the shell
 RHO, SHELL, INFILL = 1.27, 0.12, 0.20
+
+def read_stl(fn):
+    raw = open(fn, "rb").read()
+    n = struct.unpack_from("<I", raw, 80)[0]
+    return [struct.unpack_from("<12f", raw, 84 + 50 * i)[3:] for i in range(n)]
+
+def weld(pts):
+    # union-find over points closer than TOL, found through a grid of TOL cells
+    parent = list(range(len(pts)))
+    def find(a):
+        while parent[a] != a:
+            parent[a] = parent[parent[a]]
+            a = parent[a]
+        return a
+    cells = {}
+    for i, p in enumerate(pts):
+        c = [math.floor(x / TOL) for x in p]
+        for dx in (-1, 0, 1):
+            for dy in (-1, 0, 1):
+                for dz in (-1, 0, 1):
+                    for j in cells.get((c[0] + dx, c[1] + dy, c[2] + dz), ()):
+                        q = pts[j]
+                        if (p[0] - q[0]) ** 2 + (p[1] - q[1]) ** 2 + (p[2] - q[2]) ** 2 <= TOL * TOL:
+                            ri, rj = find(i), find(j)
+                            if ri != rj:
+                                parent[ri] = rj
+        cells.setdefault(tuple(c), []).append(i)
+    return [find(i) for i in range(len(pts))]
+
+def cross(a, b):
+    return (a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0])
+
 d, bad = sys.argv[1], 0
-print(f"{'part':18s} {'X x Y x Z (mm, as printed)':28s} {'volume':>9s} {'mass':>6s}  mesh")
-for p in sys.argv[2:]:
-    raw = open(f"{d}/{p}.stl", "rb").read()
-    n = struct.unpack("<I", raw[80:84])[0]
-    t = np.frombuffer(raw[84:84 + 50 * n], dtype=np.dtype([("n", "<3f4"), ("v", "<9f4"), ("a", "<u2")]))
-    v = t["v"].reshape(-1, 3, 3).astype(float)
-    # every edge shared by exactly two triangles, once in each direction
-    _, idx = np.unique(v.reshape(-1, 3), axis=0, return_inverse=True)
-    idx = idx.reshape(-1, 3)
-    e = np.concatenate([idx[:, [0, 1]], idx[:, [1, 2]], idx[:, [2, 0]]])
-    _, cnt = np.unique(np.sort(e, axis=1), axis=0, return_counts=True)
-    _, dcnt = np.unique(e, axis=0, return_counts=True)
-    area = 0.5 * np.linalg.norm(np.cross(v[:, 1] - v[:, 0], v[:, 2] - v[:, 0]), axis=1)
-    problems = int((cnt != 2).sum() + (dcnt > 1).sum() + (area == 0).sum())
+print(f"{'part':18s} {'X x Y x Z (mm, as printed)':28s} {'volume':>9s} {'mass':>6s}  mesh (vertices merged within {TOL} mm)")
+for part in sys.argv[2:]:
+    tris = read_stl(f"{d}/{part}.stl")
+    index, pts = {}, []
+    for t in tris:
+        for k in range(3):
+            v = t[3 * k:3 * k + 3]
+            if v not in index:
+                index[v] = len(pts)
+                pts.append(v)
+    root = weld(pts)
+    merged = len(pts) - len(set(root))
+    edges, degenerate, vol, area = {}, 0, 0.0, 0.0
+    for t in tris:
+        a, b, c = t[0:3], t[3:6], t[6:9]
+        ids = [root[index[a]], root[index[b]], root[index[c]]]
+        n = cross([b[i] - a[i] for i in range(3)], [c[i] - a[i] for i in range(3)])
+        ar = 0.5 * math.sqrt(n[0] ** 2 + n[1] ** 2 + n[2] ** 2)
+        area += ar
+        vol += (a[0] * (b[1] * c[2] - b[2] * c[1]) - a[1] * (b[0] * c[2] - b[2] * c[0]) + a[2] * (b[0] * c[1] - b[1] * c[0])) / 6
+        if len(set(ids)) < 3 or ar == 0:
+            degenerate += 1
+        for i in range(3):                        # a slicer keeps these edges too
+            e = (ids[i], ids[(i + 1) % 3])
+            if e[0] != e[1]:
+                edges[e] = edges.get(e, 0) + 1
+    und = {}
+    for (i, j), k in edges.items():
+        und[(min(i, j), max(i, j))] = und.get((min(i, j), max(i, j)), 0) + k
+    open_or_shared = sum(1 for k in und.values() if k != 2)
+    flipped = sum(1 for k in edges.values() if k > 1)
+    problems = open_or_shared + flipped + degenerate
     bad += problems
-    c = v / 10.0                                                  # cm
-    vol = np.einsum("ij,ij->i", c[:, 0], np.cross(c[:, 1], c[:, 2])).sum() / 6
-    shell = min(vol, area.sum() / 100 * SHELL)
-    mass = RHO * (shell + INFILL * (vol - shell))
-    size = v.reshape(-1, 3).max(0) - v.reshape(-1, 3).min(0)
-    print(f"{p:18s} {' x '.join(f'{s:.1f}' for s in size):28s} {vol:7.1f}cm3 {mass:4.0f} g  "
-          + ("ok" if problems == 0 else f"{problems} PROBLEMS"))
+    vol_cm3, area_cm2 = vol / 1000, area / 100
+    shell = min(vol_cm3, area_cm2 * SHELL)
+    mass = RHO * (shell + INFILL * (vol_cm3 - shell))
+    size = [max(p[i] for p in pts) - min(p[i] for p in pts) for i in range(3)]
+    status = "ok" if problems == 0 else (f"{merged} vertices merged, {open_or_shared} edges not shared by two faces, "
+                                         f"{flipped} flipped, {degenerate} degenerate triangles")
+    print(f"{part:18s} {' x '.join(f'{s:.1f}' for s in size):28s} {vol_cm3:7.1f}cm3 {mass:4.0f} g  {status}")
 sys.exit(1 if bad else 0)
 PY
-fi
 echo "Done."
