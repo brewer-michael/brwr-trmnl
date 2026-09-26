@@ -321,6 +321,25 @@
       server = server.trim();
       server = server.replace(/\/+$/, '');
 
+      var ha = null;
+      if (!document.getElementById('ha-section').hidden) {
+        var haHost = document.getElementById('haHost').value.trim()
+          .replace(/^https?:\/\//, '').replace(/[\/:].*$/, '');
+        var haSource = document.getElementById('haSource').value;
+        // The Terminus add-on listens on port 2300 of the Home Assistant host. Save it
+        // either way, so switching the source later in Home Assistant just works.
+        if (haHost && !server) server = 'http://' + haHost + ':2300';
+        ha = {
+          host: haHost,
+          source: haSource,
+          mqttUser: document.getElementById('mqttUser').value.trim(),
+          mqttPass: document.getElementById('mqttPass').value,
+          mqttHost: document.getElementById('mqttHost').value.trim(),
+          mqttPort: parseInt(document.getElementById('mqttPort').value, 10) || 0,
+          vcom: parseFloat(document.getElementById('vcom').value) || 0
+        };
+      }
+
       var body = {
         ssid: ssid,
         pswd: pswd,
@@ -333,6 +352,8 @@
         body.identity = document.getElementById('identity').value;
         body.username = document.getElementById('username').value;
       }
+
+      if (ha) body.ha = ha;
 
       var useStaticIP = document.getElementById('useStaticIP').checked;
       if (useStaticIP) {
@@ -542,8 +563,24 @@
     async function loadServerFromDevice() {
       try {
         const response = await fetch('/device-settings');
-        const server = (await response.json()).api_url;
+        const settings = await response.json();
+        const server = settings.api_url;
         if (server) document.getElementById('server').value = server;
+        if (settings.ha) {
+          document.getElementById('ha-section').hidden = false;
+          document.getElementById('mqtt-section').hidden = false;
+          document.getElementById('haHost').value = settings.ha.host || '';
+          document.getElementById('haSource').value = settings.ha.source || 'trmnl';
+          document.getElementById('mqttUser').value = settings.ha.mqttUser || '';
+          document.getElementById('mqttHost').value = settings.ha.mqttHost || '';
+          if (settings.ha.mqttPort) document.getElementById('mqttPort').value = settings.ha.mqttPort;
+          if (settings.ha.hasPassword) document.getElementById('mqttPass').placeholder = 'Unchanged';
+          if (settings.ha.vcom) document.getElementById('vcom').value = settings.ha.vcom;
+          // A Terminus URL we filled in ourselves shouldn't block switching sources.
+          if (server && settings.ha.host && server === 'http://' + settings.ha.host + ':2300') {
+            document.getElementById('server').value = '';
+          }
+        }
       } catch (_) { }
     }
 
@@ -704,6 +741,37 @@
         </div>
       </div>
 
+      <!-- Home Assistant: only shown by firmware that reports it in /device-settings -->
+      <div class="adv-sec" id="ha-section" hidden>
+        <h3>Home Assistant</h3>
+        <div class="field">
+          <label for="haHost">Home Assistant address</label>
+          <input class="inp" type="text" id="haHost" placeholder="192.168.1.20"
+                 autocapitalize="off" autocorrect="off" spellcheck="false">
+          <p class="hint">Where Home Assistant and its MQTT broker run. An IP address is the most reliable.</p>
+        </div>
+        <div class="field">
+          <label for="haSource">Screens come from</label>
+          <select class="inp" id="haSource">
+            <option value="trmnl">Terminus add-on (TRMNL plugins)</option>
+            <option value="ha">Home Assistant dashboards</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="mqttUser">MQTT username <span class="opt">&mdash; optional</span></label>
+          <input class="inp" type="text" id="mqttUser" autocapitalize="off" autocorrect="off" spellcheck="false">
+        </div>
+        <div class="field">
+          <label for="mqttPass">MQTT password <span class="opt">&mdash; optional</span></label>
+          <input class="inp" type="password" id="mqttPass">
+        </div>
+        <div class="field">
+          <label for="vcom">Panel VCOM <span class="opt">&mdash; optional</span></label>
+          <input class="inp" type="number" id="vcom" step="0.01" min="-3" max="-0.5" placeholder="-1.50">
+          <p class="hint">Printed on the panel's ribbon cable, for example &minus;1.52. A wrong value looks washed out.</p>
+        </div>
+      </div>
+
       <div class="msg msg-warn" id="message" role="alert" hidden></div>
 
       <div class="msg msg-live" id="connect-status" role="status" hidden>
@@ -738,6 +806,19 @@
           <label for="server">API server</label>
           <input class="inp" type="url" id="server" name="server" placeholder="https://trmnl.app">
           <p class="hint">Point your TRMNL at your own server (BYOS). No trailing slash.</p>
+        </div>
+      </div>
+
+      <div class="adv-sec" id="mqtt-section" hidden>
+        <h3>MQTT broker</h3>
+        <div class="field">
+          <label for="mqttHost">Broker address <span class="opt">&mdash; if not on Home Assistant</span></label>
+          <input class="inp" type="text" id="mqttHost" placeholder="Same as Home Assistant"
+                 autocapitalize="off" autocorrect="off" spellcheck="false">
+        </div>
+        <div class="field">
+          <label for="mqttPort">Port</label>
+          <input class="inp" type="number" id="mqttPort" placeholder="1883" min="1" max="65535">
         </div>
       </div>
 

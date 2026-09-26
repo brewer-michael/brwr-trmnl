@@ -7,6 +7,15 @@
 
 #include "WifiCaptive.h"
 
+#ifdef BOARD_BRWR_TRMNL
+// Home Assistant fields on the setup page (src/brwr/settings.cpp). Declared
+// here because libraries don't see the project's include/ directory.
+namespace brwr {
+String portal_settings_json();
+void portal_save(JsonObject ha);
+} // namespace brwr
+#endif
+
 void setUpWebserver(AsyncWebServer &server, const IPAddress &localIP, WifiOperationCallbacks callbacks,
                     const String &modemMac) {
     //======================== Webserver ========================
@@ -68,7 +77,13 @@ void setUpWebserver(AsyncWebServer &server, const IPAddress &localIP, WifiOperat
     prefs.end();
     apiUrl.replace("\\", "\\\\");
     apiUrl.replace("\"", "\\\"");
+#ifdef BOARD_BRWR_TRMNL
+    // Home Assistant fields; their presence makes the page show them.
+    request->send(200, "application/json",
+                  "{\"api_url\":\"" + apiUrl + "\",\"ha\":" + brwr::portal_settings_json() + "}");
+#else
     request->send(200, "application/json", "{\"api_url\":\"" + apiUrl + "\"}");
+#endif
   });
 
   auto scanGET = server.on("/scan", HTTP_GET, [callbacks, modemMac](AsyncWebServerRequest *request) {
@@ -189,6 +204,10 @@ void setUpWebserver(AsyncWebServer &server, const IPAddress &localIP, WifiOperat
         WifiCaptivePortal.setHostname(hostname); // keep in-memory hostname up-to-date
         Log_info("WebServer: Saved hostname: %s", hostname.c_str());
       }
+
+#ifdef BOARD_BRWR_TRMNL
+      if (data["ha"].is<JsonObject>()) brwr::portal_save(data["ha"].as<JsonObject>());
+#endif
 
       Log_info("WebServer: Received SSID: %s, Static IP: %s", ssid.c_str(), useStaticIP ? "yes" : "no");
 

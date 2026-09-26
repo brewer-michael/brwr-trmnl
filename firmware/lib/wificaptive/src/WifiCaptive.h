@@ -14,7 +14,11 @@
 #include "WifiCaptivePage.h"
 #include "wifi-types.h"
 
+#ifdef BOARD_BRWR_TRMNL
+#define WIFI_SSID                "brwr-trmnl"
+#else
 #define WIFI_SSID                "TRMNL"
+#endif
 #define WIFI_PASSWORD            NULL
 
 // Define the DNS interval in milliseconds between processing DNS requests
