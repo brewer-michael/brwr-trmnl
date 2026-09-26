@@ -31,6 +31,7 @@ namespace brwr {
     char shownUrl[384];    // image URL of what's on screen, for the HA image entity
     uint32_t discoveryHash; // hash of the last discovery payload published
     uint16_t wakeCount;
+    uint32_t lastBroadcastTs; // newest brwr-trmnl/all command handled (they're never deleted)
     bool forceRedraw;      // a setting changed (e.g. VCOM): redraw even if the image didn't
   };
 
@@ -59,6 +60,8 @@ namespace brwr {
     String cmd;          // "refresh" | "next" | "back"
     String selectScreen; // from the Screen select
     String show;         // JSON or plain text from <base>/show
+    String allShow;      // brwr-trmnl/all/show: JSON with "ts", for every display
+    String allCmd;       // brwr-trmnl/all/cmd: {"cmd": "next", "ts": ...}
 
     bool haConnected = false;
     bool drewScreen = false;

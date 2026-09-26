@@ -12,6 +12,10 @@
 //   <base>/set/screen    Screen select (one-shot, cleared once shown) HA -> device
 //   <base>/cmd           refresh | next | back (one-shot)          HA -> device
 //   <base>/show          show a screen or URL now (one-shot, JSON)  HA -> device
+//   brwr-trmnl/all/...   set/screens, show, cmd for every display: the Home
+//                        Assistant package uses these, so it needs no device id.
+//                        show and cmd carry "ts" (epoch seconds) and stay retained;
+//                        each display handles a given ts once and ignores stale ones.
 //
 // Home Assistant publishes one-shot commands with retain so a device in deep
 // sleep still gets them at its next wake; the device deletes them once done.
@@ -184,7 +188,8 @@ namespace brwr {
   bool commands_pending() {
     if (!s_lock) return false;
     xSemaphoreTake(s_lock, portMAX_DELAY);
-    bool pending = wake().cmd.length() || wake().show.length() || wake().selectScreen.length();
+    bool pending = wake().cmd.length() || wake().show.length() || wake().selectScreen.length() ||
+                   wake().allShow.length() || wake().allCmd.length();
     xSemaphoreGive(s_lock);
     return pending;
   }
@@ -192,6 +197,21 @@ namespace brwr {
   static void handle_message(const String &t, const String &payload) {
     if (t == "homeassistant/status") {
       if (payload == "online") xEventGroupSetBits(ha_events(), EV_HA_ONLINE);
+      return;
+    }
+    if (t.startsWith("brwr-trmnl/all/")) {
+      String name = t.substring(15);
+      xSemaphoreTake(s_lock, portMAX_DELAY);
+      if (name == "set/screens") {
+        apply_setting("screens", payload);
+      } else if (name == "show" && payload.length()) {
+        wake().allShow = payload;
+        xEventGroupSetBits(ha_events(), EV_COMMAND);
+      } else if (name == "cmd" && payload.length()) {
+        wake().allCmd = payload;
+        xEventGroupSetBits(ha_events(), EV_COMMAND);
+      }
+      xSemaphoreGive(s_lock);
       return;
     }
     if (!t.startsWith(s_base + "/")) return;
@@ -291,6 +311,8 @@ namespace brwr {
   // messages for each subscription before anything published afterwards, so
   // once the marker comes back every retained setting and command is in.
   static bool mqtt_subscribe_and_sync(uint32_t timeout_ms) {
+    for (const char *all : {"brwr-trmnl/all/set/screens", "brwr-trmnl/all/show", "brwr-trmnl/all/cmd"})
+      esp_mqtt_client_subscribe(s_client, all, 1);
     const char *subs[] = {"set/+", "cmd", "show", "sync"};
     for (const char *suffix : subs)
       esp_mqtt_client_subscribe(s_client, topic(suffix).c_str(), 1);

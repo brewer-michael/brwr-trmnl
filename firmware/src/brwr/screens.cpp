@@ -145,9 +145,22 @@ namespace brwr {
     return show_screen(s.currentScreen, force, result);
   }
 
-  static void start_hold(uint16_t minutes) {
+  // `from`: when the hold started (a broadcast command's timestamp), 0 = now.
+  static void start_hold(uint16_t minutes, uint32_t from = 0) {
+    uint32_t start = from ? from : now_epoch();
+    rtc.holdUntil = (minutes > 0 && start) ? start + minutes * 60u : 0;
+  }
+
+  static constexpr uint32_t BROADCAST_SHOW_MAX_AGE_S = 15 * 60; // without a hold
+  static constexpr uint32_t BROADCAST_CMD_MAX_AGE_S = 5 * 60;
+
+  // brwr-trmnl/all/... commands stay retained for every display. Handle each
+  // timestamp once, and skip ones that are too old to still mean anything.
+  static bool broadcast_is_fresh(uint32_t ts, uint32_t max_age_s) {
+    if (ts == 0 || ts <= rtc.lastBroadcastTs) return false;
+    rtc.lastBroadcastTs = ts;
     uint32_t now = now_epoch();
-    rtc.holdUntil = (minutes > 0 && now) ? now + minutes * 60u : 0;
+    return now == 0 || now < ts + max_age_s; // no clock: trust it
   }
 
   // TRMNL server source: step through images already downloaded, like the
@@ -196,10 +209,11 @@ namespace brwr {
   // <base>/show: {"screen": "Calendar"} | {"path": "fridge/note", "name": "Note"}
   //              | {"url": "http://...", "name": "Doorbell"}, each with optional "hold" (minutes).
   //              A bare screen name or URL also works.
-  static Outcome handle_show(const String &payload, https_request_err_e *result) {
+  static Outcome handle_show(const String &payload, https_request_err_e *result, bool broadcast) {
     Settings &s = settings();
     String screenName, url, name;
     int hold = -1;
+    uint32_t ts = 0;
     if (payload.startsWith("{")) {
       JsonDocument doc;
       if (deserializeJson(doc, payload)) {
@@ -211,11 +225,21 @@ namespace brwr {
       url = doc["url"] | "";
       name = doc["name"] | "";
       hold = doc["hold"] | -1;
+      ts = doc["ts"] | 0;
       if (url.isEmpty() && path.length()) url = dashboard_url(path);
+    } else if (broadcast) {
+      return Outcome::Ignored; // broadcasts must be JSON with a timestamp
     } else if (payload.startsWith("http://") || payload.startsWith("https://")) {
       url = payload;
     } else {
       screenName = payload;
+    }
+
+    if (broadcast) {
+      uint32_t maxAge = hold > 0 ? hold * 60u : BROADCAST_SHOW_MAX_AGE_S;
+      if (!broadcast_is_fresh(ts, maxAge)) return Outcome::Ignored;
+    } else {
+      ts = 0; // per-device commands are deleted once read; the hold starts now
     }
 
     if (screenName.length()) {
@@ -239,7 +263,7 @@ namespace brwr {
       return Outcome::Ignored;
     }
     if (name.isEmpty()) name = "Home Assistant";
-    if (show_url(url, name, true, result)) start_hold(hold >= 0 ? hold : s.holdMinutes);
+    if (show_url(url, name, true, result)) start_hold(hold >= 0 ? hold : s.holdMinutes, ts);
     return Outcome::Handled;
   }
 
@@ -267,6 +291,17 @@ namespace brwr {
       start_hold(s.holdMinutes);
     }
     return Outcome::Handled;
+  }
+
+  static Action action_for_broadcast_cmd(const String &payload) {
+    JsonDocument doc;
+    if (deserializeJson(doc, payload)) return Action::None;
+    String cmd = doc["cmd"] | "";
+    if (!broadcast_is_fresh(doc["ts"] | 0, BROADCAST_CMD_MAX_AGE_S)) return Action::None;
+    if (cmd.equalsIgnoreCase("next")) return Action::Next;
+    if (cmd.equalsIgnoreCase("back") || cmd.equalsIgnoreCase("previous")) return Action::Back;
+    if (cmd.equalsIgnoreCase("refresh")) return Action::Refresh;
+    return Action::None;
   }
 
   static Action action_for_cmd(const String &cmd) {
@@ -331,7 +366,12 @@ namespace brwr {
       String payload = w.show;
       w.show = "";
       mqtt_clear_retained("show");
-      if (handle_show(payload, result) == Outcome::Handled) return true;
+      if (handle_show(payload, result, false) == Outcome::Handled) return true;
+    }
+    if (w.allShow.length()) {
+      String payload = w.allShow;
+      w.allShow = "";
+      if (handle_show(payload, result, true) == Outcome::Handled) return true;
     }
     if (w.selectScreen.length()) {
       String option = w.selectScreen;
@@ -345,6 +385,11 @@ namespace brwr {
       Action a = action_for_cmd(w.cmd);
       w.cmd = "";
       mqtt_clear_retained("cmd");
+      if (a != Action::None) w.action = a;
+    }
+    if (w.allCmd.length()) {
+      Action a = action_for_broadcast_cmd(w.allCmd);
+      w.allCmd = "";
       if (a != Action::None) w.action = a;
     }
 
