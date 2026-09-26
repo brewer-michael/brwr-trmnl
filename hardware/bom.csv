@@ -11,10 +11,10 @@ R1-R2,2,Resistor 220 kOhm 1%,1/4 W through-hole,DigiKey,Yageo MFR-25FBF52-220K,0
 R3,1,Resistor 1 kOhm 1%,1/4 W through-hole,DigiKey,Yageo MFR-25FBF52-1K,0.10,0.10,typical,,In series with the HAT RST line.
 R4,1,Resistor 4.7 kOhm 1%,1/4 W through-hole,DigiKey,Yageo MFR-25FBF52-4K7,0.10,0.10,typical,,Pull-down on MiniBoost EN.
 C1,1,Capacitor 100 nF,"50 V X7R, radial",DigiKey,KEMET C320C104J5R5TA7301,0.30,0.30,typical,,Battery divider filter.
-C2,1,Capacitor 220 uF 10 V,"low-ESR electrolytic, radial",DigiKey,Panasonic EEU-FR1A221,0.40,0.40,typical,,5 V rail at the HAT.
-C3,1,Capacitor 470 uF 6.3 V,"low-ESR electrolytic, radial",DigiKey,Panasonic EEU-FR0J471,0.45,0.45,typical,https://www.digikey.com/en/products/detail/panasonic-electronic-components/EEU-FR0J471/3072278,Battery rail at the booster input.
+C2,1,Capacitor 220 uF 10 V,"low-ESR electrolytic, radial",DigiKey,Panasonic EEU-FR1A221,0.40,0.40,typical,,5 V rail at the HAT. Lies flat on the carrier.
+C3,1,Capacitor 470 uF 6.3 V,"low-ESR electrolytic, radial",DigiKey,Panasonic EEU-FR0J471,0.45,0.45,typical,https://www.digikey.com/en/products/detail/panasonic-electronic-components/EEU-FR0J471/3072278,"Battery rail at the booster input. 8 mm across: lay it flat, or use a low-profile part no taller than 8 mm."
 J1,1,JST-PH 2-pin socket or pigtail,2.0 mm pitch,Adafruit,261,0.75,0.75,seen 2026-09-26,https://www.adafruit.com/product/261,Lets the battery be unplugged.
-J2-J3,1,Pin headers 2.54 mm,"1x40 male strip (cut to 1x8 and 1x4), 2x 1x7 female for the XIAO (optional)",Amazon / DigiKey,,1.00,1.00,typical,,
+J2-J3,1,Right-angle pin headers 2.54 mm,"1x8 (J2, HAT cable) and 1x4 (J3, buttons), or a 1x40 right-angle strip",Amazon / DigiKey,,1.00,1.00,typical,,"Right-angle: plugs on straight pins stand ~15 mm, and the case leaves 9 mm above the carrier. Or solder the leads to the board."
 PCB1-PCB2,2,Protoboard,"5 x 7 cm double-sided, 2.54 mm",Amazon,,0.80,1.60,typical (10-packs ~$8),,Cut to 70 x 35 mm (carrier) and 84 x 20 mm (buttons).
 ,1,Hook-up wire,"26 AWG silicone (power), 28-30 AWG (signals)",Adafruit,2517 / 2513,5.00,5.00,typical,https://www.adafruit.com/product/2517,Leftovers are fine.
 ,8,M3 heat-set insert + M3 x 8 countersunk screw,insert 4.0 mm hole x 5 mm; flat-head screw ISO 10642 / DIN 7991,Adafruit / Amazon,4255,0.25,2.00,typical ($5.95 / 50 inserts),https://www.adafruit.com/product/4255,Back cover to bezel. Countersunk so the heads sit flush: a raised head would hold the magnets off the door.

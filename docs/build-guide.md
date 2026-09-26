@@ -53,19 +53,22 @@ component side. Cut the protoboard to 70 × 35 mm (score both sides along a
 row of holes and snap it), and drill the two 2.7 mm mounting holes where the
 layout shows them.
 
-1. **Prepare the XIAO.** Its BAT+ and BAT− pads are on the underside, so
-   solder a short 26 AWG wire to each first (BAT− is the pad nearer the USB
-   connector). If you'll plug it into female headers, solder its male pins
-   now too.
-2. **Place, don't solder yet:** the XIAO (directly, or on two 1 × 7 female
-   headers), the MiniBoost, the charger module, the JST-PH socket, the
-   1 × 8 header for the HAT cable and the 1 × 4 header for the buttons. The
-   two USB-C connectors must overhang the board's top edge by 1.5 mm, or
-   the plugs won't reach them through the case.
-3. **Solder the modules and headers**, and the XIAO's two battery wires
-   through the board.
-4. **Add the passives:** R1–R4, C1, and the two electrolytics C2 and C3
-   lying flat. The stripe on an electrolytic marks `−`.
+1. **Prepare the XIAO.** Its BAT+ pad is on the underside: solder a short
+   26 AWG wire to it first, to pass through the hole beneath it. (BAT−, the
+   pad nearer the USB connector, is the same as GND and needs no wire.)
+2. **Place, don't solder yet:** the XIAO and the charger module flat on the
+   board (not on headers: their USB-C connectors must line up with the
+   slots), the MiniBoost, the JST-PH socket, and **right-angle** pin headers
+   for the HAT cable (1 × 8, J2) and the buttons (1 × 4, J3). The two USB-C
+   connectors overhang the board's top edge by 1.5 mm, or the plugs won't
+   reach them through the case.
+3. **Solder the modules and headers**, and the XIAO's battery wire through
+   the board. There's only 9 mm above the carrier inside the case: plugs on
+   straight pins would stand about 15 mm, so use right-angle pins or solder
+   the two leads straight to the board.
+4. **Add the passives:** R1–R4 and C1, C2 lying flat, and C3 lying flat or a
+   low-profile one no taller than 8 mm. The stripe on an electrolytic marks
+   `−`.
 5. **Wire the underside** as the layout shows: thick (26 AWG) wire for the
    battery, `VBAT_SYS`, 5 V and ground; thin wire for the signals. Every
    ground goes to the charger's **OUT−**, never to **B−**.
@@ -90,7 +93,7 @@ Follow [the button board drawing](images/button-board.svg).
 4. **Signals:** each switch's top-left leg, diagonally opposite its ground
    leg, to its own insulated wire. Diagonal legs are always on opposite
    sides of the switch, whichever way round it's fitted.
-5. **The lead:** about 15 cm of four wires to a 1 × 4 socket in the order
+5. **The lead:** about 20 cm of four wires to a 1 × 4 socket in the order
    BACK, REFRESH, NEXT, GND, matching the carrier's header J3. From the front,
    BACK is on the left. Keep the wires clear of the two screw holes.
 6. Check with the meter: each signal wire reads open to ground, and closed

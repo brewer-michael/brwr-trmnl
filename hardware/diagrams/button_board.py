@@ -140,7 +140,7 @@ def lead(s: Svg, v: View) -> float:
     s.poly([(gx, gy), (x_gnd, gy), (x_gnd, top_y)], stroke=COL["gnd"], width=2.6)
     s.text(x_gnd + 4, top_y - 4, "GND", size=12, anchor="start", weight="bold", rotate=-90)
     left = min(v(*HOLE[n])[0] for n in SW_NAMES)
-    s.text(left - 16, v.top - 36, "4-wire lead, ~15 cm, to the carrier's", size=12.5, anchor="end",
+    s.text(left - 16, v.top - 36, "4-wire lead, ~20 cm, to the carrier's", size=12.5, anchor="end",
            fill=COL["text2"])
     s.text(left - 16, v.top - 18, "1 × 4 header J3: BACK, REFRESH, NEXT, GND", size=12.5, anchor="end",
            fill=COL["text2"])

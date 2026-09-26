@@ -24,10 +24,10 @@ more than the per-unit total, and a second one much less.
 | R3 | 1 | 1 kΩ 1%, ¼ W | In series with the HAT's reset line | $0.10 |
 | R4 | 1 | 4.7 kΩ 1%, ¼ W | Keeps the booster off while the ESP32 boots | $0.10 |
 | C1 | 1 | 100 nF ceramic, radial | Smooths the battery reading | $0.30 |
-| C2 | 1 | 220 µF 10 V low-ESR electrolytic | 5 V rail at the HAT (Panasonic EEU-FR1A221) | $0.40 |
-| C3 | 1 | 470 µF 6.3 V low-ESR electrolytic | Battery rail at the booster (Panasonic EEU-FR0J471) | $0.45 |
+| C2 | 1 | 220 µF 10 V low-ESR electrolytic | 5 V rail at the HAT (Panasonic EEU-FR1A221), lying flat | $0.40 |
+| C3 | 1 | 470 µF 6.3 V low-ESR electrolytic | Battery rail at the booster (Panasonic EEU-FR0J471). Lay it flat, or use a low-profile one no taller than 8 mm | $0.45 |
 | J1 | 1 | [JST-PH 2-pin socket or pigtail](https://www.adafruit.com/product/261) | So the battery can be unplugged | $0.75 seen |
-| J2, J3 | 1 | Pin headers, 2.54 mm | A 1 × 40 male strip cut to 1 × 8 (HAT cable) and 1 × 4 (buttons); optionally 2 × 1 × 7 female for the XIAO | $1.00 |
+| J2, J3 | 1 | Right-angle pin headers, 2.54 mm | 1 × 8 (HAT cable) and 1 × 4 (buttons). Plugs on straight pins would stand ~15 mm; the case leaves 9 mm | $1.00 |
 | PCB1, PCB2 | 2 | Protoboard, double-sided, 2.54 mm, 5 × 7 cm | Cut to 70 × 35 mm (carrier) and 84 × 20 mm (buttons) | $1.60 |
 | | 1 | Hook-up wire | 26 AWG silicone for power, 28–30 AWG for signals | $5.00 |
 | SW4 | 1 | Slide switch, SPDT (optional) | Power switch for storage | $0.50 |

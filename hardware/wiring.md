@@ -30,7 +30,7 @@ those rather than the SVGs.
 | D9 | 8 | EPD_MISO | HAT `MISO` | |
 | D10 | 9 | EPD_MOSI | HAT `MOSI` | |
 | BAT+ pad (back) | | VBAT_SYS | charger `OUT+` | Pad farther from the USB connector |
-| BAT− pad (back) | | GND | charger `OUT−` | Pad nearer the USB connector |
+| BAT− pad (back) | | GND | | Nearer the USB connector. Already the same as the GND pin: no wire needed |
 | 5V, 3V3 | | | not connected | |
 | U.FL | | | FPC antenna | Always plug the antenna in before Wi-Fi is on |
 
@@ -65,14 +65,20 @@ pins), or they can't wake the ESP32-S3.
   for signals. Keep the 5 V and ground to the HAT short and twisted together.
 - **SW4** (optional) switches everything off for storage. Charging still
   works with it off, because the charger sits before it.
+- **Height:** the case leaves 9 mm above the carrier. Solder the XIAO and
+  the charger flat, lay C2 flat, use a C3 no taller than 8 mm (or lay it
+  flat), and use right-angle pins for J2 and J3.
+- **The HAT's inputs:** while its supply is off, the firmware floats every
+  line to the HAT (`panel_release_lines()`), so no pin can power the IT8951
+  through its input protection diodes.
 
 ## The HAT
 
 - **Interface switch: SPI.** The HAT has a small switch or DIP switches for
   SPI, I80 and I²C. Set it to SPI before powering it.
 - **Cable:** the 8-wire PH2.0 cable in the box, with the white plug in the HAT
-  and the separate sockets on the carrier's 1 × 8 header, in the order
-  printed on the carrier layout: 5V, GND, MISO, MOSI, SCK, CS, RST, HRDY.
+  and the separate sockets on the carrier's right-angle 1 × 8 header J2, pin 1
+  at the top: 5V, GND, MISO, MOSI, SCK, CS, RST, HRDY.
   Match the wire labels on the HAT's silkscreen, not the wire colours.
 - **Panel:** the 40-pin flat cable goes from the small adapter board to the
   HAT. Lift the connector latch, slide the cable in square, contacts facing
