@@ -64,6 +64,9 @@ namespace brwr {
       rtc_gpio_deinit((gpio_num_t)pin); // back to a digital pin after an ext1 wake
       pinMode(pin, INPUT_PULLUP);
     }
+    delayMicroseconds(50); // let the pull-ups settle
+    for (uint8_t pin : BUTTON_PINS)
+      if (digitalRead(pin) == HIGH) rtc.stuckPins &= ~(1u << pin); // released: it may wake us again
   }
 
   void panel_after_init() {
@@ -121,17 +124,18 @@ namespace brwr {
     gpio_hold_en((gpio_num_t)EPD_EN_PIN);
     gpio_deep_sleep_hold_en();
 
-    // Buttons: RTC pull-ups, wake when any of them goes low.
+    // Buttons: RTC pull-ups, wake when any of them goes low. A stuck button
+    // would wake us again at once, so it's left out until it's released.
     uint64_t mask = 0;
     for (uint8_t pin : BUTTON_PINS) {
       rtc_gpio_init((gpio_num_t)pin);
       rtc_gpio_set_direction((gpio_num_t)pin, RTC_GPIO_MODE_INPUT_ONLY);
       rtc_gpio_pulldown_dis((gpio_num_t)pin);
       rtc_gpio_pullup_en((gpio_num_t)pin);
-      mask |= 1ULL << pin;
+      if (!(rtc.stuckPins & (1u << pin))) mask |= 1ULL << pin;
     }
     esp_sleep_pd_config(ESP_PD_DOMAIN_RTC_PERIPH, ESP_PD_OPTION_ON); // keeps the pull-ups powered
-    esp_sleep_enable_ext1_wakeup(mask, ESP_EXT1_WAKEUP_ANY_LOW);
+    if (mask) esp_sleep_enable_ext1_wakeup(mask, ESP_EXT1_WAKEUP_ANY_LOW);
   }
 
 } // namespace brwr

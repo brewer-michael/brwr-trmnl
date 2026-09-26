@@ -6,7 +6,7 @@
 
 namespace brwr {
 
-  static constexpr uint32_t RTC_MAGIC = 0xB5A7'0001;
+  static constexpr uint32_t RTC_MAGIC = 0xB5A7'0002;
 
   RTC_DATA_ATTR RtcState rtc;
   static WakeState s_wake;
@@ -68,6 +68,8 @@ namespace brwr {
       return "very_long";
     case PRESS_RESET:
       return "reset";
+    case PRESS_STUCK:
+      return "stuck";
     default:
       return "none";
     }

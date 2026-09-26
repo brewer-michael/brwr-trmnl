@@ -549,7 +549,7 @@ namespace brwr {
     doc["hold"] = s.holdMinutes;
     doc["vcom"] = s.vcomMv ? -(s.vcomMv / 1000.0f) : -1.5f;
     doc["held_until"] = iso8601(hold_active() ? rtc.holdUntil : 0);
-    doc["error"] = wake().error;
+    doc["error"] = wake().error.length() ? wake().error : stuck_buttons_error();
     String payload;
     serializeJson(doc, payload);
     mqtt_publish(topic("state"), payload, true, 1);

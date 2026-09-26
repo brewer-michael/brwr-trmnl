@@ -88,6 +88,7 @@ namespace brwr {
     s_isrEvents = ha_events();
     gpio_install_isr_service(0); // "already installed" (by the Arduino core) is fine
     for (uint8_t pin : BUTTON_PINS) {
+      if (rtc.stuckPins & (1u << pin)) continue; // its low level would fire forever
       gpio_set_intr_type((gpio_num_t)pin, GPIO_INTR_LOW_LEVEL);
       gpio_isr_handler_add((gpio_num_t)pin, on_button, (void *)(uint32_t)pin);
       gpio_wakeup_enable((gpio_num_t)pin, GPIO_INTR_LOW_LEVEL); // wakes the chip from light sleep
@@ -150,6 +151,10 @@ namespace brwr {
           Button button = button_for_pin(pin);
           Press press = classify_press(pin);
           Log_info("brwr: %s button (%s press)", button_name(button), press_name(press));
+          if (press == PRESS_STUCK) {
+            ha_publish_state(); // shows up as the last error
+            continue;           // leave its interrupt off; the next wake checks it again
+          }
           ha_publish_button(button, press); // straight to Home Assistant
           bool local = settings().buttons == ButtonMode::Local || button == BUTTON_REFRESH;
           bool acts = press == PRESS_SHORT || press == PRESS_VERY_LONG || press == PRESS_RESET ||

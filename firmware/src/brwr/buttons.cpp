@@ -6,7 +6,9 @@
 //   double     two taps within 0.5 s
 //   long       1-5 s
 //   very long  5-15 s   (REFRESH: open the Wi-Fi setup hotspot)
-//   reset      >= 15 s  (REFRESH: forget Wi-Fi and server credentials)
+//   reset      15-30 s  (REFRESH: forget Wi-Fi, server and Home Assistant settings)
+//   stuck      still down after 30 s: ignored, and it stops waking the device
+//              until it's released (a cap pressing its switch, say)
 //
 #include <Arduino.h>
 #include <brwr/board.h>
@@ -22,7 +24,7 @@ namespace brwr {
   static constexpr uint32_t LONG_MS = 1000;
   static constexpr uint32_t VERY_LONG_MS = 5000;
   static constexpr uint32_t RESET_MS = 15000;
-  static constexpr uint32_t MAX_HOLD_MS = 20000;
+  static constexpr uint32_t MAX_HOLD_MS = 30000;
 
   static bool is_down(uint8_t pin) { return digitalRead(pin) == LOW; }
 
@@ -50,6 +52,11 @@ namespace brwr {
     uint32_t start = millis();
     while (is_down(pin) && millis() - start < MAX_HOLD_MS)
       delay(10);
+    if (is_down(pin)) {
+      rtc.stuckPins |= 1u << pin;
+      Log_error("brwr: GPIO%u held down for %u s: treating the button as stuck", pin, (unsigned)(MAX_HOLD_MS / 1000));
+      return PRESS_STUCK;
+    }
     uint32_t held = millis() - start + already_held_ms;
     if (held >= RESET_MS) return PRESS_RESET;
     if (held >= VERY_LONG_MS) return PRESS_VERY_LONG;
@@ -70,6 +77,18 @@ namespace brwr {
     default:
       return BUTTON_NONE;
     }
+  }
+
+  String stuck_buttons_error() {
+    String names;
+    for (uint8_t pin : BUTTON_PINS) {
+      if (!(rtc.stuckPins & (1u << pin))) continue;
+      String name = button_name(button_for_pin(pin));
+      name.toUpperCase();
+      if (names.length()) names += ", ";
+      names += name;
+    }
+    return names.length() ? "Button stuck down: " + names : String();
   }
 
   bool button_wake(Button *button, Press *press) {

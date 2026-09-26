@@ -33,9 +33,12 @@ namespace brwr {
     uint16_t wakeCount;
     uint32_t lastBroadcastTs; // newest brwr-trmnl/all command handled (they're never deleted)
     bool forceRedraw;      // a setting changed (e.g. VCOM): redraw even if the image didn't
+    uint32_t stuckPins;    // buttons held down for good (GPIO bitmask): they can't wake us until released
   };
 
   extern RtcState rtc;
+
+  String stuck_buttons_error(); // "" unless a button is stuck down (buttons.cpp)
 
   // Actions a button press asks for, decided in handle_button() and carried
   // out once Wi-Fi is up (display_takeover) or by bl.cpp (setup/reset).

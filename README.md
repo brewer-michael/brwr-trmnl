@@ -74,11 +74,13 @@ the battery lasts months.
 | **REFRESH** double press | TRMNL's special function | — |
 | Any button, long press (1–5 s) | Only a Home Assistant trigger, for your own automations | same |
 | **REFRESH**, hold 5 s | Wi-Fi and Home Assistant setup | same |
-| **REFRESH**, hold 15 s | Reset: forget Wi-Fi, the server and the Home Assistant settings | same |
+| **REFRESH**, hold 15 s (let go within 30 s) | Reset: forget Wi-Fi, the server and the Home Assistant settings | same |
 
 Short and double presses also reach Home Assistant as triggers. Set
 **Buttons** to *Home Assistant only* and every press is yours to automate
-(setup and reset still work).
+(setup and reset still work). A button held down for more than 30 seconds
+counts as stuck: it's ignored, stops waking the display, and shows up as
+**Last error** in Home Assistant until it's released.
 
 ## Firmware
 

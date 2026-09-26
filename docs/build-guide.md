@@ -241,6 +241,7 @@ panel's face with a blower or a soft brush; any dust in there stays there.
 | Washed-out or smudged picture | Panel VCOM: enter the value printed on the flex cable |
 | Resets when it starts to draw | Battery flat, or C3/C2 missing or reversed; ground to the HAT too thin or too long |
 | Buttons do nothing | Each switch must connect its signal wire to ground when pressed; the cap must reach the plunger (press it: it should click) |
+| **Last error** says "Button stuck down" | That switch is pressed all the time: a cap pressing on it (see `cap_preload` in the [enclosure README](../hardware/enclosure/README.md)) or a solder bridge on the button strip. It's ignored until it's released |
 | Doesn't wake from a button in deep sleep | The buttons must be on D0–D2 (GPIO1–3) |
 | No setup hotspot | Hold REFRESH for 5–15 seconds to open it again |
 | Doesn't appear in Home Assistant | The MQTT user and password; the broker's log; [home-assistant.md](home-assistant.md#troubleshooting) |

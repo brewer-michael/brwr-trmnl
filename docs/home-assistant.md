@@ -196,3 +196,4 @@ or 15 s (reset) always works.
 | Screen changes take minutes | Power mode is Deep sleep, or the display lost Wi-Fi (Wi-Fi signal sensor) |
 | Washed-out picture | Panel VCOM |
 | Entities "unavailable" | The display went offline unexpectedly (last will): battery, Wi-Fi or a crash |
+| **Last error**: "Button stuck down" | A switch is pressed all the time (a cap or a solder bridge); it's ignored until released |

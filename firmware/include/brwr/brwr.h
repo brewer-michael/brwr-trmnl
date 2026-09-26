@@ -16,11 +16,20 @@ namespace brwr {
 
   // Front buttons, left to right.
   enum Button : uint8_t { BUTTON_NONE = 0, BUTTON_BACK = 1, BUTTON_REFRESH = 2, BUTTON_NEXT = 3 };
-  // short < 1 s, double = two taps within 0.5 s, long 1-5 s, very long 5-15 s, reset >= 15 s
-  enum Press : uint8_t { PRESS_NONE = 0, PRESS_SHORT, PRESS_DOUBLE, PRESS_LONG, PRESS_VERY_LONG, PRESS_RESET };
+  // short < 1 s, double = two taps within 0.5 s, long 1-5 s, very long 5-15 s, reset 15-30 s,
+  // stuck = still down after 30 s
+  enum Press : uint8_t {
+    PRESS_NONE = 0,
+    PRESS_SHORT,
+    PRESS_DOUBLE,
+    PRESS_LONG,
+    PRESS_VERY_LONG,
+    PRESS_RESET,
+    PRESS_STUCK
+  };
 
   const char *button_name(Button button);  // "back", "refresh", "next"
-  const char *press_name(Press press);     // "short", "double", "long", "very_long", "reset"
+  const char *press_name(Press press);     // "short", "double", "long", "very_long", "reset", "stuck"
 
 // ---- Board (src/brwr/board.cpp) ----------------------------------------
 
