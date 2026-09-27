@@ -150,9 +150,10 @@ pio run -e brwr_trmnl -t upload
   than the real, steel-backed one).
 
 The battery life, the IT8951's current draw, the magnets' grip on a real
-fridge door, the print tolerances and the heights of the parts on a real
-HAT and charger module are estimates until someone builds one. If you do,
-please open an issue with what you find.
+fridge door, the print tolerances, the heights of the parts on a real HAT,
+charger module and MiniBoost, and the length of the kit's 40-pin flat cable
+are estimates or unknowns until someone builds one. If you do, please open
+an issue with what you find.
 
 ## Credits
 
