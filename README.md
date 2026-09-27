@@ -1,186 +1,168 @@
 # brwr-trmnl
 
-**A 10.3" e-paper dashboard for Home Assistant, built from off-the-shelf parts:
-TRMNL's open-source firmware on an ESP32-S3, with Home Assistant built in, served
-entirely from your own network.**
+**A 10.3" e-paper display for the fridge door, run by Home Assistant. Say
+"show the calendar on the fridge" to your voice speaker, and it does.**
 
-[TRMNL](https://trmnl.com) makes calm, low-power e-paper displays, and publishes
-its [firmware](https://github.com/usetrmnl/trmnl-firmware) and
-[server API](https://docs.trmnl.com/go/diy/byos) so you can build and host your own.
-This project builds the large-format version, the same panel size and resolution
-as the TRMNL X, from parts you can buy anywhere, in a 3D-printed frame. The
-firmware ships already set up for Home Assistant, so there's no cloud account
-and nothing to wire together after you flash it.
+![Render of the brwr-trmnl enclosure: a 10.3-inch e-paper panel in a printed frame with three buttons below it](docs/images/enclosure-front.png)
 
-- **10.3", 1872 × 1404, 16 grays**: sharp enough for small text, calendars and
-  graphs at 227 PPI.
-- **Home Assistant first**: the setup page asks for your Home Assistant address
-  and the device does the rest. It shows your dashboards, TRMNL plugins and
-  playlists from the [Terminus](https://github.com/usetrmnl/terminus) add-on,
-  and appears in Home Assistant as a device with battery, Wi-Fi signal and a
-  button.
-- **Local only**: no TRMNL account, no BYOD licence, and nothing leaves your
-  network. TRMNL's cloud is still an option if you want its plugin library.
-- **Months per charge**: the ESP32-S3 sleeps between refreshes, and the panel
-  controller is powered off entirely while it does.
-- **Off-the-shelf**: an e-paper HAT, a XIAO board, a boost converter and a
-  battery. There's one small resistor divider to solder; everything else plugs
-  together.
-- **A parametric enclosure**: an OpenSCAD picture frame that stands on a desk or
-  hangs on a wall, printed without supports.
+[TRMNL](https://trmnl.com) makes calm, low-power e-paper displays and
+publishes its [firmware](https://github.com/usetrmnl/trmnl-firmware) and
+[server API](https://docs.trmnl.com/go/diy/byos) so you can build and host
+your own. brwr-trmnl is the large-format version (the TRMNL X's panel size
+and resolution) built from parts you can buy anywhere, in a 13 mm thin
+3D-printed frame that holds onto the fridge with magnets. Its firmware has Home Assistant
+built in, so your screens and commands stay on your own network. (It does
+reach a public time server to set its clock, unless you point the setup
+page's NTP server field at a local one.)
+
+- **10.3", 1872 × 1404, 16 grays.** Sharp enough for small text,
+  calendars and graphs at 227 dpi.
+- **Three buttons, no touchscreen:** back, refresh and next, like a TRMNL.
+  Presses are also Home Assistant triggers.
+- **Lives on the fridge.** Four magnets hidden in the back, steel-backed,
+  placed and checked so their field stays clear of the electronics
+  ([magnets.md](docs/magnets.md)). Or stand it on a desk, or hang it on a
+  steel plate on the wall.
+- **13 mm thin** (the TRMNL X is 12), stiffened by epoxied steel rods, and
+  it prints on a 220 × 220 mm bed.
+- **Home Assistant built in.** One setup page. It appears as an MQTT device
+  with its battery, what's on screen, a screen picker and settings.
+- **Voice.** Any Home Assistant voice satellite (the open speaker, a Voice
+  PE, your phone) can put a screen or a note on the fridge.
+- **Your screens:** Home Assistant dashboards rendered for e-paper, or
+  TRMNL's plugins and playlists from the self-hosted
+  [Terminus](https://github.com/usetrmnl/terminus) server. No cloud account.
+- **Weeks to months per charge** (estimated), depending on how quickly you
+  want it to react ([power.md](docs/power.md)). USB-C charging.
+- **About $240 in parts,** $157 of it the display.
 
 ## How it works
 
 ```
- brwr-trmnl (XIAO ESP32-S3)                    Home Assistant
- ┌──────────────────────────────┐   wake     ┌─────────────────────────────────┐
- │ sleep (deep sleep, panel off)│  ───────►  │ Terminus add-on (TRMNL BYOS)    │
- │   │ timer or button          │  GET image │  plugins, playlists, schedules  │
- │   ▼                          │  ◄──────── │  or: TRMNL HA add-on            │
- │ wake, power up IT8951 ───────┼─► 10.3"    │   screenshots of HA dashboards, │
- │ draw, report, sleep again    │   e-paper  │   dithered to 16 grays          │
- │                              │  ───────►  │ MQTT: battery, Wi-Fi, button,   │
- │ battery ─► boost ─► 5 V      │   state    │  refresh interval, refresh now  │
- └──────────────────────────────┘            └─────────────────────────────────┘
+ Voice speaker ──► Home Assistant ─────────────────────────────┐
+ "show the         Assist → script → MQTT                      │ MQTT: commands, settings
+  calendar on      TRMNL HA add-on: dashboards → 16-gray PNG   │ ◄── state, battery, buttons
+  the fridge"      Terminus add-on: TRMNL plugins, playlists   │
+                          │ image                              │
+                          ▼                                    ▼
+                   brwr-trmnl: XIAO ESP32-S3 ──► IT8951 HAT ──► 10.3" e-paper
+                   (sleeps between refreshes; the panel's supply is switched off)
 ```
 
-On each wake the device:
+The brain is an ESP32-S3 (a Seeed XIAO ESP32-S3), the same chip as in the
+TRMNL X. The 10.3" panel comes as a kit with Waveshare's IT8951 driver
+board, which is shaped as a Raspberry Pi "HAT", but there's no Pi here: the
+driver is only the panel's controller and power supply, and the ESP32-S3
+talks to it over SPI. (The TRMNL X drives its panel directly from the
+ESP32-S3 on a custom board instead.)
 
-1. Switches on the 5 V supply to the panel's IT8951 controller.
-2. Asks the server for the current screen (`/api/display`) and draws it at 16
-   grays.
-3. Publishes its state to Home Assistant over MQTT and picks up any settings
-   changed there since it last woke.
-4. Switches the panel supply off and sleeps until the next refresh or a button
-   press.
+Each refresh, the display wakes, switches on the 5 V supply to the panel's
+IT8951 controller, fetches the current screen, draws it at 16 grays, reports
+to Home Assistant over MQTT and goes back to sleep. In **Always ready** mode
+it stays connected in light sleep between refreshes, so a voice command
+is on screen in about 10–15 seconds; in **Deep sleep** it only checks in when
+it wakes, and the battery should last months.
 
-## Home Assistant integration
-
-The difference from stock TRMNL firmware is that Home Assistant is part of the
-firmware, not something you set up afterwards.
-
-- **One setup page.** On first boot the device opens a Wi-Fi hotspot. Its setup
-  page asks for your Wi-Fi network, your Home Assistant address, and MQTT
-  details if your broker needs them. It fills in the server address for the
-  [Terminus add-on](https://github.com/usetrmnl/trmnl-home-assistant) itself
-  (port 2300), so you don't need the *Advanced › Custom Server* step.
-- **Two image sources.**
-  - *Terminus* (default): the full TRMNL experience, run locally. Plugins,
-    playlists and recipes, managed from the Terminus dashboard inside Home
-    Assistant.
-  - *Home Assistant dashboard*: the device fetches a pre-rendered screenshot
-    of a Lovelace dashboard from the
-    [TRMNL HA add-on](https://github.com/usetrmnl/trmnl-home-assistant/blob/main/trmnl-ha/DOCS.md)'s
-    fetch URL. The add-on handles the rendering, dithering and 16-gray
-    palette, so a dashboard designed at 1872 × 1404 appears as you laid it out.
-- **A device in Home Assistant, over MQTT discovery.** Nothing extra to install
-  in Home Assistant beyond an MQTT broker (Mosquitto add-on).
-
-  | Entity | Type | |
-  |---|---|---|
-  | Battery | sensor | percentage and voltage |
-  | Wi-Fi signal | sensor | RSSI at the last wake |
-  | Last refresh | sensor | timestamp |
-  | Button | device trigger | single, double and long press, for automations |
-  | Refresh interval | number | applied at the next wake |
-  | Image source | select | Terminus or Home Assistant dashboard |
-  | Refresh now | button | applied at the next wake, or at once if the device is awake |
-
-  The device sleeps most of the time, so settings changed in Home Assistant
-  are published as retained MQTT messages and picked up on the next wake.
-
-## Hardware
+## Build one
 
 | | |
 |---|---|
-| Display | [Waveshare 10.3inch e-Paper HAT](https://www.waveshare.com/wiki/10.3inch_e-Paper_HAT): 1872 × 1404, 16 grays, IT8951 controller, driven over SPI. The flexible HAT (D) version also works and is lighter. |
-| Microcontroller | Seeed Studio XIAO ESP32S3 (8 MB flash, 8 MB PSRAM, built-in LiPo charger, USB-C) |
-| Power | 3.7 V LiPo, 5000 mAh or larger, JST-PH 2.0 connector |
-| 5 V for the panel | Pololu U3V16F5 boost regulator, switched off in sleep via its EN pin |
-| Battery sense | 2 × 220 kΩ resistors (voltage divider into an ADC pin) |
-| Controls | 1 × 12 mm tactile button (wake, refresh, and Home Assistant triggers) |
-| Enclosure | PETG or PLA picture frame, stands on a desk or hangs on a wall; M2.5 screws |
+| [Bill of materials](docs/bom.md) | Parts, suppliers and prices ([CSV](hardware/bom.csv)) |
+| [Build guide](docs/build-guide.md) | Printing, soldering, flashing and assembly, step by step |
+| [Wiring](hardware/wiring.md) | Pin map, [schematic](docs/images/schematic.svg), [wiring](docs/images/wiring.svg), [carrier board](docs/images/carrier-layout.svg) and [button board](docs/images/button-board.svg) layouts |
+| [Enclosure](hardware/enclosure/README.md) | Parametric OpenSCAD frame, 229 × 204 × 13 mm, in four print jobs on a 220 × 220 mm bed: STLs, print settings, rod cut list, desk stand |
+| [Magnets](docs/magnets.md) | Holding force, and why the magnets don't disturb the electronics |
+| [Power](docs/power.md) | Battery life, power modes, charging |
+| [Home Assistant](docs/home-assistant.md) | Add-ons, setup, entities, screens, MQTT topics |
+| [Voice](docs/voice.md) | Voice commands through Home Assistant Assist |
 
-About $180 in parts, most of it the panel. The bill of materials will list
-suppliers and alternatives.
+## Buttons
 
-### Wiring
-
-| XIAO ESP32S3 | GPIO | To |
+| | TRMNL server | Home Assistant screens |
 |---|---|---|
-| D0 | 1 | Button to GND (wake from deep sleep) |
-| D1 | 2 | Battery divider midpoint |
-| D2 | 3 | HAT `CS` |
-| D3 | 4 | HAT `HRDY` |
-| D4 | 5 | HAT `RST` |
-| D5 | 6 | Boost regulator `EN` |
-| D8 | 7 | HAT `SCLK` |
-| D9 | 8 | HAT `MISO` |
-| D10 | 9 | HAT `MOSI` |
-| BAT+ / BAT− | | LiPo; boost regulator `VIN` / `GND` |
-| GND | | HAT `GND` |
+| **BACK** | The previous image (from the display's cache, instant) | The previous screen |
+| **REFRESH** | Fetch now (the playlist moves on) | Redraw the current screen |
+| **NEXT** | The next playlist item | The next screen |
+| **REFRESH** double press | TRMNL's special function | — |
+| Any button, long press (1–5 s) | Only a Home Assistant trigger, for your own automations | same |
+| **REFRESH**, hold 5 s | Setup hotspot, for Wi-Fi and Home Assistant. It forgets the saved Wi-Fi, so you pick it again; the other settings stay | same |
+| **REFRESH**, hold 15 s (let go within 30 s) | Reset: forget Wi-Fi, the server and the Home Assistant connection. Set it up again with the same broker and the settings you made in Home Assistant come back | same |
 
-The boost regulator's 5 V output goes to the HAT's `5V` pin. Set the HAT's
-interface switch to **SPI**, and set the panel's VCOM value (printed on the
-panel's ribbon cable) in the firmware configuration. The wrong VCOM gives a
-washed-out image.
+Short and double presses also reach Home Assistant as triggers. Set
+**Buttons** to *Home Assistant only* and every press is yours to automate
+(setup and reset still work). In **Deep sleep**, though, any press also
+wakes the display, which then refreshes as it would on its timer. A button
+held down for more than 30 seconds counts as stuck: it's ignored, stops
+waking the display, and shows up as **Last error** in Home Assistant until
+the first refresh after it's released.
 
 ## Firmware
 
-A fork of [usetrmnl/trmnl-firmware](https://github.com/usetrmnl/trmnl-firmware)
-(PlatformIO, Arduino on ESP-IDF), with:
+A fork of [usetrmnl/trmnl-firmware](https://github.com/usetrmnl/trmnl-firmware),
+imported into [`firmware/`](firmware/) with `git subtree`. The changes are
+listed in [`firmware/BRWR.md`](firmware/BRWR.md). In short:
 
-- a `brwr_trmnl` build environment for the XIAO ESP32S3 and the pins above
-- an IT8951 display driver for the 1872 × 1404 panel, with 4-bit (16-gray)
-  images decoded into PSRAM and streamed to the controller
-- panel power switching through the boost regulator
-- the Home Assistant setup page, image sources and MQTT device described above
-- everything else unchanged, so the device still works with TRMNL's cloud or
-  any other BYOS server
+- a `brwr_trmnl` board for the XIAO ESP32-S3 and the Waveshare IT8951 HAT
+  over SPI, using upstream's IT8951 driver for the reTerminal E1003 (the same
+  1872 × 1404 panel)
+- three buttons, a switched panel supply and a battery voltage reading
+- Home Assistant over MQTT: discovery, state, settings, commands, button
+  triggers, and **Always ready** light sleep
+- Home Assistant screens rendered by the TRMNL HA add-on, as an alternative
+  to a TRMNL server
+- the Home Assistant fields on the setup page
 
-Changes are kept as small, separate commits so they can be rebased onto new
-upstream releases, and offered upstream where they're useful to others.
+It still works with TRMNL's cloud or any other TRMNL-compatible server. CI
+builds both firmware variants whenever `firmware/` changes. Flash the
+`brwr_trmnl` one: its `merged_firmware.bin` goes at `0x0` for the first
+flash (it clears saved Wi-Fi and settings); to update, upload with
+PlatformIO or write `firmware.bin` at `0x10000`.
 
-## Getting started
+```sh
+cd firmware
+pio run -e brwr_trmnl -t upload
+```
 
-1. **Build**: wire the parts on the desk, then print and assemble the frame.
-2. **Flash** from a browser, or build with PlatformIO:
-
-   ```sh
-   pio run -e brwr_trmnl -t upload
-   ```
-
-3. **Home Assistant**: install the Mosquitto broker and the
-   [Terminus add-on](https://github.com/usetrmnl/trmnl-home-assistant).
-   Optionally add the TRMNL HA add-on to show Lovelace dashboards.
-4. **Connect**: join the `brwr-trmnl` Wi-Fi hotspot, enter your Wi-Fi and Home
-   Assistant details, and the device appears in Home Assistant under
-   *Settings › Devices › MQTT*.
-
-## Repository (planned)
+## Repository
 
 | Path | |
 |---|---|
-| `firmware/` | Fork of trmnl-firmware with the `brwr_trmnl` environment |
-| `hardware/enclosure/` | Parametric OpenSCAD frame and export script |
-| `hardware/wiring.md` | Wiring and power budget |
-| `homeassistant/` | Example dashboards sized for 1872 × 1404, and automations using the button |
-| `docs/` | Build guide, bill of materials, Home Assistant guide |
+| [`firmware/`](firmware/) | trmnl-firmware with the `brwr_trmnl` board ([changes](firmware/BRWR.md)) |
+| [`homeassistant/`](homeassistant/) | Package (screens, scripts, voice intents), voice sentences, example fridge dashboard |
+| [`hardware/enclosure/`](hardware/enclosure/) | OpenSCAD source, export script, STLs |
+| [`hardware/diagrams/`](hardware/diagrams/) | Scripts that draw the schematic and wiring diagrams |
+| [`hardware/analysis/`](hardware/analysis/) | Magnetic field model behind [magnets.md](docs/magnets.md) |
+| [`hardware/bom.csv`](hardware/bom.csv), [`hardware/wiring.md`](hardware/wiring.md) | Parts and wiring |
+| [`docs/`](docs/) | Build guide and reference |
 
 ## Status
 
-**Design stage.** This README is the specification; nothing has been built or
-flashed yet. The parts, pins and power design follow the datasheets, but the
-battery life, the IT8951 controller's current draw and the enclosure dimensions
-have still to be measured on real hardware.
+**Designed, not yet built.** What has been checked so far:
+
+- The firmware builds for both variants in CI. It has not run on hardware
+  yet.
+- The Home Assistant package's templates, and the voice sentences against
+  Home Assistant's sentence matcher.
+- The enclosure renders, its parts are manifold and fit a 220 × 220 mm bed,
+  and its clearances (every layer of the 13 mm stack, the magnets, the rods,
+  the antenna's keep-out) are checked by assertions in the OpenSCAD source.
+- The magnetic field numbers come from a model of a bare magnet (worse
+  than the real, steel-backed one).
+
+The battery life, the IT8951's current draw, the magnets' grip on a real
+fridge door, the print tolerances, the heights of the parts on a real HAT,
+charger module and MiniBoost, and the length of the kit's 40-pin flat cable
+are estimates or unknowns until someone builds one. If you do, please open
+an issue with what you find.
 
 ## Credits
 
-[TRMNL](https://trmnl.com) for the device concept, firmware and server API,
-[Terminus](https://github.com/usetrmnl/terminus) for the self-hosted server, and
-[trmnl-home-assistant](https://github.com/usetrmnl/trmnl-home-assistant) for the
-Home Assistant add-ons. This is an independent project, not affiliated with
-TRMNL.
+[TRMNL](https://trmnl.com) for the device, the firmware and the server API;
+[Terminus](https://github.com/usetrmnl/terminus) and
+[trmnl-home-assistant](https://github.com/usetrmnl/trmnl-home-assistant) for
+the self-hosted server and the Home Assistant add-ons;
+[FastEPD](https://github.com/bitbank2/FastEPD) for the IT8951 driver. This is
+an independent project, not affiliated with TRMNL.
 
 ## License
 

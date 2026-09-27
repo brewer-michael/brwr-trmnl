@@ -1,0 +1,92 @@
+# brwr-trmnl: example dashboard for the fridge (1872 x 1404, 16 grays).
+#
+# Create it: Settings > Dashboards > Add dashboard > New dashboard from
+# scratch, titled "Fridge display" (its URL becomes fridge-display), untick
+# "Show in sidebar". Open it, then pencil > three dots > Raw configuration
+# editor, paste this file and save.
+#
+# The TRMNL HA add-on renders each view for the display at
+#   http://<home-assistant>:10000/fridge-display/<view path>?zoom=2
+# (the screens in packages/brwr_trmnl.yaml point here). Panel views keep the
+# layout fixed, so it doesn't reflow when the add-on zooms the page.
+#
+# Built-in cards only. Replace the entity ids with yours:
+#   weather.forecast_home, calendar.family, todo.shopping_list,
+#   input_text.brwr_trmnl_note (from the package).
+title: Fridge display
+views:
+  - title: Home
+    path: home
+    panel: true
+    cards:
+      - type: grid
+        columns: 2
+        square: false
+        cards:
+          - type: vertical-stack
+            cards:
+              - type: markdown
+                content: >-
+                  # {{ now().strftime('%A') }}
+
+                  ## {{ now().strftime('%-d %B') }}
+              - type: weather-forecast
+                entity: weather.forecast_home
+                forecast_type: daily
+                show_current: true
+                show_forecast: true
+              - type: todo-list
+                entity: todo.shopping_list
+                hide_completed: true
+          - type: calendar
+            entities:
+              - calendar.family
+            initial_view: listWeek
+
+  - title: Calendar
+    path: calendar
+    panel: true
+    cards:
+      - type: calendar
+        entities:
+          - calendar.family
+        initial_view: dayGridMonth
+
+  - title: Shopping list
+    path: shopping
+    panel: true
+    cards:
+      - type: todo-list
+        title: Shopping list
+        entity: todo.shopping_list
+        hide_completed: true
+        hide_create: true
+
+  - title: Weather
+    path: weather
+    panel: true
+    cards:
+      - type: vertical-stack
+        cards:
+          - type: weather-forecast
+            entity: weather.forecast_home
+            forecast_type: hourly
+            show_current: true
+            show_forecast: true
+          - type: weather-forecast
+            entity: weather.forecast_home
+            forecast_type: daily
+            show_current: false
+            show_forecast: true
+
+  - title: Note
+    path: note
+    panel: true
+    cards:
+      - type: markdown
+        content: >-
+          # {{ states('input_text.brwr_trmnl_note') }}
+
+
+          *{{ as_timestamp(states.input_text.brwr_trmnl_note.last_changed)
+          | timestamp_custom('%A %-H:%M') }}*

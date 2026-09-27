@@ -1,0 +1,53 @@
+# brwr-trmnl voice commands, for any Assist satellite (the Raspberry Pi
+# speaker, a Voice PE, the phone app...). Copy to
+# <config>/custom_sentences/en/brwr_trmnl.yaml and restart Home Assistant.
+# The actions are in packages/brwr_trmnl.yaml (intent_script).
+#
+# The "out" values must match the screen names in brwr_trmnl_publish_screens.
+language: "en"
+intents:
+  BrwrTrmnlShowScreen:
+    data:
+      - sentences:
+          - "(show|display|put|bring up) [the|my] {brwr_screen:screen} on [the] (fridge|fridge display|kitchen display)"
+          - "[put] [the|my] {brwr_screen:screen} on [the] fridge"
+          - "fridge (show|display) [the|my] {brwr_screen:screen}"
+
+  BrwrTrmnlNote:
+    data:
+      - sentences:
+          - "(put|leave|post|add|write) a note on [the] fridge (saying|that says|to say) {brwr_message:message}"
+          - "fridge note {brwr_message:message}"
+
+  BrwrTrmnlCommand:
+    data:
+      - sentences:
+          - "[show [the]] {brwr_command:command} screen on [the] fridge"
+          - "{brwr_command:command} fridge screen"
+      - sentences:
+          - "refresh [the] fridge [display]"
+          - "(clear|reset) [the] fridge [display]"
+        slots:
+          command: refresh
+
+lists:
+  brwr_screen:
+    values:
+      - in: "home [screen]"
+        out: "Home"
+      - in: "calendar"
+        out: "Calendar"
+      - in: "(shopping|grocery) list"
+        out: "Shopping list"
+      - in: "(weather|forecast)"
+        out: "Weather"
+      - in: "note"
+        out: "Note"
+  brwr_message:
+    wildcard: true
+  brwr_command:
+    values:
+      - in: "next"
+        out: "next"
+      - in: "(previous|last)"
+        out: "back"
