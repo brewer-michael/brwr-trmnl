@@ -88,7 +88,8 @@ wall, so it prints almost solid.
   lead, so the frame and the back cover come apart. It lies flat on the back
   cover beside the adapter board, centred at (−50, −53) (`btn_plug_pos`), and
   the clash check includes it.
-- **Antenna:** Taoglas FXP831 (45 × 7 mm FPC, 100 mm of 1.37 mm coax, U.FL).
+- **Antenna:** Taoglas FXP831 (45 × 7 mm FPC, 100 mm of 1.37 mm coax, U.FL),
+  on a fin on the back cover.
 - **Foam:**
   - a 0.5 mm gasket on the window lip
   - 1 mm × 4 mm strips on the rib tops and the magnet tubes
@@ -126,20 +127,20 @@ spots. The console prints them as `STACK` lines.
 | Spot | Layers, Z in mm | Margin |
 |---|---|---|
 | Panel | front plate 11.4–13, gasket 10.9–11.4, panel 10.12–10.9, rib tops 9.42 plus 0.7 mm of squeezed foam | – |
-| Carrier | recess floor 0–0.8, solder joints 0.8–2.0, board 2.0–3.6, charger USB-C to 8.6 | 1.52 mm to the panel |
+| Carrier | recess floor 0–0.6, solder joints 0.6–1.8, board 1.8–3.4, MiniBoost (5.6 mm, the tallest part) to 9.0 | 1.12 mm to the panel |
 | Driver HAT | plate 0–1.8, clipped header pins 2.3–3.3, standoffs to 3.3, board 3.3–4.9, parts and nuts to 7.9, screw tips at 8.0 | 2.22 mm to the panel |
 | Battery | recess floor 0–0.6, foam 0.6–1.1, cell 1.1–7.1 | 2.32 mm to the rib tops |
 | Buttons | recess floor 0–1.0, joints 1.3–3.3, strip 3.3–4.9, switch body to 8.4, plunger to 9.2, 0.2 mm gap, cap 9.4–13.5, sleeve 10.2–11.4 | 0.3 mm above the recess floor; the switch clicks after 0.45 mm with the cap face 0.05 mm proud |
 | Magnets | skin 0–0.6, magnet 0.6–3.6, steel disc 3.6–5.1, epoxy to 5.4, tube to 9.42; rubber pad −1–0 | 4.7 mm to the panel |
-| USB slots | XIAO centre 6.2 (slot 2.95–9.45), charger centre 6.8 (slot 3.55–10.05) | 1.45 mm below the front chamfer |
-| Antenna | 4.4–11.4 on the top wall in a 0.3 mm recess, X 38–83 | 11.5 mm to the nearest metal |
-| Rods | bezel rods 8.2–11.2, beside the panel edge; back rods 0.8–3.8, half sunk into the plate | – |
+| USB slots | XIAO centre 6.0 (slot 2.75–9.25), charger centre 6.6 (slot 3.35–9.85) | 1.65 mm below the front chamfer |
+| Antenna | 3.0–10.0 on a fin on the back cover, 2.4 mm inside the top wall, X 38–83 | 11.5 mm to the nearest metal part; the carrier board's copper is 3 mm from its end |
+| Rods | bezel rods 8.2–11.2, beside the panel edge; back rods 0.8–3.8, a third sunk into the plate | – |
 
 The console also prints what each stack needs as `DEPTH` lines. 13 mm closes.
-The smallest depth that closes is **12.6 mm**, set by the buttons with 0.6 mm
-of plate left under the strip. With a 1.0 mm sleeve that drops to 12.5 mm,
-where the charger's USB-C plus 1 mm of air takes over. The model refuses a
-`depth` that does not close.
+The smallest depth that closes is **12.88 mm**, set by the carrier: the
+MiniBoost, 5.6 mm tall (Adafruit's figure), with 1 mm of air to the panel.
+The buttons come next, at 12.6 mm. The model refuses a `depth` that does
+not close.
 
 ## Assembly
 
@@ -177,10 +178,11 @@ where the charger's USB-C plus 1 mm of air takes over. The model refuses a
      below the top of its 70 × 35 mm outline. A notch in the left ledge clears
      the MiniBoost's VIN joint.
    - **Battery:** on its foam pad in the cradle recess, lead out through the
-     slot toward the middle.
-   - **Antenna:** stick it into the recess on the inside of the top wall
-     (X 38–83, front edge against the front plate). Run the coax over the
-     carrier to the XIAO's U.FL.
+     slot toward the middle and through the gap in the rib above, to J1.
+   - **Antenna:** stick it to the inner face of the fin along the back
+     cover's top edge (X 38–83), and run its coax over the carrier to the
+     XIAO's U.FL. It stays connected when the case is opened: only the
+     panel's flat cable and the button lead (J4) cross between the halves.
 8. **Close up.** Put foam strips on the rib pads and the magnet tubes, plug
    the button lead together and lay its plug flat beside the adapter board,
    tie the button wires up the back at X = −30, and close the case with the
@@ -231,8 +233,7 @@ also runs `assert()` design rules and stops with a message when one fails.
 - **Magnets:** `mag_d`, `mag_h`, `steel_disc` and `mag_pos`, with one `[X, Y]`
   per magnet; the count is the number of entries. The rules are:
   - every centre is at least `mag_keep_board` (36 mm) from the driver and
-    carrier boards, and at least `mag_keep_ant` (35 mm) from the antenna
-    recess
+    carrier boards, and at least `mag_keep_ant` (30 mm) from the antenna
   - magnets stay out of the flex zone and the battery cradle
 - **Rods:** `rod_back_y`, `rod_back_x` and `rod_legs`. The rules are
   `rod_mag_clear`, `rod_ant_clear` and the flex zone.
@@ -243,9 +244,12 @@ also runs `assert()` design rules and stops with a message when one fails.
   caps rattle. Lower it if a switch clicks by itself when the case is closed.
 
 Use `part = "fit_check"` to see all module envelopes and rods inside a
-see-through case. Use `part = "clash"` to render every overlap between the
-printed parts, the modules and the rods. It is empty when everything fits,
-and OpenSCAD reports "top level object is empty".
+see-through case. Use `part = "clash"` to render every overlap between two
+printed parts, or between a printed part and a module's envelope or a rod.
+It is empty when everything fits, and OpenSCAD reports "top level object is
+empty". Modules aren't checked against each other, and cables aren't
+modelled, apart from the antenna's coax (for its length) and the button
+lead's plug.
 
 Coordinates follow the front view: X and Y are measured from the centre of the
 outline (+X right, +Y up). Z is measured from the back face (the fridge side)
@@ -294,6 +298,20 @@ toward the front.
   - The buttons are 25.4 mm (10 holes) apart (brief 26).
   - A notch in the carrier's left ledge clears the MiniBoost's VIN joint,
     which lands on the ledge.
+  - The XIAO's USB slot is at X −7.62, on the carrier's grid (brief −8).
+- **The antenna is on a fin on the back cover,** not in a recess in the top
+  wall. On the wall, its 100 mm coax couldn't reach the XIAO while the case
+  was open, so it could only be plugged in blind. On the fin, the antenna and
+  the XIAO are on the same part; it sits 2.4 mm inside the wall and 1.4 mm
+  further back, still standing on edge away from the door. The magnet rule
+  for it is 30 mm (was 35): a steady field doesn't affect an antenna, and the
+  magnets' metal is kept 10 mm away like any other. The coax notch in the
+  top rib is 4 mm deep (brief 3) for its lower feed.
+- **The carrier sits 0.2 mm lower** (0.6 mm of plate under its recess) to
+  fit the MiniBoost, which is 5.6 mm tall, not the 5 mm first assumed.
+- **The interior rib at Y = 36 has a second gap** for the battery lead and
+  its plug, at X 1–13; the HAT's wires share the wire passage with the
+  button lead.
 - **Kept from the first pass:**
   - magnets at (±90, ±65) under a 36 mm board rule (the brief had ±58 and
     30 mm)

@@ -105,8 +105,8 @@ drv_ffc_socket = [5, 30, 2.0]; // mm, FFC socket envelope on the +X edge, X x Y 
 /* [Carrier board: XIAO ESP32-S3 + MiniBoost + TP4056] */
 car_size = [70, 35];     // mm, protoboard W x H (spec)
 car_pcb_t = 1.6;         // mm, protoboard thickness
-car_comp_h = 5.0;        // mm, tallest part above the board: the charger's USB-C (lead)
-car_floor = 0.8;         // mm, back plate left under the board's recess (lead)
+car_comp_h = 5.6;        // mm, tallest part above the board: the MiniBoost, 17.8 x 11.3 x 5.6 mm (Adafruit, lead)
+car_floor = 0.6;         // mm, back plate left under the board's recess (lead: the thinnest allowed, for the MiniBoost)
 car_ledge_h = 1.2;       // mm, ledges that carry the board; room for its solder joints (lead)
 car_ledge_w = 1.5;       // mm, ledge width along the board's left and right edges (design)
 car_air_min = 1.0;       // mm, minimum gap from the tallest part to the panel or rim (design)
@@ -122,7 +122,7 @@ car_ledge_notches = [[-33.02, 23.2]]; // mm, joints that land on a ledge, as [X,
 car_notch_len = 4;       // mm, ledge cut away along the edge at each such joint: a 2 mm pad and 1 mm either side (design)
 car_screw_len = 6;       // mm, M2.5 x 6 countersunk from outside into a nut on the board (design)
 car_wire_gap = [-30, 9]; // mm, gap in the tray rim for incoming wires, [X centre, width] (design; edges not in line with the tie blocks)
-usb_x = [-8, 22];        // mm, USB-C centres: XIAO, charger (spec)
+usb_x = [-7.62, 22];     // mm, USB-C centres: XIAO (on the carrier's hole grid), charger (spec -8, 22)
 usb_size = [9, 3.2];     // mm, USB-C receptacle W x H (typical)
 usb_overhang = 1.5;      // mm, connector beyond the board's top edge (spec)
 usb_len = 7.4;           // mm, receptacle length (typical USB-C)
@@ -140,16 +140,20 @@ ufl_from_top = 20;       // mm, U.FL connector below the carrier's top edge (spe
 ufl_plug_h = 2.0;        // mm, U.FL plug above the XIAO PCB (estimate)
 
 /* [Wi-Fi antenna: Taoglas FXP831] */
-ant_x = [38, 83];        // mm, X range on the inside of the top wall (FXP831 is 45 long)
+ant_x = [38, 83];        // mm, X range, just inside the top wall (FXP831 is 45 long)
 ant_h = 7;               // mm, height along Z (FXP831 45 x 7 x 0.1)
-ant_recess = 0.3;        // mm, shallow recess in the top wall (lead)
 ant_t = 0.2;             // mm, FPC and adhesive thickness (estimate)
-ant_rim_keep = 1.0;      // mm, pocket rim kept in front of the antenna (design)
+// The antenna sticks to a fin on the back cover, so it and the XIAO are on the
+// same part and its coax never has to cross between the halves. Standing on
+// edge beside the top wall, it faces away from the fridge door as before.
+ant_fin_t = 1.2;         // mm, fin thickness (design)
+ant_wall_gap = 1.0;      // mm, fin to the top wall's inner face, so it clears the wall as the case closes (design)
+ant_top_clear = 0.2;     // mm, fin and antenna top below the bezel's pocket rim (design)
 ant_feed_dx = 3;         // mm, coax exit from the antenna's -X end (estimate)
 ant_metal_keepout = 10;  // mm, nothing metallic closer than this (spec)
 coax_d = 1.37;           // mm, antenna coax (FXP831)
 coax_len = 100;          // mm, antenna coax (FXP831)
-coax_notch = 3;          // mm, notch width and depth in ribs for the coax (spec)
+coax_notch = 4;          // mm, notch width and depth in ribs for the coax (spec 3; 4 for the lower feed on the fin)
 coax_z = 7.0;            // mm, coax height where it crosses the carrier (design: between the parts and the panel)
 
 /* [Battery: LiPo pouch] */
@@ -208,7 +212,7 @@ mag_wall = 1.6;          // mm, radial wall around the pocket (design)
 mag_epoxy = 0.3;         // mm, epoxy over the steel disc (design); the pocket's tube runs on up to the rib tops and carries foam
 pad = [25, 1.0];         // mm, self-adhesive rubber pad over each pocket, outside, D x T (lead)
 mag_keep_board = 36;     // mm, magnet centre to driver/carrier board edge, >= 25 mm from the magnet's edge (lead: < 5 mT)
-mag_keep_ant = 35;       // mm, magnet centre to antenna reservation (spec rule)
+mag_keep_ant = 30;       // mm, magnet centre to antenna reservation (design rule: a steady field doesn't affect it; its metal is kept ant_metal_keepout away too)
 
 /* [Steel rods] */
 rod_d = 3;               // mm, steel rod (lead)
@@ -252,6 +256,7 @@ rib_inset = 2.7;         // mm, perimeter rib centre inside the panel edge (desi
 rib_mid_y = 36;          // mm, Y of the horizontal interior rib (design; the lower rod replaces the one at -35)
 rib_mid_x = [-45, 45];   // mm, X of the two vertical ribs in the upper corners (design)
 rib_gap_wire = 10;       // mm, gap in the interior rib where the wires pass (design)
+rib_gap_bat = [7, 12];   // mm, [X centre, width] of the gap in the interior rib for the battery lead and its plug (design)
 rib_keep = 1.0;          // mm, rib clearance around bosses, rods and modules (design)
 
 /* [Wire route] */
@@ -377,11 +382,13 @@ ufl_pos = [usb_x[0], car_top - ufl_from_top];
 z_ufl = z_car_top + xiao_t + ufl_plug_h;
 
 // ---- antenna ---------------------------------------------------------
-z_ant = [z_lip - ant_h, z_lip];                  // front edge against the front plate
-ant_lo = [ant_x[0], in_h / 2 + ant_recess - ant_t, z_ant[0]];   // the FPC itself, on the recess floor
-ant_hi = [ant_x[1], in_h / 2 + ant_recess, z_ant[1]];
-ant_res_lo = [ant_x[0], in_h / 2, z_ant[0]];                       // reservation: the whole recess,
-ant_res_hi = ant_hi;                                               // measured from the wall's inner face
+z_ant = [z_pocket - ant_top_clear - ant_h, z_pocket - ant_top_clear];   // under the bezel's pocket rim
+ant_fin_lo = [ant_x[0], in_h / 2 - ant_wall_gap - ant_fin_t, back_t - eps];
+ant_fin_hi = [ant_x[1], in_h / 2 - ant_wall_gap, z_ant[1]];
+ant_lo = [ant_x[0], ant_fin_lo[1] - ant_t, z_ant[0]];             // the FPC itself, on the fin's inner face
+ant_hi = [ant_x[1], ant_fin_lo[1], z_ant[1]];
+ant_res_lo = ant_lo;                                               // reservation: the FPC, the fin and the
+ant_res_hi = [ant_x[1], in_h / 2, z_ant[1]];                       // gap to the wall
 coax_path = concat(
   [[ant_x[0] + ant_feed_dx, ant_lo[1] - coax_d / 2, (z_ant[0] + z_ant[1]) / 2]],
   [for (v = coax_via) [v[0], v[1], coax_z]],
@@ -662,7 +669,6 @@ module bezel() {
     window_cut();
     pocket_cut();
     flex_relief_cut();
-    antenna_cuts();
     button_bores();
     strip_insert_holes();
     m3_insert_holes();
@@ -717,10 +723,9 @@ module flex_relief_cut() {
   box([-fpc_relief_w / 2, pocket_bot - fpc_relief_d, z_in - eps], [fpc_relief_w / 2, pocket_bot + eps, z_lip]);
 }
 
-module antenna_cuts() {
-  // shallow recess on the inside of the top wall, and the pocket rim cut back in front of it
-  box([ant_x[0], in_h / 2 - eps, z_ant[0] - eps], [ant_x[1], in_h / 2 + ant_recess, z_ant[1]]);
-  box([ant_x[0] - rib_keep, pocket_top + ant_rim_keep, z_pocket - eps], [ant_x[1] + rib_keep, in_h / 2, z_lip]);
+module antenna_fin() {
+  // the antenna sticks to its inner face; the coax leaves its -X end towards the XIAO
+  box(ant_fin_lo, ant_fin_hi);
 }
 
 module button_sleeves() {
@@ -864,6 +869,7 @@ module back_cover() {
           rod_channel_walls();
           wire_ties();
           ribs();
+          antenna_fin();
         }
         carrier_recess();
         battery_recess();
@@ -1047,6 +1053,9 @@ module rib_keepouts() {
   // wire passage; with a split back it runs on to the seam band so no stub is left
   wire_gap_x0 = split ? min(wire_x - rib_gap_wire / 2, back_split_x + rib_seam_clear) : wire_x - rib_gap_wire / 2;
   box([wire_gap_x0, rib_mid_y - rib_pad, -cut_over], [wire_x + rib_gap_wire / 2, rib_mid_y + rib_pad, depth + cut_over]);
+  // battery lead, from the cradle's slot up to J1 on the carrier
+  box([rib_gap_bat[0] - rib_gap_bat[1] / 2, rib_mid_y - rib_pad, -cut_over],
+      [rib_gap_bat[0] + rib_gap_bat[1] / 2, rib_mid_y + rib_pad, depth + cut_over]);
   // ribs end short of the back cover seam
   if (split) box([back_seam_out - rib_seam_clear, -outer_h, -cut_over], [back_split_x + rib_seam_clear, outer_h, depth + cut_over]);
   // coax notch in the top rib
@@ -1690,13 +1699,13 @@ module design_checks() {
   // ---- depth: every stack that has to fit between the plates ----------
   reach = max([for (k = [0 : len(m3_pos) - 1]) hole_reach(m3_pos[k], face_off(k))]);
   need = [
-    ["carrier: board on its ledges, charger USB-C, air", z_car_top + car_comp_h + car_air_min + stack_front],
+    ["carrier: board on its ledges, tallest part (the MiniBoost), air", z_car_top + car_comp_h + car_air_min + stack_front],
     ["driver HAT: standoffs, board, 3 mm parts, air", z_drv_top + drv_air_min + stack_front],
     ["driver HAT: screw tips, air", drv_screw_len + drv_air_min + stack_front],
     ["battery: floor, foam, cell, air to the rib tops", z_bat[1] + bat_air_min + foam_gap + stack_front],
     ["buttons: cap, gap, switch, strip, joints, recess floor", depth - (z_strip_joints - strip_joint_clear) + recess_floor_min],
     ["USB slots below the front chamfer", max([for (z = z_usb) z + usb_slot[1] / 2]) + front_chamfer],
-    ["antenna on the top wall", z_in + ant_h + front_t],
+    ["antenna on its fin, under the pocket rim", z_in + ant_h + ant_top_clear + front_t + pocket_depth],
     ["M3 inserts under the 45 deg boss caps", z_m3_floor + reach + boss_panel_clear + stack_front],
     ["magnet pockets under the rib tops", z_mag_epoxy + foam_gap + stack_front],
     ["bezel rod grooves", z_in + rod_slot + front_t]];
@@ -1716,7 +1725,8 @@ module design_checks() {
   // battery
   assert(bat_floor >= recess_floor_min, "battery recess floor too thin");
   // antenna and coax
-  assert(z_ant[0] >= z_in - eps, str("antenna (", ant_h, " mm) taller than the inside of the top wall (", z_lip - z_in, " mm)"));
+  assert(z_ant[0] >= z_in - eps, str("antenna (", ant_h, " mm) taller than the space under the pocket rim (", z_pocket - ant_top_clear - z_in, " mm)"));
+  assert(ant_lo[1] >= pocket_top + 0.5, "antenna fin too close to the panel pocket");
   assert(path_len(coax_path) <= coax_len, "coax too short for the route to the U.FL");
   assert(coax_z + coax_d / 2 <= z_panel_back - car_air_min, "coax too close to the panel");
   assert(coax_z - coax_d / 2 >= z_car_top + max([for (m = car_modules) m[2][2]]), "coax on the carrier's modules");
@@ -1777,7 +1787,7 @@ module design_checks() {
   assert(d_rf > 0, "a rod runs through the flex zone");
   for (i = [0 : len(rod_corners) - 1]) let(l = rod_leg(i))
     echo(str("CUT bezel rod ", corner_names[i], ": L-shape, ", r2(l[0]), " mm along the ", rod_corners[i][1] > 0 ? "top" : "bottom",
-             " wall + ", r2(l[1]), " mm down the side wall (straight parts), bend ", r2(rod_R), " mm centre radius (",
+             " wall + ", r2(l[1]), " mm along the side wall (straight parts), bend ", r2(rod_R), " mm centre radius (",
              r2(rod_R - rod_d / 2), " inside), cut ", r2(rod_len(i)), " mm"));
   for (y = rod_back_y) echo(str("CUT back rod at Y ", y, ": straight, ", 2 * rod_back_x, " mm, X -", rod_back_x, " to ", rod_back_x));
 
@@ -1816,7 +1826,8 @@ module design_checks() {
   echo(str("STACK USB slots: XIAO centre ", r2(z_usb[0]), " (slot ", r2(z_usb[0] - usb_slot[1] / 2), "-", r2(z_usb[0] + usb_slot[1] / 2),
            "), charger centre ", r2(z_usb[1]), " (slot ", r2(z_usb[1] - usb_slot[1] / 2), "-", r2(z_usb[1] + usb_slot[1] / 2),
            "), front chamfer from ", depth - front_chamfer));
-  echo(str("STACK antenna: ", r2(z_ant[0]), "-", r2(z_ant[1]), " on the top wall in a ", ant_recess, " mm recess, X ", ant_x,
+  echo(str("STACK antenna: ", r2(z_ant[0]), "-", r2(z_ant[1]), " on a fin on the back cover, ", r2(ant_wall_gap + ant_fin_t + ant_t),
+           " mm inside the top wall, X ", ant_x,
            "; coax route ", r2(path_len(coax_path)), " of ", coax_len, " mm, nearest metal ", r2(metal_d), " mm"));
   echo(str("STACK rods: bezel rods ", r2(rod_zc - rod_d / 2), "-", r2(rod_zc + rod_d / 2), " in grooves ", r2(rod_z[0]), "-", r2(rod_z[1]),
            ", back rods ", r2(rod_back_zc - rod_d / 2), "-", r2(rod_back_zc + rod_d / 2), " at Y ", rod_back_y));
@@ -1893,8 +1904,7 @@ module split_checks() {
     [for (sx = [-1, 1], y = [pocket_top, pocket_bot]) ["pocket corner relief", [sx * pocket_edge[0], y] - [1, 1] * pocket_relief_d / 2,
                                                                                   [sx * pocket_edge[0], y] + [1, 1] * pocket_relief_d / 2]],
     [for (x = btn_x) ["button sleeve", [x, btn_y] - [1, 1] * sleeve_od / 2, [x, btn_y] + [1, 1] * sleeve_od / 2]],
-    [["flex relief", [-fpc_relief_w / 2, pocket_bot - fpc_relief_d], [fpc_relief_w / 2, pocket_bot]],
-     ["antenna recess", [ant_x[0], in_h / 2], [ant_x[1], in_h / 2 + ant_recess]]]);
+    [["flex relief", [-fpc_relief_w / 2, pocket_bot - fpc_relief_d], [fpc_relief_w / 2, pocket_bot]]]);
   d_joint = min([for (it = items, s = [-1, 1], b = bands)
     box_dist([it[1][0], it[1][1], 0], [it[2][0], it[2][1], 0],
                                                   [s > 0 ? jx[0] : -jx[1], b[0], 0], [s > 0 ? jx[1] : -jx[0], b[1], 0])]);
