@@ -12,7 +12,7 @@ import math
 import carrier as C
 from svgkit import COL, Svg, text_w
 
-W, H = 1400, 1040
+W, H = 1400, 1100
 K = 4.3                              # px per mm
 CX, CY = 40 + 114.5 * K, 118 + 102 * K
 
@@ -33,7 +33,10 @@ BTN_X = {"BACK": -25.4, "REFRESH": 0.0, "NEXT": 25.4}
 STRIP_SCREW_X = 36.83                                  # the strip's M2.5 holes, 14.5 pitches either side
 MAGNETS = [(-90, 65), (90, 65), (-90, -65), (90, -65)]
 MAG_D = 20.0                                           # N52 disc, sealed in the back cover
-ANT = (38.0, 83.0)                                     # Taoglas FXP831 (45 x 7 mm) on the inside of the top wall
+ANT = (38.0, 83.0)                                     # Taoglas FXP831 (45 x 7 mm), on a fin on the back cover
+ANT_FIN_Y = (97.3, 98.5)                               # the fin, just inside the top wall; the antenna is on its inner face
+RIB_Y, RIB_X = 36.0, 105.0                             # the interior rib the cables cross (up to the panel's foam)
+RIB_GAPS = [(-41.5, -25.0), (1.0, 13.0)]               # its gaps: wire passage (and the back seam), battery lead
 COAX_VIA = [(36.0, 90.0), (5.0, 82.0)]                 # where the coax runs over the carrier (builder's choice)
 WIRE_X = -30.0                                         # button wires run up the back cover here (clear of its joint at -39)
 TIES_Y = (-25.0, 15.0, 52.0)                           # zip-tie blocks on the back cover, 8 x 5 mm, at X = WIRE_X
@@ -132,6 +135,11 @@ def rod_swatch(sv: Svg, cx, cy):
     sv.line(cx + 2, cy, cx + 34, cy, stroke="#546e7a", width=ROD_D * K + 1.6)
     sv.line(cx + 2, cy, cx + 34, cy, stroke="#b0bec5", width=ROD_D * K - 1.6)
     sv.line(cx + 2, cy, cx + 34, cy, stroke="#eceff1", width=1.6)
+
+
+def rib_swatch(sv: Svg, cx, cy):
+    sv.line(cx + 2, cy, cx + 14, cy, stroke="#78909c", width=1.6 * K)
+    sv.line(cx + 22, cy, cx + 34, cy, stroke="#78909c", width=1.6 * K)
 
 
 def tie_swatch(sv: Svg, cx, cy):
@@ -247,9 +255,17 @@ def draw_strip(s: Svg):
 
 
 def draw_antenna(s: Svg):
-    y_in = OUT_H / 2 - WALL
-    brect(s, (ANT[0], y_in - 1.6, ANT[1], y_in + 0.6), fill="#c9a227", stroke="#8d6e1f", width=1.2)
-    return (ANT[0] + 3, y_in - 1.0)
+    brect(s, (ANT[0], ANT_FIN_Y[0], ANT[1], ANT_FIN_Y[1]), fill="#b0bec5", stroke="#546e7a", width=1)       # fin
+    brect(s, (ANT[0], ANT_FIN_Y[0] - 1.4, ANT[1], ANT_FIN_Y[0]), fill="#c9a227", stroke="#8d6e1f", width=1.2)
+    return (ANT[0] + 3, ANT_FIN_Y[0] - 0.7)
+
+
+def draw_rib(s: Svg):
+    """The interior rib at Y = 36: solid up to the panel's foam, so cables cross only at its gaps."""
+    xs = [-RIB_X] + [x for g in RIB_GAPS for x in g] + [RIB_X]
+    for a, b in zip(xs[0::2], xs[1::2]):
+        (ax, ay), (bx, by) = B(a, RIB_Y), B(b, RIB_Y)
+        s.line(ax, ay, bx, by, stroke="#78909c", width=1.6 * K, stroke_linecap="butt")
 
 
 def draw_rods(s: Svg):
@@ -311,7 +327,8 @@ def draw_cables(s: Svg, feed):
     j2 = car(C.hx(15), C.hy(9))
     hat_hid = P([j2, (C.hx(15), CAR_TOP - 35.4)])
     s.path(smooth(hat_hid), stroke=COL["spi"], width=2.4, stroke_dasharray="5 4")
-    hat_vis = P([(C.hx(15), CAR_TOP - 35.4), (3.5, 56), (-8, 45.5), (-24, 36), (-38, 31.4), (HAT_PADS[0], 29.6)])
+    hat_vis = P([(C.hx(15), CAR_TOP - 35.4), (3.5, 56), (-10, 46.5), (-26, 40.5), (-35, 36), (-42, 32.5),
+                 (HAT_PADS[0], 29.6)])   # through the rib's wire gap, left of the button lead
     bundle(s, hat_vis, [COL["v5"], COL["gnd"], COL["spi"], COL["spi"], COL["spi"], COL["spi"], COL["ctl"],
                         COL["ctl"]], gap=2.6, width=1.9)
     a, b = B(HAT_PADS[0], 29.6), B(HAT_PADS[0], (HAT_PADS[1] + HAT_PADS[2]) / 2)
@@ -344,11 +361,12 @@ def draw_magnets(s: Svg):
 def build() -> str:
     s = Svg(W, H, "brwr-trmnl v1 wiring, back view",
             "Where each module sits and how the cables run, seen from the back through the back cover: carrier, "
-            "driver HAT, battery, panel flex and adapter, button board, antenna, magnets, steel rods and tie blocks.")
+            "driver HAT, battery, panel flex and adapter, button board, antenna, magnets, steel rods, tie blocks and "
+            "the rib the cables cross.")
     hatch_defs(s)
     s.text(40, 40, "brwr-trmnl v1 — wiring, seen from the back", size=22, weight="bold")
-    s.text(40, 66, "Seen from the back through the back cover's plate (its rods, magnets and tie blocks are drawn). "
-                   "Left and right are swapped", size=13.5, fill=COL["text2"])
+    s.text(40, 66, "Seen from the back through the back cover's plate (its rods, magnets, tie blocks and one rib are "
+                   "drawn). Left and right are swapped", size=13.5, fill=COL["text2"])
     s.text(40, 86, "compared with the front: the HAT is on the right here. Dashed outlines are parts on the far side "
                    "of a board, facing the panel. Positions from the enclosure model.", size=13.5, fill=COL["text2"])
 
@@ -360,6 +378,7 @@ def build() -> str:
     draw_strip(s)
     feed = draw_antenna(s)
     draw_rods(s)
+    draw_rib(s)
     draw_ties(s)
     draw_cables(s, feed)
     dim_x = draw_magnets(s)
@@ -375,7 +394,7 @@ def num(s: Svg, x, y, n, r=10):
 def annotate(s: Svg, dim_x):
     # top edge: antenna and USB-C slots
     y = 108
-    s.text(B(sum(ANT) / 2, 0)[0], y, "ANT1 FXP831 on the top wall", size=12, anchor="middle", weight="bold")
+    s.text(B(sum(ANT) / 2, 0)[0], y, "ANT1 FXP831 on its fin", size=12, anchor="middle", weight="bold")
     s.text(B(22, 0)[0], y, "USB-C charging", size=12, anchor="middle", weight="bold")
     s.text(B(-7.62, 0)[0], y, "USB-C flash, logs", size=12, anchor="middle", weight="bold")
 
@@ -413,6 +432,7 @@ def annotate(s: Svg, dim_x):
     x0 = 1045
     _, lh = s.legend(x0, 118, title="Colour code", col_w=320, size=12.5,
                      extra=[(ffc_swatch, "40-pin FFC (panel)"), (rod_swatch, "Steel rod, 3 mm, epoxied"),
+                            (rib_swatch, "Rib: cables cross only at its gaps"),
                             (tie_swatch, "Tie block and zip tie")])
     y = 118 + lh + 14
     cables = [("Kit 8-wire cable, plug cut off:", "soldered to the HAT's SPI pads and J2"),
@@ -429,8 +449,12 @@ def annotate(s: Svg, dim_x):
         s.text(x0 + 40, yy + 17, b, size=12.5, fill=COL["text2"])
     y = y + 44 + len(cables) * 42 + 14
     notes = ["Front-view X is mirrored here: the charger",
-             "(X = +22) is left of the XIAO (X = −8), and the",
-             "MiniBoost (X = −28) is at the carrier's right end.",
+             "(X = +22) is left of the XIAO (X = −7.6), and the",
+             "MiniBoost (X = −29) is at the carrier's right end.",
+             "",
+             "The antenna sticks to a fin on the back cover,",
+             "so it and the XIAO stay connected when the",
+             "case is opened; only the FFC and J4 cross.",
              "",
              "The carrier and HAT face the panel: their wires",
              "sit between board and panel. Route the cables",

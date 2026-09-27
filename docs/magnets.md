@@ -3,8 +3,9 @@
 brwr-trmnl hangs on the fridge door by four magnets hidden inside its back
 cover. Each is capped with a steel disc, which works like the cup of a pot
 magnet: it turns the field towards the door and away from the electronics.
-They hold it through a slammed door, and they're far enough from the boards
-that their field doesn't matter there.
+They should hold it through a slammed door (the estimate is below: test it
+on yours), and they're far enough from the boards that their field doesn't
+matter there.
 
 ## The magnets
 
@@ -13,7 +14,7 @@ Four **N52 neodymium discs, 20 × 3 mm**, each with a **20 mm steel disc**
 
 - Each sits in a pocket that opens to the inside of the back cover, behind a
   0.6 mm skin of plastic. The steel disc goes on top, and epoxy fills the
-  rest. Nothing metal shows outside.
+  pocket to just over it. Nothing metal shows outside.
 - A self-adhesive rubber pad (25 mm, 0.5–1 mm thick) over each one outside is
   all that touches the door: grip, and no scratches.
 - They sit at the four corners of the back, at (±90, ±65) mm from the
@@ -103,24 +104,28 @@ few mm further, the panel, which doesn't care.
 |---|---|---|---|
 | Driver HAT (IT8951, panel supplies) | 36.75 mm | 26.75 mm | 2.4 mT |
 | Carrier board (XIAO, MiniBoost, charger) | 55 mm | 45 mm | 0.7 mT |
-| Wi-Fi antenna | 35.2 mm | 25.2 mm | not affected by a steady field; kept away from metal instead |
+| Wi-Fi antenna | 32.9 mm | 22.9 mm | not affected by a steady field; kept away from metal instead |
 
 ### The steel rods
 
 The thin case is stiffened by 3 mm steel rods epoxied into it: two across
 the back cover and one in each corner of the frame. They're plain steel, so
-the magnets attract them, but they're epoxied in place, and every rod stays
-at least 8 mm from a magnet's edge, so it doesn't pick up and carry the
-magnets' field anywhere. They also stay 10 mm from the antenna. The
+the magnets attract them, but they're epoxied in place. As a rule of thumb
+every rod stays at least 8 mm from a magnet's edge, so it doesn't gather
+much of the field (the rods aren't in the field model), and every rod runs
+well clear of the boards. They also stay 10 mm from the antenna. The
 enclosure's source asserts both rules.
 
 ## Wi-Fi next to a steel door
 
 The door is a large sheet of steel right behind the display, and steel
 reflects and detunes a nearby antenna. So the antenna (a Taoglas FXP831,
-45 × 7 mm) is stuck to the inside of the **top** wall, where it stands out
-from the door instead of lying flat against it, with its front edge against
-the front face and no metal within 10 mm. Check the **Wi-Fi signal** sensor
+45 × 7 mm) stands on edge on a fin just inside the **top** wall, where it
+stands out from the door instead of lying flat against it. The fin is part
+of the back cover, so the antenna and the XIAO it plugs into come apart
+from the frame together. Nothing metal is within 10 mm of it (the nearest
+steel rod is at 10 mm) except the carrier board's copper, 3 mm from its end,
+and the charger module, 7 mm away. Check the **Wi-Fi signal** sensor
 in Home Assistant once it's hung. Anything better than about −75 dBm is
 fine; if it's weaker, a Wi-Fi access point in the kitchen helps more than
 anything you can do to the display.

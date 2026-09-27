@@ -1,7 +1,7 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1400" height="1200" viewBox="0 0 1400 1200" font-family="system-ui, -apple-system, &quot;Segoe UI&quot;, Roboto, Helvetica, Arial, sans-serif" role="img" aria-labelledby="t d">
 <title id="t">brwr-trmnl v1 carrier board layout</title>
-<desc id="d">Component-side layout of the 70 x 35 mm protoboard carrier as it sits in the back cover: XIAO ESP32-S3, TP4056 charger, MiniBoost, divider, series and pull-down resistors, capacitors, battery socket and headers, with the solder-side wiring shown through the board.</desc>
-<defs><clipPath id="hid"><rect x="725.9" y="189.7" width="220.5" height="352.8"/><rect x="351.0" y="196.0" width="224.0" height="264.6"/><rect x="118.9" y="296.3" width="144.0" height="224.0"/><rect x="287.8" y="448.6" width="30.2" height="79.4"/><rect x="319.9" y="512.6" width="30.2" height="79.4"/><rect x="487.3" y="473.2" width="79.4" height="30.2"/><rect x="423.3" y="505.2" width="79.4" height="30.2"/><rect x="350.6" y="479.1" width="32.8" height="50.4"/><rect x="650.9" y="344.6" width="40.3" height="31.5"/><rect x="650.9" y="408.6" width="40.3" height="31.5"/><rect x="159.2" y="580.2" width="31.5" height="40.3"/><rect x="191.2" y="580.2" width="31.5" height="40.3"/><rect x="779.8" y="584.3" width="6.4" height="64.7"/><rect x="811.8" y="584.3" width="6.4" height="64.7"/><polygon points="609.6,520.3 609.6,643.3 636.4,643.3 636.4,520.3"/><polygon points="296.8,323.9 269.2,364.1 269.3,587.6 216.0,637.9 226.6,648.7 284.2,590.6 284.3,365.6 309.1,332.7"/></clipPath></defs>
+<desc id="d">Component-side layout of the 70 x 35 mm protoboard carrier as it sits in the back cover: XIAO ESP32-S3, TP4056 charger, MiniBoost, divider, series and pull-down resistors, capacitors, the battery pigtail and the soldered-in wires, with the solder-side wiring shown through the board.</desc>
+<defs><clipPath id="hid"><rect x="725.9" y="196.0" width="220.5" height="352.8"/><rect x="351.0" y="196.0" width="224.0" height="264.6"/><rect x="118.9" y="296.3" width="144.0" height="224.0"/><rect x="287.8" y="448.6" width="30.2" height="79.4"/><rect x="319.9" y="512.6" width="30.2" height="79.4"/><rect x="487.3" y="473.2" width="79.4" height="30.2"/><rect x="423.3" y="505.2" width="79.4" height="30.2"/><rect x="350.6" y="479.1" width="32.8" height="50.4"/><rect x="650.9" y="344.6" width="40.3" height="31.5"/><rect x="650.9" y="408.6" width="40.3" height="31.5"/><rect x="159.2" y="580.2" width="31.5" height="40.3"/><rect x="191.2" y="580.2" width="31.5" height="40.3"/><rect x="779.8" y="584.3" width="6.4" height="64.7"/><rect x="811.8" y="584.3" width="6.4" height="64.7"/><polygon points="609.6,520.3 609.6,643.3 636.4,643.3 636.4,520.3"/><polygon points="296.8,323.9 269.2,364.1 269.3,587.6 216.0,637.9 226.6,648.7 284.2,590.6 284.3,365.6 309.1,332.7"/></clipPath></defs>
 <rect x="0" y="0" width="1400" height="1200" fill="#ffffff"/>
 <rect x="118" y="196" width="882" height="441" rx="6" fill="#f1e6cc" stroke="#8d7b5a" stroke-width="1.6"/>
 <circle cx="142.95" cy="296.3" r="10.08" fill="#dcc08d" stroke="none" stroke-width="0"/>
@@ -803,7 +803,7 @@
 <circle cx="623.01" cy="488.32" r="4.3" fill="#6a1b9a" stroke="#ffffff" stroke-width="1"/>
 <circle cx="623.01" cy="520.32" r="4.3" fill="#6a1b9a" stroke="#ffffff" stroke-width="1"/>
 <circle cx="559" cy="424.31" r="4.3" fill="#6a1b9a" stroke="#ffffff" stroke-width="1"/>
-<rect x="725.95" y="189.7" width="220.5" height="352.8" rx="10.08" fill="#1f5fae" stroke="#0d3c75" stroke-width="1.4"/>
+<rect x="725.95" y="196" width="220.5" height="352.8" rx="10.08" fill="#1f5fae" stroke="#0d3c75" stroke-width="1.4"/>
 <rect x="779.88" y="177.1" width="112.64" height="91.98" rx="11.34" fill="#cfd8dc" stroke="#78909c" stroke-width="1.2"/>
 <rect x="794.62" y="183.4" width="83.16" height="20.16" rx="6.3" fill="#90a4ae" stroke="none" stroke-width="0"/>
 <rect x="803.44" y="315.7" width="65.52" height="55.44" rx="1" fill="#212121" stroke="#000000" stroke-width="1"/>
@@ -865,15 +865,17 @@
 <line x1="462.99" y1="488.32" x2="591" y2="488.32" stroke="#9e9e9e" stroke-width="2.2"/>
 <rect x="487.31" y="473.2" width="79.38" height="30.24" rx="13.75" fill="#ead2a4" stroke="#8d6e3f" stroke-width="1.2"/>
 <rect x="499.39" y="473.8" width="4.4" height="29.04" rx="0" fill="#6d4c41" stroke="none" stroke-width="0"/>
-<rect x="519.24" y="473.8" width="4.4" height="29.04" rx="0" fill="#111111" stroke="none" stroke-width="0"/>
-<rect x="539.08" y="473.8" width="4.4" height="29.04" rx="0" fill="#d32f2f" stroke="none" stroke-width="0"/>
-<rect x="553.37" y="473.8" width="4.4" height="29.04" rx="0" fill="#c9a227" stroke="none" stroke-width="0"/>
+<rect x="512.62" y="473.8" width="4.4" height="29.04" rx="0" fill="#111111" stroke="none" stroke-width="0"/>
+<rect x="525.85" y="473.8" width="4.4" height="29.04" rx="0" fill="#111111" stroke="none" stroke-width="0"/>
+<rect x="539.08" y="473.8" width="4.4" height="29.04" rx="0" fill="#6d4c41" stroke="none" stroke-width="0"/>
+<rect x="553.37" y="473.8" width="4.4" height="29.04" rx="0" fill="#6d4c41" stroke="none" stroke-width="0"/>
 <line x1="398.98" y1="520.32" x2="527" y2="520.32" stroke="#9e9e9e" stroke-width="2.2"/>
 <rect x="423.3" y="505.2" width="79.38" height="30.24" rx="13.75" fill="#ead2a4" stroke="#8d6e3f" stroke-width="1.2"/>
 <rect x="435.39" y="505.8" width="4.4" height="29.04" rx="0" fill="#fbc02d" stroke="none" stroke-width="0"/>
-<rect x="455.23" y="505.8" width="4.4" height="29.04" rx="0" fill="#7b1fa2" stroke="none" stroke-width="0"/>
-<rect x="475.08" y="505.8" width="4.4" height="29.04" rx="0" fill="#d32f2f" stroke="none" stroke-width="0"/>
-<rect x="489.36" y="505.8" width="4.4" height="29.04" rx="0" fill="#c9a227" stroke="none" stroke-width="0"/>
+<rect x="448.62" y="505.8" width="4.4" height="29.04" rx="0" fill="#7b1fa2" stroke="none" stroke-width="0"/>
+<rect x="461.85" y="505.8" width="4.4" height="29.04" rx="0" fill="#111111" stroke="none" stroke-width="0"/>
+<rect x="475.08" y="505.8" width="4.4" height="29.04" rx="0" fill="#6d4c41" stroke="none" stroke-width="0"/>
+<rect x="489.36" y="505.8" width="4.4" height="29.04" rx="0" fill="#6d4c41" stroke="none" stroke-width="0"/>
 <line x1="366.98" y1="488.32" x2="366.98" y2="520.32" stroke="#9e9e9e" stroke-width="2"/>
 <rect x="350.6" y="479.12" width="32.76" height="50.4" rx="15.12" fill="#e0a526" stroke="#8d6200" stroke-width="1.2"/>
 <rect x="650.85" y="344.55" width="40.32" height="31.5" rx="2" fill="#c9a77c" stroke="#6d5330" stroke-width="1.2"/>
@@ -1115,9 +1117,9 @@
 <text x="1030" y="666" font-size="12.5" text-anchor="start" font-weight="bold" fill="#1a1a1a">R1, R2</text>
 <text x="1088" y="666" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">220 kΩ 1 % (red red black orange brown)</text>
 <text x="1030" y="685" font-size="12.5" text-anchor="start" font-weight="bold" fill="#1a1a1a">R3</text>
-<text x="1088" y="685" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">1 kΩ (brown black red)</text>
+<text x="1088" y="685" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">1 kΩ 1 % (brown black black brown brown)</text>
 <text x="1030" y="704" font-size="12.5" text-anchor="start" font-weight="bold" fill="#1a1a1a">R4</text>
-<text x="1088" y="704" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">4.7 kΩ (yellow violet red)</text>
+<text x="1088" y="704" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">4.7 kΩ 1 % (yellow violet black brown brown)</text>
 <text x="1030" y="723" font-size="12.5" text-anchor="start" font-weight="bold" fill="#1a1a1a">C1</text>
 <text x="1088" y="723" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">100 nF ceramic</text>
 <text x="1030" y="742" font-size="12.5" text-anchor="start" font-weight="bold" fill="#1a1a1a">C2</text>
@@ -1125,7 +1127,7 @@
 <text x="1030" y="761" font-size="12.5" text-anchor="start" font-weight="bold" fill="#1a1a1a">C3</text>
 <text x="1088" y="761" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">2 × 100 µF 6.3 V X5R, 1210</text>
 <text x="1030" y="780" font-size="12.5" text-anchor="start" font-weight="bold" fill="#1a1a1a">SW4</text>
-<text x="1088" y="780" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">optional power switch, or a wire link</text>
+<text x="1088" y="780" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">wire link (a switch here is inside the case)</text>
 <rect x="40" y="802" width="608" height="128" rx="6" fill="#ffffff" stroke="#b0b7c3" stroke-width="1.2"/>
 <text x="52" y="824" font-size="13" text-anchor="start" font-weight="bold" fill="#1a1a1a">Colour code</text>
 <line x1="52" y1="840" x2="88" y2="840" stroke="#c62828" stroke-width="4" stroke-linecap="butt"/>
@@ -1163,13 +1165,13 @@
 <text x="1066" y="904.5" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">White gap: wires cross, not joined</text>
 <rect x="40" y="950" width="1320" height="232" rx="6" fill="#fff8e1" stroke="#f9a825" stroke-width="1.2"/>
 <text x="54" y="974" font-size="13" text-anchor="start" font-weight="bold" fill="#1a1a1a">Notes</text>
-<text x="54" y="1000" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">1. U1 and U4 are soldered flat. U1&#x27;s end is on the outline&#x27;s top edge, 2.9 mm above the first row of holes, and both USB-C connectors reach 1.5 mm past that edge, level with each other.</text>
+<text x="54" y="1000" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">1. U1 and U4 lie flat with their ends on the outline&#x27;s top edge (2.9 mm above the first row of holes). Glue U4 down (epoxy or thin tape): its four wires can&#x27;t take the force of plugging in a cable.</text>
 <text x="54" y="1022" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">2. Before fitting U1, solder a short wire to its BAT+ pad and pass it through the hole beneath it. BAT− is the same net as the GND pin.</text>
 <text x="54" y="1044" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">3. VBAT_SYS runs from SW4 along the bottom (U3, C3, R1), and up left of U4 and along the top margin (U1 BAT+). GND and 5V_EPD run along the bottom.</text>
-<text x="54" y="1066" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">4. The board sits in a 0.8 mm recess in the back cover, on ledges along its left and right edges (the left one notched under U3&#x27;s VIN pin) and on the two screw bosses: trim the joints underneath to 1.2 mm.</text>
-<text x="54" y="1088" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">5. Nothing may stand more than 5 mm above the board (the USB-C connectors are the tallest). R1–R4 and C1 lie flat; C2 and C3 are 1210 chips, each soldered flat across two pads.</text>
+<text x="54" y="1066" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">4. The board rests on ledges along its left and right edges (the left one notched under U3&#x27;s VIN pin) and on the two screw bosses, over a 1.2 mm recess in the back cover: trim the joints underneath to 1.2 mm.</text>
+<text x="54" y="1088" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">5. U3 is the tallest part, 5.6 mm above the board; nothing may stand taller. R1–R4 and C1 lie flat; C2 and C3 are 1210 chips, each soldered flat across two pads.</text>
 <text x="54" y="1110" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">6. J2, J3: there&#x27;s no room for connectors between U1, U3 and U4, so the wires are soldered straight in. The button lead has an inline JST-PH plug (J4) instead.</text>
 <text x="54" y="1132" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">7. U4&#x27;s pad order varies between makers: follow its silkscreen. Check the battery plug&#x27;s polarity against J1&#x27;s leads with a meter.</text>
-<text x="54" y="1154" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">8. Cut 27 × 13 holes. Cut midway between holes (68.6 × 33 mm), or up to the 70 × 35 mm outline drawn: the screws, not the edges, place the board.</text>
+<text x="54" y="1154" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">8. Cut 27 × 13 holes: the top edge along the next row of holes up (a wire runs in that margin), the others midway between holes, 68.6 × 34.3 mm. Up to the 70 × 35 mm outline fits: the screws place the board.</text>
 <text x="54" y="1176" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">9. M2.5 holes: drill 2.7 mm through the middle of the four holes in the top-left and bottom-right corners, where the drill centres itself. Countersunk screws from the back, nuts on top.</text>
 </svg>

@@ -1007,7 +1007,7 @@
 <text x="593.04" y="510" font-size="12" text-anchor="start" font-weight="bold" fill="#1a1a1a" transform="rotate(-90 593.04 510)">NEXT</text>
 <polyline points="670.32,700.96 750,700.96 750,514" fill="none" stroke="#263238" stroke-width="2.6" stroke-linejoin="round" stroke-linecap="round"/>
 <text x="754" y="510" font-size="12" text-anchor="start" font-weight="bold" fill="#1a1a1a" transform="rotate(-90 754 510)">GND</text>
-<text x="573.04" y="524" font-size="12.5" text-anchor="end" font-weight="normal" fill="#4a4a4a">4-wire lead, about 5 cm, to one half of a 4-pin JST-PH pair (J4):</text>
+<text x="573.04" y="524" font-size="12.5" text-anchor="end" font-weight="normal" fill="#4a4a4a">4-wire lead, about 7 cm, to one half of a 4-pin JST-PH pair (J4):</text>
 <text x="573.04" y="542" font-size="12.5" text-anchor="end" font-weight="normal" fill="#4a4a4a">pin 1 BACK, then REFRESH, NEXT, GND. The other half goes on to J3.</text>
 <text x="599.2" y="742" font-size="13" text-anchor="middle" font-weight="bold" fill="#1a1a1a">BACK</text>
 <text x="396" y="742" font-size="13" text-anchor="middle" font-weight="bold" fill="#1a1a1a">REFRESH</text>
@@ -1046,7 +1046,7 @@
 <text x="872" y="422" font-size="13" text-anchor="start" font-weight="bold" fill="#1a1a1a">Notes</text>
 <text x="874" y="442" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">① The middle switch sits at the strip&#x27;s centre, the others 10 holes</text>
 <text x="874" y="461" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">    (25.4 mm) either side, the same spacing as the caps.</text>
-<text x="874" y="480" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">② Push each switch flat onto the board; bend the legs in slightly to</text>
+<text x="874" y="480" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">② Push each switch flat onto the board; spread the legs slightly to</text>
 <text x="874" y="499" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">    fit the grid. Trim the legs to 2 mm under the board after soldering.</text>
 <text x="874" y="518" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">③ Drill out the 15th hole either side of the centre, on the middle</text>
 <text x="874" y="537" font-size="12.5" text-anchor="start" font-weight="normal" fill="#1a1a1a">    row (the second hole in from each end), to 2.7 mm for the M2.5</text>

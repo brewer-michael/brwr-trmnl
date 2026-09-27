@@ -53,10 +53,11 @@ pins), or they can't wake the ESP32-S3.
 - **All grounds go to the charger's `OUT−`,** never to `B−`. The charger
   module's protection switch sits between the two; wiring anything to `B−`
   bypasses it.
-- **The MiniBoost only runs while the display draws.** The ESP32 drives its
-  `EN` high (D5), then low again before sleeping. R4 holds it off while the
-  ESP32 boots. With `EN` low its output is disconnected from the battery,
-  so the HAT gets nothing.
+- **The MiniBoost only runs while the display is awake.** The ESP32 drives
+  its `EN` high (D5) as it starts the display, early in each wake, and low
+  again before sleeping. R4 holds it off while the ESP32 boots. With `EN`
+  low its output is disconnected from the battery, so the HAT gets nothing
+  between wakes.
 - **Capacitors:** C3 (2 × 100 µF) at the MiniBoost's input and C2 (2 × 47 µF)
   at the HAT's `5V` wire carry the current surge when the panel's power
   supply starts, so the battery voltage doesn't dip and reset the ESP32.
@@ -66,14 +67,16 @@ pins), or they can't wake the ESP32-S3.
   board-mounted socket, which would be too tall.
 - **Wire:** 26 AWG for the battery, `VBAT_SYS`, 5 V and ground runs; 28–30 AWG
   for signals. Keep the 5 V and ground to the HAT short and twisted together.
-- **SW4** (optional) switches everything off for storage. Charging still
-  works with it off, because the charger sits before it.
+- **SW4** is a wire link, and it's needed: it joins the charger's output to
+  everything else. A switch would fit the same holes (charging would still
+  work with it off, because the charger sits before it), but it would be
+  sealed inside the case. To store the display, unplug the battery.
 - **Height:** the case is 13 mm deep, and the carrier sits in a recess with
-  the panel 1.5 mm above its tallest part. Nothing may stand more than 5 mm
-  above the board (the USB-C connectors are the tallest): solder the XIAO,
-  the charger and the MiniBoost flat, solder the J2 and J3 wires straight
-  into the board (there's no room for connectors), and trim the joints
-  underneath to 1.2 mm.
+  the panel 1.1 mm above its tallest part, the MiniBoost (5.6 mm above the
+  board). Nothing may stand taller: solder the XIAO, the charger and the
+  MiniBoost flat, glue the charger module down, solder the J2 and J3 wires
+  straight into the board (there's no room for connectors), and trim the
+  joints underneath to 1.2 mm.
 - **The HAT's inputs:** while its supply is off, the firmware floats every
   line to the HAT (`panel_release_lines()`), so no pin can power the IT8951
   through its input protection diodes.

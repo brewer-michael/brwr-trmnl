@@ -140,7 +140,7 @@ def lead(s: Svg, v: View) -> float:
     s.poly([(gx, gy), (x_gnd, gy), (x_gnd, top_y)], stroke=COL["gnd"], width=2.6)
     s.text(x_gnd + 4, top_y - 4, "GND", size=12, anchor="start", weight="bold", rotate=-90)
     left = min(v(*HOLE[n])[0] for n in SW_NAMES)
-    s.text(left - 16, v.top - 36, "4-wire lead, about 5 cm, to one half of a 4-pin JST-PH pair (J4):",
+    s.text(left - 16, v.top - 36, "4-wire lead, about 7 cm, to one half of a 4-pin JST-PH pair (J4):",
            size=12.5, anchor="end", fill=COL["text2"])
     s.text(left - 16, v.top - 18, "pin 1 BACK, then REFRESH, NEXT, GND. The other half goes on to J3.",
            size=12.5, anchor="end", fill=COL["text2"])
@@ -229,7 +229,7 @@ def build() -> str:
     notes = [
         "① The middle switch sits at the strip's centre, the others 10 holes",
         "    (25.4 mm) either side, the same spacing as the caps.",
-        "② Push each switch flat onto the board; bend the legs in slightly to",
+        "② Push each switch flat onto the board; spread the legs slightly to",
         "    fit the grid. Trim the legs to 2 mm under the board after soldering.",
         "③ Drill out the 15th hole either side of the centre, on the middle",
         "    row (the second hole in from each end), to 2.7 mm for the M2.5",

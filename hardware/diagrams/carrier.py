@@ -25,7 +25,7 @@ XIAO = dict(x0=-16.51, y0=0.0, w=17.78, h=21.0)             # soldered flat, cas
 BATM = (-16.51 + 4.445, 8.21)                                  # BAT- pad (underside)
 BATP = (-16.51 + 4.445, 10.12)                                 # BAT+ pad (underside)
 UFL = (-7.62 - 4.85, 19.36)
-U4 = dict(x0=13.25, y0=-0.5, w=17.5, h=28.0)                  # TP4056 module, USB-C centre at X = +22
+U4 = dict(x0=13.25, y0=0.0, w=17.5, h=28.0)                   # TP4056 module, flush with the top edge, USB-C at X = +22
 U4PADS = {"OUT−": 15.05, "B−": 19.45, "B+": 24.05, "OUT+": 28.45}
 U4PAD_Y = 25.8
 U3 = dict(x0=-34.925, y0=7.96, w=11.43, h=17.78)             # MiniBoost, header 2.54 mm above its bottom edge
@@ -178,8 +178,8 @@ def tag(s: Svg, x, y, text, size=12, fill="#ffffff", stroke="#455a64"):
 
 BANDS = {
     "220k1": ["#d32f2f", "#d32f2f", "#111111", "#f57c00", "#6d4c41"],   # red red black orange brown
-    "1k": ["#6d4c41", "#111111", "#d32f2f", "#c9a227"],                 # brown black red gold
-    "4k7": ["#fbc02d", "#7b1fa2", "#d32f2f", "#c9a227"],                # yellow violet red gold
+    "1k": ["#6d4c41", "#111111", "#111111", "#6d4c41", "#6d4c41"],      # brown black black brown brown (1 %)
+    "4k7": ["#fbc02d", "#7b1fa2", "#111111", "#6d4c41", "#6d4c41"],     # yellow violet black brown brown (1 %)
 }
 
 
@@ -517,10 +517,10 @@ def annotate(s: Svg):
     s.text(x0, y + 40, "Check the battery's plug with a meter first.", size=12.5)
     y = y + 40 + 30
     s.text(x0, y, "Parts", size=14, weight="bold")
-    parts = [("R1, R2", "220 kΩ 1 % (red red black orange brown)"), ("R3", "1 kΩ (brown black red)"),
-             ("R4", "4.7 kΩ (yellow violet red)"), ("C1", "100 nF ceramic"),
+    parts = [("R1, R2", "220 kΩ 1 % (red red black orange brown)"), ("R3", "1 kΩ 1 % (brown black black brown brown)"),
+             ("R4", "4.7 kΩ 1 % (yellow violet black brown brown)"), ("C1", "100 nF ceramic"),
              ("C2", "2 × 47 µF 10 V X5R, 1210"), ("C3", "2 × 100 µF 6.3 V X5R, 1210"),
-             ("SW4", "optional power switch, or a wire link")]
+             ("SW4", "wire link (a switch here is inside the case)")]
     for i, (a_, b_) in enumerate(parts):
         yy = y + 22 + i * 19
         s.text(x0, yy, a_, size=12.5, weight="bold")
@@ -566,22 +566,22 @@ def annotate(s: Svg):
 
     ny = 950
     notes = [
-        "U1 and U4 are soldered flat. U1's end is on the outline's top edge, 2.9 mm above the first row of holes, "
-        "and both USB-C connectors reach 1.5 mm past that edge, level with each other.",
+        "U1 and U4 lie flat with their ends on the outline's top edge (2.9 mm above the first row of holes). Glue U4 "
+        "down (epoxy or thin tape): its four wires can't take the force of plugging in a cable.",
         "Before fitting U1, solder a short wire to its BAT+ pad and pass it through the hole beneath it. "
         "BAT− is the same net as the GND pin.",
         "VBAT_SYS runs from SW4 along the bottom (U3, C3, R1), and up left of U4 and along the top margin (U1 BAT+). "
         "GND and 5V_EPD run along the bottom.",
-        "The board sits in a 0.8 mm recess in the back cover, on ledges along its left and right edges (the left "
-        "one notched under U3's VIN pin) and on the two screw bosses: trim the joints underneath to 1.2 mm.",
-        "Nothing may stand more than 5 mm above the board (the USB-C connectors are the tallest). R1–R4 and C1 "
-        "lie flat; C2 and C3 are 1210 chips, each soldered flat across two pads.",
+        "The board rests on ledges along its left and right edges (the left one notched under U3's VIN pin) and on "
+        "the two screw bosses, over a 1.2 mm recess in the back cover: trim the joints underneath to 1.2 mm.",
+        "U3 is the tallest part, 5.6 mm above the board; nothing may stand taller. R1–R4 and C1 lie flat; C2 and C3 "
+        "are 1210 chips, each soldered flat across two pads.",
         "J2, J3: there's no room for connectors between U1, U3 and U4, so the wires are soldered straight in. The "
         "button lead has an inline JST-PH plug (J4) instead.",
         "U4's pad order varies between makers: follow its silkscreen. Check the battery plug's polarity against "
         "J1's leads with a meter.",
-        "Cut 27 × 13 holes. Cut midway between holes (68.6 × 33 mm), or up to the 70 × 35 mm outline drawn: the "
-        "screws, not the edges, place the board.",
+        "Cut 27 × 13 holes: the top edge along the next row of holes up (a wire runs in that margin), the others "
+        "midway between holes, 68.6 × 34.3 mm. Up to the 70 × 35 mm outline fits: the screws place the board.",
         "M2.5 holes: drill 2.7 mm through the middle of the four holes in the top-left and bottom-right corners, "
         "where the drill centres itself. Countersunk screws from the back, nuts on top.",
     ]
@@ -594,8 +594,8 @@ def annotate(s: Svg):
 def build() -> str:
     s = Svg(W, H, "brwr-trmnl v1 carrier board layout",
             "Component-side layout of the 70 x 35 mm protoboard carrier as it sits in the back cover: XIAO "
-            "ESP32-S3, TP4056 charger, MiniBoost, divider, series and pull-down resistors, capacitors, battery "
-            "socket and headers, with the solder-side wiring shown through the board.")
+            "ESP32-S3, TP4056 charger, MiniBoost, divider, series and pull-down resistors, capacitors, the battery "
+            "pigtail and the soldered-in wires, with the solder-side wiring shown through the board.")
     draw_board(s)
     annotate(s)
     return s.render()

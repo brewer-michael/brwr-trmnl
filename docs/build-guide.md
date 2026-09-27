@@ -11,7 +11,7 @@ assembly, plus overnight for the epoxy to cure.
 | You need | |
 |---|---|
 | Parts | [Bill of materials](bom.md) |
-| Tools | Soldering iron with a fine tip and a heat-set insert tip, multimeter, flush cutters, wire strippers, tweezers, hobby knife, a drill or pin vise with a 2.7 mm bit, a vise or pliers for bending rod, a hacksaw or bolt cutters |
+| Tools | Soldering iron with a fine tip and a heat-set insert tip, multimeter, flush cutters, wire strippers, tweezers, hobby knife, a drill or pin vise with a 2.7 mm bit, hex keys (1.5 and 2 mm) and a small screwdriver, small pliers or a 5 mm nut driver, a vise or pliers for bending rod, a hacksaw or bolt cutters |
 | Printer | Bed at least **220 × 220 mm** |
 | Computer | Chrome or Edge to flash from the browser, or PlatformIO |
 | Home Assistant | With the Mosquitto broker; see [home-assistant.md](home-assistant.md) |
@@ -20,8 +20,9 @@ The case is 229 × 204 × **13 mm**. There's no spare room in it, so the parts
 have to be low: the steps below say where to trim.
 
 > **Handle the panel with care.** It's 0.78 mm glass. Pick it up by its
-> edges, keep it flat on its foam, never bend the flex cable along its
-> bottom edge or press on its face, and keep it in its box until step 9.
+> edges, keep it flat on its foam, never crease its flex cable or bend it
+> sharply (in step 9 it folds back over the panel in a gentle curve), never
+> press on its face, and keep it in its box until step 8.
 
 ## 1. Print the enclosure
 
@@ -77,12 +78,14 @@ use a Pi, and those parts are too tall for the case.
 Follow [the carrier layout](images/carrier-layout.svg), viewed from the
 component side.
 
-Cut a piece of protoboard **27 holes wide and 13 holes tall**: score both
-sides midway between two rows of holes and snap it, which gives
-68.6 × 33 mm. Anything up to the layout's 70 × 35 mm fits, because the
-screws, not the edges, place the board. Then drill the two mounting holes,
-2.7 mm, each through the middle of the four holes in a corner: top left and
-bottom right, seen from the component side. The drill centres itself there.
+Cut a piece of protoboard **27 holes wide and 13 holes tall**. Score the top
+edge along the next row of holes up, so a row of half holes stays on that
+edge (a wire runs in the margin there), and the other three edges midway
+between holes; score both sides and snap it. That gives 68.6 × 34.3 mm.
+Anything up to the layout's 70 × 35 mm fits, because the screws, not the
+edges, place the board. Then drill the two mounting holes, 2.7 mm, each
+through the middle of the four holes in a corner: top left and bottom
+right, seen from the component side. The drill centres itself there.
 
 1. **Prepare the XIAO.** Its BAT+ pad is on the underside: solder a short
    26 AWG wire to it first, to pass through the hole beneath it. (BAT−, the
@@ -90,16 +93,19 @@ bottom right, seen from the component side. The drill centres itself there.
 2. **Place, don't solder yet:** the XIAO, the charger module and the
    MiniBoost, all flat on the board, not on headers. The XIAO's pads go on
    the holes the layout shows, which puts its connector where the case's
-   slot is. (If you cut the board midway between holes, the XIAO's end
-   hangs 1.6 mm over the board's top edge. That's fine.) Line the charger's
-   USB-C connector up with the XIAO's, level with it, or the plug won't
-   reach it through the case.
+   slot is; its end hangs 0.3 mm over the board's top edge. Put the charger
+   module's end level with the XIAO's, no further out: the case's top wall
+   is there.
 3. **Solder the modules**, and the XIAO's battery wire through the board.
+   Glue the charger module down with a thin layer of epoxy or double-sided
+   tape: its four wires alone won't take the force of plugging in a cable.
 4. **Add the passives:** R1–R4 and C1 lying flat, and the four ceramic
    capacitors, C2 (2 × 47 µF) and C3 (2 × 100 µF), each soldered flat
    across two adjacent pads.
-5. **The battery pigtail (J1):** solder the JST-PH pigtail's leads to the
-   carrier where the layout shows J1.
+5. **The battery pigtail (J1) and SW4:** solder the JST-PH pigtail's leads
+   where the layout shows J1, and a wire link at SW4. The link joins the
+   charger's output to everything else: without it nothing gets power. (A
+   switch fits there too, but it would be sealed inside the case.)
 6. **Wire the underside** as the layout shows: thick (26 AWG) wire for the
    battery, `VBAT_SYS`, 5 V and ground; thin wire for the signals. Every
    ground goes to the charger's **OUT−**, never to **B−**.
@@ -112,10 +118,9 @@ bottom right, seen from the component side. The drill centres itself there.
    - **J3:** take one half of the JST-PH 4-pin pair (J4), cut its wires to
      about 17 cm and solder them into J3's holes: BACK, REFRESH, NEXT, GND
      from the top.
-8. **Keep it low.** Nothing may stand more than 5 mm above the board (the
-   USB-C connectors are the tallest), and the joints underneath must be
-   trimmed to 1.2 mm: the board sits in a recess with the panel 1.5 mm above
-   it.
+8. **Keep it low.** Nothing may stand taller than the MiniBoost, 5.6 mm
+   above the board, and the joints underneath must be trimmed to 1.2 mm:
+   the MiniBoost ends up only 1.1 mm from the back of the panel.
 9. **Check it** with the meter before connecting anything: no short from
    `VBAT_SYS` or the HAT's 5V pad to ground, and each HAT pad and each pin
    of the JST-PH plug reaching the right XIAO pin
@@ -129,9 +134,9 @@ Follow [the button board drawing](images/button-board.svg).
 1. Cut protoboard to 84 × 20 mm, 32 holes by 7 (or midway between holes,
    81.3 × 17.8 mm). Put the middle switch at the centre, and the other two
    10 holes (25.4 mm) either side, plungers facing the front: the caps are
-   the same distance apart. The legs sit 5 holes by 2 holes apart; bend
-   them in slightly to fit, press each switch flat, solder, and trim the
-   legs to 2 mm under the board.
+   the same distance apart. The legs sit 5 holes by 2 holes apart; spread
+   them slightly to fit (the grid is a little wider than the legs), press
+   each switch flat, solder, and trim the legs to 2 mm under the board.
 2. Drill out the 15th hole either side of the centre, on the middle row,
    to 2.7 mm: the second hole in from each end.
 3. **Ground:** each switch's bottom-right leg (seen from the front) to a bare
@@ -140,7 +145,8 @@ Follow [the button board drawing](images/button-board.svg).
    leg, to its own insulated wire. Diagonal legs are always on opposite
    sides of the switch, whichever way round it's fitted.
 5. **The lead:** the other half of the JST-PH pair, its wires cut to about
-   5 cm. Plug the two halves together, find with the meter which of this
+   7 cm, which reaches the plug with the back cover propped open (step 9).
+   Plug the two halves together, find with the meter which of this
    half's wires meets J3's BACK, REFRESH, NEXT and GND, and solder each into
    its hole on the strip as the drawing shows: the signals on the top row
    above BACK, GND at the end of the bus. From the front, BACK is on the
@@ -182,6 +188,10 @@ pip install esptool
 esptool --chip esp32s3 write-flash 0x0 merged_firmware.bin
 ```
 
+`merged_firmware.bin` is for the first flash: it also clears the saved Wi-Fi
+and settings. To update a display that's set up, write `firmware.bin` (in the
+same artifact) at `0x10000` instead, or upload with PlatformIO (below).
+
 To build it yourself (the first build downloads the ESP-IDF toolchain and
 takes a while):
 
@@ -222,7 +232,9 @@ firmware work together.
 6. Plug a USB-C charger into the charger module's port: its LED turns red
    while it charges.
 
-Unplug the battery before assembly.
+Before assembly, unplug the battery, the flat cable at the HAT and the
+button lead (J4). The antenna can stay plugged into the XIAO: it goes on the
+back cover too.
 
 ## 9. Assemble
 
@@ -268,36 +280,43 @@ bend is tight. Dry-fit every rod in its groove before mixing any epoxy.
    the chin, and let it settle. Fold the flex gently back over the panel's
    back without creasing it, so the adapter board lies behind the panel's
    bottom centre.
-9. **Antenna.** Peel the FPC antenna and stick it into the shallow recess on
-   the inside of the top wall (to the right of the USB slots, seen from the
-   front), its front edge against the front face.
 
-**The electronics** (into the back cover):
+**The electronics** (into the back cover, inside facing up):
 
-10. **Driver HAT.** Components facing up (towards the panel), its 40-pin
-    flat-cable socket towards the centre, on its four low standoffs: M2.5 × 8
-    countersunk screws from the outside, nuts on top. The carrier is wired
-    to it, so keep it close.
-11. **Carrier.** Into its recess at the top edge, USB-C connectors outwards,
+9. **Driver HAT.** Components facing up (towards the panel), its 40-pin
+   flat-cable socket towards the centre, on its four low standoffs: M2.5 × 8
+   countersunk screws from the outside, nuts on top. The carrier is wired
+   to it, so keep it close.
+10. **Carrier.** Into its recess at the top edge, USB-C connectors outwards,
     with M2.5 × 6 countersunk screws from the outside and nuts on top. Lay
-    the HAT's wires along the route in the wiring diagram.
+    the HAT's wires through the wire gap in the rib, as the
+    [wiring diagram](images/wiring.svg) shows.
+11. **Antenna.** Peel the FPC antenna and stick it to the thin fin along the
+    top edge, right of the carrier (seen from inside), on the fin's face
+    towards the middle of the case, its lead at the carrier's end. Its coax
+    runs over the carrier to the XIAO's U.FL socket: if it isn't plugged in
+    already, press the plug straight down until it clicks.
 12. **Battery.** Foam pad in its recessed cradle, battery on top, its lead
-    out through the cradle's slot. Nothing may press on it or pierce it.
+    out through the cradle's slot and the gap in the rib above it, to J1.
+    Nothing may press on the cell or pierce it.
 
 **Together:**
 
-13. **Connect.** Stand the back cover up along the frame's bottom edge and
-    connect: the flat cable from the adapter board to the HAT, the button
-    strip's plug to its mate (J4), the antenna's coax to the XIAO's U.FL
-    socket, and last, the battery. Lay the plug flat on the back cover
-    beside the adapter board, not under it, and zip-tie the button wires to
-    the three tie blocks up the back cover. Put foam strips on the rib tops
-    and the magnet tubes.
+13. **Connect.** Prop the back cover open along the frame's bottom edge at
+    about 45° (lean it against something), inside facing the frame. Connect
+    the flat cable from the adapter board to the HAT, and the button strip's
+    plug to its mate (J4), then plug in the battery. The flat cable needs
+    about 10 cm to reach at that angle; with a shorter one, work with the
+    cover nearer closed, or use a longer cable (see the
+    [BOM](bom.md)). Lay J4 flat on the back cover beside
+    the adapter board, not under it, with the strip's spare lead beside it,
+    and zip-tie the button wires to the three tie blocks. Put foam strips on
+    the rib tops and the magnet tubes.
 14. **Close.** Fold the back cover down onto the frame, checking that no wire
-    is pinched at the edges and the USB-C connectors meet their slots in the
-    top wall (**USB** and **CHARGE**). Drive the nine M3 × 6 screws in a cross
-    pattern, snug only. Plug a cable into each USB-C port from outside to
-    check it seats.
+    is pinched at the edges, the antenna's fin slides in beside the top
+    wall, and the USB-C connectors meet their slots in it (**USB** and
+    **CHARGE**). Drive the nine M3 × 6 screws in a cross pattern, snug only.
+    Plug a cable into each USB-C port from outside to check it seats.
 
 ## 10. Hang it
 
@@ -331,11 +350,11 @@ stand it on the desk stand.
 | Washed-out or smudged picture | Panel VCOM: enter the value printed on the flex cable |
 | Resets when it starts to draw | Battery flat, or C2/C3 missing; ground to the HAT too thin or too long |
 | Buttons do nothing | Each switch must connect its signal wire to ground when pressed; the cap must reach the plunger (press it: it should click) |
-| **Last error** says "Button stuck down" | That switch is pressed all the time: a cap pressing on it (see `cap_preload` in the [enclosure README](../hardware/enclosure/README.md)) or a solder bridge on the button strip. It's ignored until it's released |
+| **Last error** says "Button stuck down" | That switch is pressed all the time: a cap pressing on it (see `cap_preload` in the [enclosure README](../hardware/enclosure/README.md)) or a solder bridge on the button strip. It's ignored until the first refresh after it's released |
 | Doesn't wake from a button in deep sleep | The buttons must be on D0–D2 (GPIO1–3) |
 | No setup hotspot | Hold REFRESH for 5–15 seconds to open it again |
 | Doesn't appear in Home Assistant | The MQTT user and password; the broker's log; [home-assistant.md](home-assistant.md#troubleshooting) |
-| Weak Wi-Fi | The antenna's front edge against the front face; its coax clicked onto the U.FL socket; no wire or metal lying over it |
+| Weak Wi-Fi | The antenna stuck flat on its fin; its coax clicked onto the U.FL socket; no wire or metal lying over it |
 | Case won't close flat | Something is too tall: trim the carrier's joints (1.2 mm) and the strip's legs (2 mm); check the HAT's clipped header pins, and that the button plug lies flat beside the adapter board |
 | Battery reads wrong | R1 and R2 must both be 220 kΩ; the divider midpoint goes to D3 |
 | Charges from USB-A but not from a USB-C charger | The charger module lacks the USB-C CC resistors ([power.md](power.md#charging)) |

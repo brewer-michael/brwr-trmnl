@@ -139,5 +139,5 @@ month or two of it saying empty: lithium cells don't like being stored flat.
 - A fridge door is at room temperature, which suits the cell. Don't mount it
   on the side of an oven or near the fridge's warm vent at the bottom or back.
 - LiPo cells charge between 0 °C and 45 °C.
-- For storage, charge to about half and switch it off with the optional
-  slide switch (SW4 in the [BOM](bom.md)), or unplug the battery.
+- For storage, charge to about half and unplug the battery (the back cover
+  comes off with its nine screws).
