@@ -20,6 +20,7 @@ namespace brwr {
     EV_RESLEEP = BIT4,    // a setting that changes the sleep plan (power mode, refresh)
     EV_HA_ONLINE = BIT5,  // Home Assistant restarted: publish discovery again
     EV_BUTTON = BIT6,     // raised by the idle loop's GPIO interrupt
+    EV_STATE = BIT7,      // a setting that only needs reporting back (buttons, hold)
   };
 
   EventGroupHandle_t ha_events();

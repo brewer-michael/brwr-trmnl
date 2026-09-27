@@ -182,6 +182,7 @@ namespace brwr {
       Log_info("brwr: Home Assistant set %s = %s", name.c_str(), payload.c_str());
       if (redraw) xEventGroupSetBits(ha_events(), EV_REDRAW);
       if (resleep) xEventGroupSetBits(ha_events(), EV_RESLEEP);
+      if (!redraw && !resleep) xEventGroupSetBits(ha_events(), EV_STATE); // echo it, or HA's control snaps back
     }
   }
 

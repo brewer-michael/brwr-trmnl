@@ -103,9 +103,10 @@ namespace brwr {
     return BUTTON_REFRESH;
   }
 
-  // Idles with Wi-Fi and MQTT up. Returns only if it had to give up (Wi-Fi
-  // lost, power mode changed); every other outcome restarts the device.
-  static void idle(uint32_t seconds) {
+  // Idles with Wi-Fi and MQTT up. Returns only if it had to give up (Wi-Fi or
+  // MQTT lost), with the seconds left until the refresh (0 = none planned);
+  // every other outcome restarts the device.
+  static uint32_t idle(uint32_t seconds) {
     esp_pm_config_t pm = {};
     pm.max_freq_mhz = 80;
     pm.min_freq_mhz = 40;
@@ -120,7 +121,7 @@ namespace brwr {
     }
     // Bits raised while retained settings synced at wake-up are stale: this
     // refresh already used them. A command that arrived since is not.
-    xEventGroupClearBits(ha_events(), EV_REDRAW | EV_RESLEEP | EV_COMMAND);
+    xEventGroupClearBits(ha_events(), EV_REDRAW | EV_RESLEEP | EV_COMMAND | EV_STATE);
     if (commands_pending()) hop(Pending::Command);
 
     esp_wifi_set_ps(WIFI_PS_MAX_MODEM);
@@ -139,8 +140,8 @@ namespace brwr {
       if (seconds > 0 && deadline_ms - elapsed < wait_ms) wait_ms = deadline_ms - elapsed;
 
       EventBits_t bits =
-        xEventGroupWaitBits(ha_events(), EV_BUTTON | EV_COMMAND | EV_REDRAW | EV_RESLEEP | EV_HA_ONLINE, pdTRUE,
-                            pdFALSE, pdMS_TO_TICKS(wait_ms));
+        xEventGroupWaitBits(ha_events(), EV_BUTTON | EV_COMMAND | EV_REDRAW | EV_RESLEEP | EV_HA_ONLINE | EV_STATE,
+                            pdTRUE, pdFALSE, pdMS_TO_TICKS(wait_ms));
 
       if (bits & EV_BUTTON) {
         if (awake) esp_pm_lock_acquire(awake); // time the press without dozing off
@@ -152,14 +153,19 @@ namespace brwr {
           Press press = classify_press(pin);
           Log_info("brwr: %s button (%s press)", button_name(button), press_name(press));
           if (press == PRESS_STUCK) {
-            ha_publish_state(); // shows up as the last error
-            continue;           // leave its interrupt off; the next wake checks it again
+            gpio_wakeup_disable((gpio_num_t)pin); // its low level would keep waking the chip
+            ha_publish_state();                   // shows up as the last error
+            continue;                             // leave its interrupt off; the next wake checks it again
           }
           ha_publish_button(button, press); // straight to Home Assistant
-          bool local = settings().buttons == ButtonMode::Local || button == BUTTON_REFRESH;
-          bool acts = press == PRESS_SHORT || press == PRESS_VERY_LONG || press == PRESS_RESET ||
-                      (press == PRESS_DOUBLE && button == BUTTON_REFRESH);
-          if (local && acts) {
+          // Setup and reset stay on REFRESH whatever the button mode; the other
+          // presses only act on the display in "Change screens" mode, as in
+          // handle_button().
+          bool setup = button == BUTTON_REFRESH && (press == PRESS_VERY_LONG || press == PRESS_RESET);
+          bool local = settings().buttons == ButtonMode::Local &&
+                       (press == PRESS_SHORT ||
+                        (press == PRESS_DOUBLE && button == BUTTON_REFRESH && uses_trmnl_server()));
+          if (setup || local) {
             mqtt_flush(1000);
             rtc.pendingButton = button;
             rtc.pendingPress = press;
@@ -177,8 +183,9 @@ namespace brwr {
       if (bits & EV_RESLEEP) {
         if (settings().power == PowerMode::DeepSleep) {
           uint32_t done = (uint32_t)(millis() - start);
-          uint32_t left = (seconds > 0 && done < deadline_ms) ? (deadline_ms - done) / 1000 : 0;
-          deep_sleep(seconds > 0 ? left : 0, Pending::None);
+          uint32_t left = done < deadline_ms ? (deadline_ms - done) / 1000 : 0;
+          ha_publish_state();
+          deep_sleep(seconds > 0 ? (left < MIN_SLEEP_S ? MIN_SLEEP_S : left) : 0, Pending::None);
         }
         seconds = sleep_seconds(refreshInterval.seconds());
         start = millis();
@@ -189,12 +196,16 @@ namespace brwr {
         ha_publish_discovery(true);
         ha_publish_state();
       }
+      if (bits & EV_STATE) ha_publish_state();
 
       if (WiFi.status() != WL_CONNECTED || !mqtt_connected()) {
         if (!wifiLostSince) wifiLostSince = millis();
         if (millis() - wifiLostSince > WIFI_LOST_GIVE_UP_MS) {
           Log_error("brwr: lost Wi-Fi/MQTT while idling; falling back to deep sleep");
-          return;
+          if (seconds == 0) return 0;
+          uint32_t done = (uint32_t)(millis() - start);
+          uint32_t left = done < deadline_ms ? (deadline_ms - done) / 1000 : 0;
+          return left < MIN_SLEEP_S ? MIN_SLEEP_S : left;
         }
       } else {
         wifiLostSince = 0;
@@ -220,8 +231,7 @@ namespace brwr {
     }
 
     if (settings().power == PowerMode::AlwaysReady && mqtt_connected() && WiFi.status() == WL_CONNECTED) {
-      idle(seconds);
-      // idle() gave up: finish the current interval in deep sleep.
+      seconds = idle(seconds); // it gave up: finish the current interval in deep sleep
     }
     deep_sleep(seconds, Pending::None);
   }
