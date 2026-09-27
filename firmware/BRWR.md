@@ -23,12 +23,18 @@ pio device monitor -e brwr_trmnl       # logs over USB
 
 Each build also writes `.pio/build/<env>/merged_firmware.bin`, a single image
 to flash at offset `0x0` (`esptool --chip esp32s3 write-flash 0x0 merged_firmware.bin`, or
-[esptool-js](https://espressif.github.io/esptool-js/) in a browser).
+[esptool-js](https://espressif.github.io/esptool-js/) in a browser). Use it for
+the first flash: it also blanks the NVS partition, which clears the saved
+Wi-Fi, the server and every setting. To update a display that's already set
+up, use `pio run -e brwr_trmnl -t upload`, or write `firmware.bin` at `0x10000`.
 
 ## What changed
 
-Everything new lives in `src/brwr/` and `include/brwr/`. Upstream files only
-gain small `#ifdef BOARD_BRWR_TRMNL` blocks that call into it:
+Everything new lives in `src/brwr/` and `include/brwr/`. Upstream files mostly
+gain small `#ifdef BOARD_BRWR_TRMNL` blocks that call into it. A few changes
+apply to every board but change nothing for the others: the setup page,
+the `Model` header (`API_DEVICE_MODEL` is `DEVICE_MODEL` on other boards),
+the components in `src/CMakeLists.txt`, and a note in `README.md`.
 
 | File | Change |
 |---|---|
@@ -38,14 +44,15 @@ gain small `#ifdef BOARD_BRWR_TRMNL` blocks that call into it:
 | `scripts/extra/post_build_brwr.py` | Writes the merged image. |
 | `include/config.h` | Pins, battery ADC pin, `brwr-trmnl` hostname, and `API_DEVICE_MODEL` (`x`, so Terminus serves 1872 × 1404 16-gray screens). |
 | `src/display.cpp` | Device-list entry; IT8951 init shared with the E1003, then VCOM and SPI clock; HAT pins released after sleep. |
-| `src/bl.cpp` | Hooks: early init, three buttons, no logo on button or timer wakes, Home Assistant before the server fetch, state report, sleep. Keeps Wi-Fi up after the download. Skips server-pushed OTA and log uploads without a TRMNL server. Keeps the cached-screen order for the Back button. |
+| `src/bl.cpp` | Hooks: early init, three buttons, no logo on button or timer wakes, Home Assistant before the server fetch, state report, sleep. Keeps Wi-Fi up after the download. Never takes firmware updates from the server, and skips log uploads without a TRMNL server. Keeps the cached-screen order for the Back button. |
 | `src/bl.cpp`, `src/services/device_setup.cpp` | Send `API_DEVICE_MODEL` in the `Model` header. |
 | `src/CMakeLists.txt` | Requires `mqtt` and `esp_pm`. |
-| `lib/wificaptive/` | Setup page: Home Assistant address, screen source, MQTT login and panel VCOM. The section only appears when the firmware reports it, so other boards are unchanged. Hotspot name `brwr-trmnl-XXXXXX`. |
+| `lib/wificaptive/` | Setup page: Home Assistant address, screen source, MQTT login, an MQTT broker address and port (if the broker isn't on Home Assistant) and panel VCOM. A blank server address becomes the Terminus add-on, `http://<Home Assistant>:2300`. The section only appears when the firmware reports it, so other boards are unchanged. Hotspot name `brwr-trmnl-XXXXXX`. `portal/index.html` is the source; `src/WifiCaptivePage.h` is generated from it by `portal/convert.py`. |
+| `README.md` | A note at the top pointing here. |
 
 Why no over-the-air updates from the server: the device reports itself as a
 TRMNL X to get the right screen format, and a TRMNL X firmware image would not
-run on this hardware. Flash updates over USB (or the merged image).
+run on this hardware. Flash updates over USB, as above.
 
 ## Updating from upstream
 
@@ -53,6 +60,8 @@ run on this hardware. Flash updates over USB (or the merged image).
 git subtree pull --prefix=firmware https://github.com/usetrmnl/trmnl-firmware.git <tag-or-commit> --squash
 ```
 
-Conflicts, if any, are in the `BOARD_BRWR_TRMNL` blocks listed above. Then
-build `brwr_trmnl` and `brwr_trmnl_arduino`; CI (`.github/workflows/firmware.yml`)
-builds both on every push.
+Conflicts, if any, are in the files listed above. For the setup page, merge
+`portal/index.html` and regenerate `WifiCaptivePage.h` with `portal/convert.py`
+rather than merging the generated file. Then build `brwr_trmnl` and
+`brwr_trmnl_arduino`; CI (`.github/workflows/firmware.yml`) builds both on
+every push that changes `firmware/`.

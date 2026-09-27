@@ -1,8 +1,9 @@
 # brwr-trmnl: example dashboard for the fridge (1872 x 1404, 16 grays).
 #
 # Create it: Settings > Dashboards > Add dashboard > New dashboard from
-# scratch, URL "fridge-display", untick "Show in sidebar". Open it, then
-# pencil > three dots > Raw configuration editor, paste this file and save.
+# scratch, titled "Fridge display" (its URL becomes fridge-display), untick
+# "Show in sidebar". Open it, then pencil > three dots > Raw configuration
+# editor, paste this file and save.
 #
 # The TRMNL HA add-on renders each view for the display at
 #   http://<home-assistant>:10000/fridge-display/<view path>?zoom=2

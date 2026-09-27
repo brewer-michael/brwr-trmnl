@@ -15,12 +15,14 @@ lasts depends mostly on two settings you can change in Home Assistant: the
  USB-C (charge) ──► TP4056 charger ──► OUT+ ─┬─► XIAO ESP32-S3 BAT+ ──► 3.3 V regulator ──► ESP32-S3
                      + DW01A protection      │
  LiPo 5000 mAh ◄──► B+ / B−                  ├─► MiniBoost 5 V (TPS61023) ──► e-paper HAT (IT8951)
-                                             │     EN ◄── GPIO6: on only while drawing
+                                             │     EN ◄── GPIO6: on while awake
                                              └─► 220k / 220k divider ──► GPIO4 (battery voltage)
 ```
 
-- The **panel's controller is powered only while it draws.** The MiniBoost
-  is a "true disconnect" booster: with EN low its output is cut off from the
+- The **panel's controller is powered only while the display is awake**:
+  the firmware switches the MiniBoost on as it starts the display, at the
+  beginning of each wake, and off again before it sleeps. The MiniBoost is a
+  "true disconnect" booster: with EN low its output is cut off from the
   battery completely, so the HAT draws nothing between refreshes. That's
   why this build uses it rather than a booster without an enable pin, which
   would feed the HAT all the time.
@@ -52,19 +54,25 @@ off without it. Sleep current drops to about 30 µA.
 
 | Step | Time | Battery current |
 |---|---|---|
-| Boot, connect to Wi-Fi and MQTT | 2–4 s | ~90 mA |
-| Ask the server, download the image (1872 × 1404 PNG) | 1–6 s | ~90 mA (longer when the TRMNL HA add-on renders a dashboard) |
-| Decode into PSRAM | ~1 s | ~70 mA |
-| Power the HAT, load the image over SPI, refresh the panel | ~3 s | ~200 mA (5 V through the booster) |
-| Report to Home Assistant, sleep | < 1 s | ~90 mA |
-| **Total** | **7–15 s** | **0.5–0.9 mAh** |
+| Boot, switch on the HAT, connect to Wi-Fi and MQTT | 2–4 s | ~90 mA, plus the HAT idling |
+| Ask the server, download the image (1872 × 1404 PNG) | 1–6 s | ~90 mA, plus the HAT (longer when the TRMNL HA add-on renders a dashboard) |
+| Decode into PSRAM | ~1 s | ~70 mA, plus the HAT |
+| Load the image over SPI, refresh the panel | ~3 s | ~200 mA (5 V through the booster) |
+| Report to Home Assistant, switch the HAT off, sleep | < 1 s | ~90 mA |
+| **Total** | **7–15 s** | **0.26–0.46 mAh, plus the HAT idling** |
+
+Nobody has measured what the IT8951 HAT draws while it idles, waiting for
+the download, so the battery life below budgets **0.5–0.9 mAh a refresh**:
+about twice the rows above, to cover it and slower networks.
 
 ### Awake and listening ("Always ready")
 
 The ESP32-S3 stays connected to Wi-Fi and MQTT in automatic light sleep,
 waking for Wi-Fi beacons and MQTT keep-alives. Expect **2–5 mA**, depending
 mostly on your network: routers that send a lot of broadcast traffic keep it
-awake more often.
+awake more often. That's the `brwr_trmnl` firmware. The fallback
+`brwr_trmnl_arduino` build can't light-sleep, so it idles fully awake at
+about 25 mA: about a week on the battery.
 
 ## Battery life
 
@@ -73,7 +81,7 @@ cells lose capacity with age):
 
 | Power mode | Refresh | Per day | One charge lasts |
 |---|---|---|---|
-| Deep sleep | every 15 min | 50–88 mAh | **2–3 months** |
+| Deep sleep | every 15 min | 50–88 mAh | **7–12 weeks** |
 | Deep sleep | every 30 min | 26–45 mAh | **3–5 months** |
 | Deep sleep | every 60 min | 14–23 mAh | **6–10 months** |
 | Always ready | every 60 min | 60–142 mAh | **4–10 weeks** |
@@ -86,8 +94,8 @@ cost about one refresh.
 
 | | **Always ready** (default) | **Deep sleep** |
 |---|---|---|
-| A voice command or automation shows up | In about 5–10 seconds | At the next refresh, or when you press a button |
-| Buttons | Instant; press events reach Home Assistant straight away | Instant (a press wakes it) |
+| A voice command or automation shows up | In about 10–15 seconds | At the next wake, if that's soon enough: the package's scripts and voice commands are dropped after 15 minutes (5 for next, previous and refresh; a note's hold time for notes). The device's own controls in Home Assistant wait for the next wake |
+| Buttons | Home Assistant gets the press at once. On screen, BACK through cached TRMNL screens takes a few seconds; anything that needs a new image (NEXT, REFRESH, or BACK with Home Assistant screens) is a full refresh, about 10–15 s | A press wakes it. The same on screen, and Home Assistant gets the press once it has reconnected |
 | Settings changed in Home Assistant | Applied at once | Applied at the next wake |
 | One charge | Weeks | Months |
 
@@ -96,9 +104,9 @@ the calendar on the fridge" is what you built it for, keep **Always ready**
 and charge it every month or so. If it's a calm dashboard that changes every
 half hour, **Deep sleep** gets you a season per charge.
 
-In Always ready, if Wi-Fi or MQTT drops for two minutes the device gives up
-listening and sleeps until its next refresh, then tries again, so a router
-outage doesn't drain the battery.
+In Always ready, if Wi-Fi or MQTT stays down for two to three minutes the
+device gives up listening and sleeps until its next refresh, then tries
+again, so a router outage doesn't drain the battery.
 
 ## Charging
 

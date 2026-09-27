@@ -1,9 +1,11 @@
 # brwr-trmnl: Home Assistant package
 #
 # - Publishes your list of screens to every brwr-trmnl display.
-# - Scripts to show a screen, a note or any image on the fridge. Voice
-#   commands (custom_sentences/en/brwr_trmnl.yaml) and automations use them.
-# - Redraws the shopping list when it changes while it's on the fridge.
+# - Scripts to show a screen, a note or an image (a full URL of a PNG, JPEG
+#   or BMP) on the fridge. Voice commands (custom_sentences/en/brwr_trmnl.yaml)
+#   and automations use them.
+# - Shows the shopping list again when its item count changes while a display
+#   is showing it (on every display: it publishes to brwr-trmnl/all/show).
 #
 # Needs the MQTT integration. Install: docs/home-assistant.md.
 #
@@ -19,8 +21,8 @@ input_text:
 
 script:
   # ---------------------------------------------------------------------------
-  # Your screens. Edit this list, then run the script (it also runs when Home
-  # Assistant starts).
+  # Your screens. Edit this list, reload scripts (Developer tools > YAML >
+  # Scripts), then run the script. It also runs when Home Assistant starts.
   #   name: what you say: "show the calendar on the fridge"
   #   path: a dashboard path, rendered by the TRMNL HA add-on at 1872x1404 in
   #         16 grays. ?zoom=2 makes normal dashboards readable at 227 dpi.
@@ -53,12 +55,14 @@ script:
   brwr_trmnl_show:
     alias: "Fridge display: show"
     # The descriptions double as instructions for an LLM voice agent if you
-    # expose the script to it (keep the screen names in step; each field
-    # description must stay under 128 characters).
+    # expose the script to it (keep the screen names in step).
     description: >-
       Show something on the fridge display: a screen by name (Home, Calendar,
       Shopping list, Weather, Note), a dashboard path or an image URL. It
-      stays up for hold minutes, then the display returns to its schedule.
+      stays up for hold minutes (or the display's Hold commanded screen
+      setting), then the display returns to its schedule. With Home Assistant
+      screens as the display's source and no hold, a listed screen becomes
+      the current screen instead.
     icon: mdi:image-frame
     mode: queued
     fields:
@@ -176,8 +180,9 @@ automation:
   - id: brwr_trmnl_refresh_shopping_list
     alias: "Fridge display: redraw the shopping list when it changes"
     description: >-
-      Only while a display is showing it. Waits 20 s so a burst of edits
-      becomes one refresh. Change todo.shopping_list if yours is different.
+      When the list's item count changes while any display is showing it,
+      shows it again on every display. Waits 20 s so a burst of edits becomes
+      one refresh. Change todo.shopping_list if yours is different.
     mode: restart
     triggers:
       - trigger: state

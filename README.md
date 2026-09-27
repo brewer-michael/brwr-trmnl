@@ -3,7 +3,7 @@
 **A 10.3" e-paper display for the fridge door, run by Home Assistant. Say
 "show the calendar on the fridge" to your voice speaker, and it does.**
 
-![brwr-trmnl on the fridge: a 10.3-inch e-paper panel in a printed frame with three buttons below it](docs/images/enclosure-front.png)
+![Render of the brwr-trmnl enclosure: a 10.3-inch e-paper panel in a printed frame with three buttons below it](docs/images/enclosure-front.png)
 
 [TRMNL](https://trmnl.com) makes calm, low-power e-paper displays and
 publishes its [firmware](https://github.com/usetrmnl/trmnl-firmware) and
@@ -11,7 +11,9 @@ publishes its [firmware](https://github.com/usetrmnl/trmnl-firmware) and
 your own. brwr-trmnl is the large-format version (the TRMNL X's panel size
 and resolution) built from parts you can buy anywhere, in a 13 mm thin
 3D-printed frame that holds onto the fridge with magnets. Its firmware has Home Assistant
-built in, so everything stays on your own network.
+built in, so your screens and commands stay on your own network. (It does
+reach a public time server to set its clock, unless you point the setup
+page's NTP server field at a local one.)
 
 - **10.3", 1872 × 1404, 16 grays.** Sharp enough for small text,
   calendars and graphs at 227 dpi.
@@ -30,8 +32,8 @@ built in, so everything stays on your own network.
 - **Your screens:** Home Assistant dashboards rendered for e-paper, or
   TRMNL's plugins and playlists from the self-hosted
   [Terminus](https://github.com/usetrmnl/terminus) server. No cloud account.
-- **Weeks to months per charge,** depending on how quickly you want it
-  to react ([power.md](docs/power.md)). USB-C charging.
+- **Weeks to months per charge** (estimated), depending on how quickly you
+  want it to react ([power.md](docs/power.md)). USB-C charging.
 - **About $240 in parts,** $157 of it the display.
 
 ## How it works
@@ -58,8 +60,8 @@ Each refresh, the display wakes, switches on the 5 V supply to the panel's
 IT8951 controller, fetches the current screen, draws it at 16 grays, reports
 to Home Assistant over MQTT and goes back to sleep. In **Always ready** mode
 it stays connected in light sleep between refreshes, so a voice command
-is on screen in about ten seconds; in **Deep sleep** it only checks in when it wakes, and
-the battery lasts months.
+is on screen in about 10–15 seconds; in **Deep sleep** it only checks in when
+it wakes, and the battery should last months.
 
 ## Build one
 
@@ -83,14 +85,16 @@ the battery lasts months.
 | **NEXT** | The next playlist item | The next screen |
 | **REFRESH** double press | TRMNL's special function | — |
 | Any button, long press (1–5 s) | Only a Home Assistant trigger, for your own automations | same |
-| **REFRESH**, hold 5 s | Wi-Fi and Home Assistant setup | same |
-| **REFRESH**, hold 15 s (let go within 30 s) | Reset: forget Wi-Fi, the server and the Home Assistant settings | same |
+| **REFRESH**, hold 5 s | Setup hotspot, for Wi-Fi and Home Assistant. It forgets the saved Wi-Fi, so you pick it again; the other settings stay | same |
+| **REFRESH**, hold 15 s (let go within 30 s) | Reset: forget Wi-Fi, the server and the Home Assistant connection. Set it up again with the same broker and the settings you made in Home Assistant come back | same |
 
 Short and double presses also reach Home Assistant as triggers. Set
 **Buttons** to *Home Assistant only* and every press is yours to automate
-(setup and reset still work). A button held down for more than 30 seconds
-counts as stuck: it's ignored, stops waking the display, and shows up as
-**Last error** in Home Assistant until it's released.
+(setup and reset still work). In **Deep sleep**, though, any press also
+wakes the display, which then refreshes as it would on its timer. A button
+held down for more than 30 seconds counts as stuck: it's ignored, stops
+waking the display, and shows up as **Last error** in Home Assistant until
+the first refresh after it's released.
 
 ## Firmware
 
@@ -101,7 +105,7 @@ listed in [`firmware/BRWR.md`](firmware/BRWR.md). In short:
 - a `brwr_trmnl` board for the XIAO ESP32-S3 and the Waveshare IT8951 HAT
   over SPI, using upstream's IT8951 driver for the reTerminal E1003 (the same
   1872 × 1404 panel)
-- three buttons, a switched panel supply and a battery gauge
+- three buttons, a switched panel supply and a battery voltage reading
 - Home Assistant over MQTT: discovery, state, settings, commands, button
   triggers, and **Always ready** light sleep
 - Home Assistant screens rendered by the TRMNL HA add-on, as an alternative
@@ -109,8 +113,10 @@ listed in [`firmware/BRWR.md`](firmware/BRWR.md). In short:
 - the Home Assistant fields on the setup page
 
 It still works with TRMNL's cloud or any other TRMNL-compatible server. CI
-builds both firmware variants on every push; the build output includes a
-single `merged_firmware.bin` to flash at `0x0`.
+builds both firmware variants whenever `firmware/` changes. Flash the
+`brwr_trmnl` one: its `merged_firmware.bin` goes at `0x0` for the first
+flash (it clears saved Wi-Fi and settings); to update, upload with
+PlatformIO or write `firmware.bin` at `0x10000`.
 
 ```sh
 cd firmware
@@ -133,8 +139,8 @@ pio run -e brwr_trmnl -t upload
 
 **Designed, not yet built.** What has been checked so far:
 
-- The firmware builds for both variants, locally and in CI. It has not run
-  on hardware yet.
+- The firmware builds for both variants in CI. It has not run on hardware
+  yet.
 - The Home Assistant package's templates, and the voice sentences against
   Home Assistant's sentence matcher.
 - The enclosure renders, its parts are manifold and fit a 220 × 220 mm bed,
