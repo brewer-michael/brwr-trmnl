@@ -33,7 +33,7 @@ corners. The back cover splits at X = −39.
 | Chin (bottom rail) | `stl/bezel_bottom.stl` | front face down, turned 45° | 188 × 188 mm | 186 × 186 × 11.2 mm | ~25 g |
 | Left and right rails | `stl/bezel_left.stl`, `stl/bezel_right.stl` | front face down | 9.3 × 158 mm | 9.2 × 157.6 × 11.2 mm | ~8 g each |
 | Back cover, left | `stl/back_left.stl` | outside face down | 77.5 × 204 mm | 77.5 × 204 × 9.4 mm | ~42 g |
-| Back cover, right | `stl/back_right.stl` | outside face down | 154.5 × 204 mm | 154.5 × 204 × 9.4 mm | ~67 g |
+| Back cover, right | `stl/back_right.stl` | outside face down | 154.5 × 204 mm | 154.5 × 204 × 10.0 mm (the antenna fin) | ~67 g |
 | Button caps (3) | `stl/button_caps.stl` | face down | 48 × 13 mm | 48.2 × 13.4 × 4.1 mm | ~2 g |
 | Desk stand (optional) | `stl/stand.stl` | base down | 100 × 79 mm | 100 × 78.8 × 73.6 mm | ~70 g |
 
@@ -44,7 +44,7 @@ turned. The model refuses a part that does not fit `bed_size` minus
 
 For a bed of **250 × 210 mm or more**, print the one-piece bezel and back
 cover instead: `stl/one-piece/bezel.stl` (229 × 204 × 11.2 mm, ~51 g) and
-`stl/one-piece/back.stl` (229 × 204 × 9.4 mm, ~110 g). `export.sh` renders them
+`stl/one-piece/back.stl` (229 × 204 × 10.0 mm, ~109 g). `export.sh` renders them
 with `split = false`. They carry the same grooves, bosses and rod channels.
 
 ![Print jobs](../../docs/images/enclosure-plates.png)
