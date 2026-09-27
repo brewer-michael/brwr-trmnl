@@ -11,7 +11,7 @@ assembly, plus overnight for the epoxy to cure.
 | You need | |
 |---|---|
 | Parts | [Bill of materials](bom.md) |
-| Tools | Soldering iron with a fine tip and a heat-set insert tip, multimeter, flush cutters, wire strippers, tweezers, hobby knife, a vise or pliers for bending rod, a hacksaw or bolt cutters |
+| Tools | Soldering iron with a fine tip and a heat-set insert tip, multimeter, flush cutters, wire strippers, tweezers, hobby knife, a drill or pin vise with a 2.7 mm bit, a vise or pliers for bending rod, a hacksaw or bolt cutters |
 | Printer | Bed at least **220 × 220 mm** |
 | Computer | Chrome or Edge to flash from the browser, or PlatformIO |
 | Home Assistant | With the Mosquitto broker; see [home-assistant.md](home-assistant.md) |
@@ -66,30 +66,35 @@ use a Pi, and those parts are too tall for the case.
 2. **The tall parts on its front.** Nothing on the component side may stand
    more than 3 mm. Desolder the white 8-pin cable socket (or cut its housing
    away), and clip or desolder any upright pin header.
-3. **The 8 wires.** Cut the plug off the kit's 8-wire cable, leaving its
-   other end (the separate sockets) whole. Solder the wires to the HAT's
-   5V, GND, MISO, MOSI, SCK, CS, RST and HRDY pads, matching its silkscreen,
-   and note which colour went where.
+3. **The 8 wires.** Cut the plug off the kit's 8-wire cable. Solder the wires
+   to the HAT's 5V, GND, MISO, MOSI, SCK, CS, RST and HRDY pads, matching its
+   silkscreen, and note which colour went where. Their other ends go to the
+   carrier in the next step.
 4. **Interface switch:** set it to **SPI**.
 
 ## 4. Build the carrier board
 
 Follow [the carrier layout](images/carrier-layout.svg), viewed from the
-component side. Cut the protoboard to 70 × 35 mm (score both sides along a
-row of holes and snap it), and drill the two 2.7 mm mounting holes where the
-layout shows them.
+component side.
+
+Cut a piece of protoboard **27 holes wide and 13 holes tall**: score both
+sides midway between two rows of holes and snap it, which gives
+68.6 × 33 mm. Anything up to the layout's 70 × 35 mm fits, because the
+screws, not the edges, place the board. Then drill the two mounting holes,
+2.7 mm, each through the middle of the four holes in a corner: top left and
+bottom right, seen from the component side. The drill centres itself there.
 
 1. **Prepare the XIAO.** Its BAT+ pad is on the underside: solder a short
    26 AWG wire to it first, to pass through the hole beneath it. (BAT−, the
    pad nearer the USB connector, is the same as GND and needs no wire.)
-2. **Place, don't solder yet:** the XIAO and the charger module flat on the
-   board (not on headers: their USB-C connectors must line up with the
-   slots), the MiniBoost flat, and **right-angle** pin headers for the HAT
-   wires (1 × 8, J2) and the buttons (1 × 4, J3). The two USB-C connectors
-   overhang the board's top edge by 1.5 mm, or the plugs won't reach them
-   through the case.
-3. **Solder the modules and headers**, and the XIAO's battery wire through
-   the board.
+2. **Place, don't solder yet:** the XIAO, the charger module and the
+   MiniBoost, all flat on the board, not on headers. The XIAO's pads go on
+   the holes the layout shows, which puts its connector where the case's
+   slot is. (If you cut the board midway between holes, the XIAO's end
+   hangs 1.6 mm over the board's top edge. That's fine.) Line the charger's
+   USB-C connector up with the XIAO's, level with it, or the plug won't
+   reach it through the case.
+3. **Solder the modules**, and the XIAO's battery wire through the board.
 4. **Add the passives:** R1–R4 and C1 lying flat, and the four ceramic
    capacitors, C2 (2 × 47 µF) and C3 (2 × 100 µF), each soldered flat
    across two adjacent pads.
@@ -98,36 +103,51 @@ layout shows them.
 6. **Wire the underside** as the layout shows: thick (26 AWG) wire for the
    battery, `VBAT_SYS`, 5 V and ground; thin wire for the signals. Every
    ground goes to the charger's **OUT−**, never to **B−**.
-7. **Keep it low.** Nothing may stand more than 5 mm above the board (the
+7. **J2 and J3: wires straight into the board.** There's no room for
+   connectors here.
+   - **J2:** cut the HAT's 8 wires to about 12 cm (the route in the
+     [wiring diagram](images/wiring.svg), with a little slack) and solder
+     them into J2's holes: 5V, GND, MISO, MOSI, SCK, CS, RST, HRDY from the
+     top. The HAT and the carrier are now one assembly.
+   - **J3:** take one half of the JST-PH 4-pin pair (J4), cut its wires to
+     about 17 cm and solder them into J3's holes: BACK, REFRESH, NEXT, GND
+     from the top.
+8. **Keep it low.** Nothing may stand more than 5 mm above the board (the
    USB-C connectors are the tallest), and the joints underneath must be
    trimmed to 1.2 mm: the board sits in a recess with the panel 1.5 mm above
    it.
-8. **Check it** with the meter before connecting anything: no short from
-   `VBAT_SYS` or J2's 5V pin to ground, and each header pin reaching the
-   right XIAO pin ([pin table](../hardware/wiring.md#xiao-esp32-s3-pins)).
-9. Cover the underside with Kapton tape.
+9. **Check it** with the meter before connecting anything: no short from
+   `VBAT_SYS` or the HAT's 5V pad to ground, and each HAT pad and each pin
+   of the JST-PH plug reaching the right XIAO pin
+   ([pin table](../hardware/wiring.md#xiao-esp32-s3-pins)).
+10. Cover the underside with Kapton tape.
 
 ## 5. Build the button strip
 
 Follow [the button board drawing](images/button-board.svg).
 
-1. Cut protoboard to 84 × 20 mm. Put the middle switch at the centre, and
-   the other two 10 holes (25.4 mm) either side, plungers facing the front.
-   The caps are 26 mm apart, and their flat backs cover the difference. The
-   legs sit 5 holes by 2 holes apart; bend them in slightly to fit, press
-   each switch flat, solder, and trim the legs to 2 mm under the board.
-2. Drill two 2.7 mm holes on the centre line, 38 mm either side of the
-   middle switch.
+1. Cut protoboard to 84 × 20 mm, 32 holes by 7 (or midway between holes,
+   81.3 × 17.8 mm). Put the middle switch at the centre, and the other two
+   10 holes (25.4 mm) either side, plungers facing the front: the caps are
+   the same distance apart. The legs sit 5 holes by 2 holes apart; bend
+   them in slightly to fit, press each switch flat, solder, and trim the
+   legs to 2 mm under the board.
+2. Drill out the 15th hole either side of the centre, on the middle row,
+   to 2.7 mm: the second hole in from each end.
 3. **Ground:** each switch's bottom-right leg (seen from the front) to a bare
    wire along the bottom row.
 4. **Signals:** each switch's top-left leg, diagonally opposite its ground
    leg, to its own insulated wire. Diagonal legs are always on opposite
    sides of the switch, whichever way round it's fitted.
-5. **The lead:** about 20 cm of four wires to a 1 × 4 socket in the order
-   BACK, REFRESH, NEXT, GND, matching the carrier's header J3. From the front,
-   BACK is on the left. Keep the wires clear of the two screw holes.
-6. Check with the meter: each signal wire reads open to ground, and closed
-   while its button is pressed.
+5. **The lead:** the other half of the JST-PH pair, its wires cut to about
+   5 cm. Plug the two halves together, find with the meter which of this
+   half's wires meets J3's BACK, REFRESH, NEXT and GND, and solder each into
+   its hole on the strip as the drawing shows: the signals on the top row
+   above BACK, GND at the end of the bus. From the front, BACK is on the
+   left. Keep the wires clear of the two screw holes.
+6. With the pair plugged together, check with the meter at the carrier:
+   each of D0–D2 reads open to ground, and closed while its button is
+   pressed.
 
 ## 6. Check the battery lead
 
@@ -186,22 +206,20 @@ firmware work together.
    flat cable: lift each connector's latch, slide the cable in square, close
    the latch. Check the contacts face the right way (Waveshare's manual has
    photos).
-2. Plug the HAT wires' sockets onto the carrier's J2 in the order printed on
-   the carrier layout: 5V, GND, MISO, MOSI, SCK, CS, RST, HRDY.
-3. Plug in the button strip, the Wi-Fi antenna (press the U.FL plug straight
-   down until it clicks), and last, the battery.
-4. The display draws the TRMNL logo, then setup instructions. If it stays
+2. Plug in the button strip's lead (J4), the Wi-Fi antenna (press the U.FL
+   plug straight down until it clicks), and last, the battery.
+3. The display draws the TRMNL logo, then setup instructions. If it stays
    blank, see [troubleshooting](#troubleshooting).
-5. **Set it up:** join the Wi-Fi hotspot `brwr-trmnl-XXXXXX` from a phone;
+4. **Set it up:** join the Wi-Fi hotspot `brwr-trmnl-XXXXXX` from a phone;
    the setup page opens (or go to `http://4.3.2.1`). Pick your Wi-Fi, and
    fill in the **Home Assistant** section: its address, where screens come
    from, the MQTT user and password, and the **panel VCOM** printed on the
    panel's flex cable (such as `-1.52`). Details:
    [home-assistant.md](home-assistant.md#2-connect-the-display).
-6. Within a minute or so it draws its first screen and appears in Home
+5. Within a minute or so it draws its first screen and appears in Home
    Assistant. Press each button: NEXT and BACK change the screen, and
    **Last refresh** updates in Home Assistant.
-7. Plug a USB-C charger into the charger module's port: its LED turns red
+6. Plug a USB-C charger into the charger module's port: its LED turns red
    while it charges.
 
 Unplug the battery before assembly.
@@ -258,20 +276,23 @@ bend is tight. Dry-fit every rod in its groove before mixing any epoxy.
 
 10. **Driver HAT.** Components facing up (towards the panel), its 40-pin
     flat-cable socket towards the centre, on its four low standoffs: M2.5 × 8
-    countersunk screws from the outside, nuts on top.
+    countersunk screws from the outside, nuts on top. The carrier is wired
+    to it, so keep it close.
 11. **Carrier.** Into its recess at the top edge, USB-C connectors outwards,
-    with M2.5 × 6 countersunk screws from the outside and nuts on top.
+    with M2.5 × 6 countersunk screws from the outside and nuts on top. Lay
+    the HAT's wires along the route in the wiring diagram.
 12. **Battery.** Foam pad in its recessed cradle, battery on top, its lead
     out through the cradle's slot. Nothing may press on it or pierce it.
 
 **Together:**
 
 13. **Connect.** Stand the back cover up along the frame's bottom edge and
-    connect: the flat cable from the adapter board to the HAT, the HAT wires
-    to J2, the button lead to J3, the antenna's coax to the XIAO's U.FL
-    socket, and last, the battery. Zip-tie the button wires to the three tie
-    blocks up the back cover, and put foam strips on the rib tops and the
-    magnet tubes.
+    connect: the flat cable from the adapter board to the HAT, the button
+    strip's plug to its mate (J4), the antenna's coax to the XIAO's U.FL
+    socket, and last, the battery. Lay the plug flat on the back cover
+    beside the adapter board, not under it, and zip-tie the button wires to
+    the three tie blocks up the back cover. Put foam strips on the rib tops
+    and the magnet tubes.
 14. **Close.** Fold the back cover down onto the frame, checking that no wire
     is pinched at the edges and the USB-C connectors meet their slots in the
     top wall (**USB** and **CHARGE**). Drive the nine M3 × 6 screws in a cross
@@ -315,6 +336,6 @@ stand it on the desk stand.
 | No setup hotspot | Hold REFRESH for 5–15 seconds to open it again |
 | Doesn't appear in Home Assistant | The MQTT user and password; the broker's log; [home-assistant.md](home-assistant.md#troubleshooting) |
 | Weak Wi-Fi | The antenna's front edge against the front face; its coax clicked onto the U.FL socket; no wire or metal lying over it |
-| Case won't close flat | Something is too tall: trim the carrier's joints (1.2 mm) and the strip's legs (2 mm); check the HAT's clipped header pins |
+| Case won't close flat | Something is too tall: trim the carrier's joints (1.2 mm) and the strip's legs (2 mm); check the HAT's clipped header pins, and that the button plug lies flat beside the adapter board |
 | Battery reads wrong | R1 and R2 must both be 220 kΩ; the divider midpoint goes to D3 |
 | Charges from USB-A but not from a USB-C charger | The charger module lacks the USB-C CC resistors ([power.md](power.md#charging)) |

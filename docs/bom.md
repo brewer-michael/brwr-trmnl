@@ -11,7 +11,7 @@ common parts, which you may already have or can buy anywhere. Several small
 parts only come in packs, so the first build costs more than the per-unit
 total, and a second one much less.
 
-## Electronics — $203.53
+## Electronics — $204.43
 
 | Ref | Qty | Part | Notes | Price |
 |---|---|---|---|---|
@@ -29,8 +29,8 @@ total, and a second one much less.
 | C2 | 2 | 47 µF 10 V X5R ceramic, 1210 | 5 V at the HAT, two in parallel (Murata GRM32ER61A476KE20L). Low enough to lie flat on the carrier | $0.90 |
 | C3 | 2 | 100 µF 6.3 V X5R ceramic, 1210 | Battery rail at the booster, two in parallel (Murata GRM32ER60J107ME20L) | $1.10 |
 | J1 | 1 | JST-PH 2-pin pigtail | A short lead with a JST-PH plug for the battery, soldered to the carrier | $0.50 |
-| J2, J3 | 1 | Right-angle pin headers, 2.54 mm | 1 × 8 (HAT wires) and 1 × 4 (buttons). Or solder the leads straight on | $1.00 |
-| PCB1, PCB2 | 2 | Protoboard, double-sided, 2.54 mm, 5 × 7 cm | Cut to 70 × 35 mm (carrier) and 84 × 20 mm (buttons) | $1.60 |
+| J4 | 1 | JST-PH 4-pin plug and socket, pre-wired pair | Inline in the button lead, so the frame and the back cover come apart. Leads 20 cm or longer. J2 and J3 have no connector: their wires solder straight into the carrier, where there's no room for one | $1.00 |
+| PCB1, PCB2 | 1 | Protoboard, double-sided, 2.54 mm, 9 × 15 cm | Both boards come out of one: the carrier (27 × 13 holes) and the 84 × 20 mm button strip. A 5 × 7 cm board is too short for either | $2.50 |
 | | 1 | Hook-up wire | 26 AWG silicone for power, 28–30 AWG for signals | $5.00 |
 | SW4 | 1 | Slide switch, SPDT (optional) | Power switch for storage | $0.50 |
 
@@ -62,6 +62,8 @@ For a wall instead of the fridge: a thin steel plate for the magnets to hold
   rails print diagonally; with a 250 × 210 mm bed or bigger you can print
   the one-piece frame and back instead
 - Flush cutters, wire strippers, tweezers, a hobby knife
+- A drill, or a pin vise, with a 2.7 mm bit: four mounting holes in the
+  protoboards
 - A vise (or two pairs of pliers) to bend the 3 mm rod, and a hacksaw or
   bolt cutters to cut it
 - A computer with Chrome or Edge (flashing from the browser), or PlatformIO

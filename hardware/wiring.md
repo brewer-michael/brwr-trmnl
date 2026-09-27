@@ -1,13 +1,13 @@
 # Wiring
 
 Everything sits on one hand-wired carrier board (70 × 35 mm protoboard) plus a
-button strip. The display's driver HAT plugs into the carrier with the 8-wire
-cable that comes in its box.
+button strip. The display's driver HAT is wired to the carrier with the 8-wire
+cable that comes in its box, its plug cut off.
 
 | | |
 |---|---|
 | ![Schematic](../docs/images/schematic.svg) | The circuit ([schematic.svg](../docs/images/schematic.svg)) |
-| ![Wiring, from the back](../docs/images/wiring.svg) | Where everything goes, seen from the back with the cover off ([wiring.svg](../docs/images/wiring.svg)) |
+| ![Wiring, from the back](../docs/images/wiring.svg) | Where everything goes, seen from the back through the back cover's plate ([wiring.svg](../docs/images/wiring.svg)) |
 | ![Carrier layout](../docs/images/carrier-layout.svg) | Carrier board layout ([carrier-layout.svg](../docs/images/carrier-layout.svg)) |
 | ![Button board](../docs/images/button-board.svg) | Button strip ([button-board.svg](../docs/images/button-board.svg)) |
 
@@ -71,8 +71,9 @@ pins), or they can't wake the ESP32-S3.
 - **Height:** the case is 13 mm deep, and the carrier sits in a recess with
   the panel 1.5 mm above its tallest part. Nothing may stand more than 5 mm
   above the board (the USB-C connectors are the tallest): solder the XIAO,
-  the charger and the MiniBoost flat, use right-angle pins for J2 and J3,
-  and trim the joints underneath to 1.2 mm.
+  the charger and the MiniBoost flat, solder the J2 and J3 wires straight
+  into the board (there's no room for connectors), and trim the joints
+  underneath to 1.2 mm.
 - **The HAT's inputs:** while its supply is off, the firmware floats every
   line to the HAT (`panel_release_lines()`), so no pin can power the IT8951
   through its input protection diodes.
@@ -86,17 +87,25 @@ pins), or they can't wake the ESP32-S3.
   than 3 mm, so its white 8-pin socket comes off too
   ([build guide](../docs/build-guide.md#3-prepare-the-driver-hat)). It sits
   on 1.5 mm standoffs, component side towards the panel.
-- **Wires:** the kit's 8-wire cable with its plug cut off. The bare ends are
-  soldered to the HAT's 5V, GND, MISO, MOSI, SCK, CS, RST and HRDY pads, and
-  the separate sockets at the other end go on the carrier's right-angle
-  1 × 8 header J2, pin 1 at the top, in that order. Go by the HAT's
-  silkscreen, not the wire colours.
+- **Wires:** the kit's 8-wire cable with its plug cut off, about 12 cm long.
+  One end is soldered to the HAT's 5V, GND, MISO, MOSI, SCK, CS, RST and HRDY
+  pads, the other straight into the carrier's J2 holes, 5V at the top, in
+  that order. Go by the HAT's silkscreen, not the wire colours.
 - **Panel:** the 40-pin flat cable goes from the small adapter board to the
   HAT. Lift the connector latch, slide the cable in square, contacts facing
   the right way (check the photos in Waveshare's manual), and close the latch.
 - **VCOM:** the panel's ribbon cable has a label with a voltage such as
   `-1.52V`. Enter it on the setup page (or later in Home Assistant). Each panel
   is different; the wrong value gives a washed-out or smudgy picture.
+
+## The button strip
+
+- **Lead:** four wires from the strip (BACK, REFRESH, NEXT, GND) to the
+  carrier's J3, soldered at both ends, with a 4-pin JST-PH pair (J4) inline
+  so the frame and the back cover come apart. The plug lies flat on the back
+  cover beside the adapter board.
+- **No resistors:** each switch pulls its GPIO to ground, against the
+  ESP32-S3's internal pull-up.
 
 ## Checks before the first power-up
 

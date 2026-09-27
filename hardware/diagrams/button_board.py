@@ -10,11 +10,11 @@ from svgkit import COL, Svg, circled
 PITCH = 2.54
 STRIP_W, STRIP_H = 84.0, 20.0           # mm
 CX, CY = STRIP_W / 2, STRIP_H / 2       # middle switch centre = strip centre
-SW_X = [-10 * PITCH, 0.0, 10 * PITCH]   # 25.4 mm apart: the grid's nearest to the caps' 26 mm
+SW_X = [-10 * PITCH, 0.0, 10 * PITCH]   # 25.4 mm apart, the same as the caps
 SW_NAMES = ["BACK", "REFRESH", "NEXT"]  # left to right, seen from the front
 SW_SYMBOL = ["◀", "●", "▶"]
 LEG_DX, LEG_DY = 2.5 * PITCH, PITCH     # legs 5 holes (12.7 mm) x 2 holes (5.08 mm) apart
-HOLE_X = 38.0                           # M2.5 mounting holes, either side of the middle switch
+HOLE_X = 14.5 * PITCH                   # M2.5 mounting holes: the 15th hole either side of the centre
 COLS = [CX + (k + 0.5) * PITCH for k in range(-16, 16)]   # half-pitch columns, so the legs land on holes
 ROWS = [CY + j * PITCH for j in range(-3, 4)]             # ROWS[3] is the switches' centre line
 BUS_Y = ROWS[6]                         # ground bus on the bottom row, clear of every leg
@@ -140,10 +140,10 @@ def lead(s: Svg, v: View) -> float:
     s.poly([(gx, gy), (x_gnd, gy), (x_gnd, top_y)], stroke=COL["gnd"], width=2.6)
     s.text(x_gnd + 4, top_y - 4, "GND", size=12, anchor="start", weight="bold", rotate=-90)
     left = min(v(*HOLE[n])[0] for n in SW_NAMES)
-    s.text(left - 16, v.top - 36, "4-wire lead, ~20 cm, to the carrier's", size=12.5, anchor="end",
-           fill=COL["text2"])
-    s.text(left - 16, v.top - 18, "1 × 4 header J3: BACK, REFRESH, NEXT, GND", size=12.5, anchor="end",
-           fill=COL["text2"])
+    s.text(left - 16, v.top - 36, "4-wire lead, about 5 cm, to one half of a 4-pin JST-PH pair (J4):",
+           size=12.5, anchor="end", fill=COL["text2"])
+    s.text(left - 16, v.top - 18, "pin 1 BACK, then REFRESH, NEXT, GND. The other half goes on to J3.",
+           size=12.5, anchor="end", fill=COL["text2"])
     return x_gnd
 
 
@@ -201,7 +201,7 @@ def build() -> str:
     s.dimension(front(CX, 0)[0], y_sw, front(CX + SW_X[2], 0)[0], y_sw, "25.4 mm", size=12)
     y_holes = front.bottom + 96
     s.dimension(front(CX - HOLE_X, 0)[0], y_holes, front(CX + HOLE_X, 0)[0], y_holes,
-                "76 mm between the Ø2.7 mm holes (±38)", size=12)
+                f"{2 * HOLE_X:.1f} mm (29 pitches) between the Ø2.7 mm holes", size=12)
     px_mid, _ = front(CX, CY)
     circled(s, px_mid + 52, front.bottom + 30, 1)
     rx_, ry_ = front(*leg(2, 1, 1))
@@ -228,16 +228,16 @@ def build() -> str:
     switch_detail(s, 860, 112)
     notes = [
         "① The middle switch sits at the strip's centre, the others 10 holes",
-        "    (25.4 mm) either side. The caps are 26 mm apart; their flat backs",
-        "    cover the difference.",
+        "    (25.4 mm) either side, the same spacing as the caps.",
         "② Push each switch flat onto the board; bend the legs in slightly to",
         "    fit the grid. Trim the legs to 2 mm under the board after soldering.",
-        "③ Drill two 2.7 mm holes on the centre line, 38 mm either side of the",
-        "    middle switch, for M2.5 screws into the bezel's inserts.",
+        "③ Drill out the 15th hole either side of the centre, on the middle",
+        "    row (the second hole in from each end), to 2.7 mm for the M2.5",
+        "    screws into the bezel's inserts.",
         "④ Signal: each switch's top-left leg (front view), insulated wire to",
         "    its hole above BACK. Ground: the diagonally opposite leg, to the bus.",
-        "⑤ The lead leaves at the left end (front view), where the tie blocks",
-        "    run up the back cover. Keep wires clear of the screw holes.",
+        "⑤ The lead leaves at the left end (front view), to its inline plug",
+        "    beside the adapter board. Keep the wires clear of the screw holes.",
         "The buttons pull D0, D1 and D2 (GPIO1–3) to ground. These are RTC",
         "pins, so any press wakes the display from deep sleep.",
     ]

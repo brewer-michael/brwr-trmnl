@@ -13,13 +13,12 @@ import math
 
 from svgkit import COL, Svg, text_w
 
-W, H = 1400, 1052
+W, H = 1400, 1200
 S = 12.6                     # px per mm
 BX, BY = 118, 196            # px of the board's top-left corner
 BW, BH = 70.0, 35.0
 PITCH = 2.54
 STRIP_Y = 1.05               # solder-side wire along the top margin, above the first hole row
-MARGIN_X = 34.3              # solder-side wire along the right margin
 
 # Part geometry (mm) ----------------------------------------------------------------
 XIAO = dict(x0=-16.51, y0=0.0, w=17.78, h=21.0)             # soldered flat, castellations on k7 / k13
@@ -30,7 +29,8 @@ U4 = dict(x0=13.25, y0=-0.5, w=17.5, h=28.0)                  # TP4056 module, U
 U4PADS = {"OUT−": 15.05, "B−": 19.45, "B+": 24.05, "OUT+": 28.45}
 U4PAD_Y = 25.8
 U3 = dict(x0=-34.925, y0=7.96, w=11.43, h=17.78)             # MiniBoost, header 2.54 mm above its bottom edge
-MOUNT = [(-30.0, 5.0), (30.0, 31.0)]                           # M2.5: 5 mm below the top / 4 mm above the bottom
+MOUNT = [(-31.75, 4.15), (31.75, 32.09)]                       # M2.5: the middle of the corner squares of four
+                                                               # holes, k0-k1 x r0-r1 and k25-k26 x r11-r12
 
 
 def hx(k):
@@ -70,13 +70,18 @@ M = lambda x, y: ("mm", x, y)
 WIRES = [
     # --- buses along the bottom: GND r10, 5V r11, VBAT r12
     ("gnd", "bus", [(16, 10), (1, 10)]),
-    ("v5", "bus", [(2, 11), (17, 11)]),
-    ("vbat", "bus", [(23, 12), (0, 12)]),
+    ("v5", "bus", [(3, 11), (17, 11)]),
+    ("vbat", "bus", [(23, 12), (1, 12)]),
     ("gnd", "bus", [(1, 8), (1, 10)]),                 # U3 GND
-    ("v5", "bus", [(2, 8), (2, 11)]),                  # U3 5V
-    ("vbat", "bus", [(0, 12), (0, 8)]),                # U3 VIN
-    # --- VBAT branch up the right margin and along the top margin to the XIAO's BAT+ wire
-    ("vbat", "pwr", [(23, 12), (26, 12), M(MARGIN_X, hy(12)), M(MARGIN_X, STRIP_Y), M(hx(8), STRIP_Y), (8, 3)]),
+    # U3 5V and VIN: insulated, the 5V crossing the GND bus between holes, VIN in the channel beside k0
+    # (k0 lies next to the left ledge, so nothing but U3's own pin is soldered there)
+    ("v5", "pwr", [(2, 8), (2, 9), (2.5, 9.5), (2.5, 10.5), (3, 11)]),
+    ("vbat", "pwr", [(1, 12), (0.5, 11.5), (0.5, 8.5), (0, 8)]),
+    # C3: two chips standing across (k1/k2, r11) GND and (k1/k2, r12) VBAT
+    ("gnd", "sig", [(1, 10), (1, 11), (2, 11)]),
+    # --- VBAT branch up the gap left of U4 and along the top margin to the XIAO's BAT+ wire
+    # (clear of the ledges and of the screw boss at the bottom right)
+    ("vbat", "pwr", [(18, 12), (17.5, 11.5), M(hx(17.5), STRIP_Y), M(hx(8), STRIP_Y), (8, 3)]),
     # --- 5V up to C2 and J2, GND from J2 / C2 down to the bus
     ("v5", "pwr", [(17, 11), (17, 2), (15, 2)]),
     ("gnd", "pwr", [(15, 3), (16, 3), (16, 10)]),
@@ -89,9 +94,10 @@ WIRES = [
     ("btn", "sig", [(7, 1), (5, 1)]),
     ("btn", "sig", [(7, 2), (5, 2)]),
     ("gnd", "sig", [(5, 3), (4.5, 3.5), (1.5, 3.5), (1.5, 8), (1, 8)]),
-    # --- EN: D5 -> U3 EN, and down to R4 (upright at k4, r9-r10)
+    # --- EN: D5 -> U3 EN, and under U1 to R4 (lying flat on r9, k8-k12; its other end to the GND bus)
     ("ctl", "sig", [(7, 5), (6.4, 5.6), (4.6, 5.6), (4, 6.2), (4, 7.4), (3, 8)]),
-    ("ctl", "sig", [(4, 7.4), (4, 9)]),
+    ("ctl", "sig", [(7, 5), (7.5, 5.5), (8.5, 5.5), (8.5, 8.5), (8, 9)]),
+    ("gnd", "sig", [(12, 9), (12, 10)]),
     # --- BATT_SENSE: D3 -> R2 top (k5, r6) and R1 top (k6, r8); C1 at (k7, r8)-(k7, r9)
     ("sense", "sig", [(7, 3), (6.3, 3.7), (5.6, 4.4), (5.6, 5.5), (5, 6)]),
     ("sense", "sig", [(5, 6), (6, 7), (6, 8)]),
@@ -111,12 +117,12 @@ WIRES = [
 WIDTH = {"bus": 5.0, "pwr": 4.0, "sig": 2.6}
 
 JOINTS = {
-    "gnd": [(1, 10), (5, 10), (4, 10), (7, 10), (16, 10), (16, 3), (15, 3), (13, 1), (1, 8), (5, 3),
-            (19, 11), (20, 11)],
-    "v5": [(2, 11), (17, 11), (17, 4), (17, 2), (15, 2), (2, 8)],
-    "vbat": [(0, 12), (0, 8), (6, 12), (1, 12), (23, 12), (8, 3), (21, 11), (22, 11)],
+    "gnd": [(1, 10), (1, 11), (2, 11), (5, 10), (7, 10), (12, 9), (12, 10), (16, 10), (16, 3), (16, 4), (16, 6),
+            (15, 3), (13, 1), (1, 8), (5, 3), (19, 11), (20, 11)],
+    "v5": [(3, 11), (17, 11), (17, 4), (17, 6), (17, 2), (15, 2), (2, 8)],
+    "vbat": [(1, 12), (2, 12), (0, 8), (6, 12), (18, 12), (23, 12), (8, 3), (21, 11), (22, 11)],
     "sense": [(7, 3), (5, 6), (6, 8), (7, 8)],
-    "ctl": [(7, 5), (3, 8), (4, 9), (7, 6), (10, 8), (14, 8), (15, 8), (15, 9), (13, 6)],
+    "ctl": [(7, 5), (3, 8), (8, 9), (7, 6), (10, 8), (14, 8), (15, 8), (15, 9), (13, 6)],
 }
 
 
@@ -199,42 +205,65 @@ def resistor(s: Svg, a, b, bands):
     return ("rect",) + box
 
 
-def ecap_top(s: Svg, cx, cy, dia, plus_ang, label):
-    """Standing electrolytic seen from above; plus_ang points to the + lead."""
-    r = dia / 2 * S
-    s.circle(cx, cy, r, fill="#20406e", stroke="#0d2240", width=1.4)
-    a = plus_ang + math.pi
-    a0, a1 = a - 0.8, a + 0.8
-    s.path(f"M {cx + r * math.cos(a0):.1f} {cy + r * math.sin(a0):.1f} A {r:.1f} {r:.1f} 0 0 1 "
-           f"{cx + r * math.cos(a1):.1f} {cy + r * math.sin(a1):.1f} "
-           f"L {cx + 0.6 * r * math.cos(a1):.1f} {cy + 0.6 * r * math.sin(a1):.1f} "
-           f"A {0.6 * r:.1f} {0.6 * r:.1f} 0 0 0 {cx + 0.6 * r * math.cos(a0):.1f} {cy + 0.6 * r * math.sin(a0):.1f} Z",
-           fill="#b0bec5", stroke="none", width=0)
-    s.text(cx, cy + 5, label, size=13, anchor="middle", weight="bold", fill="#ffffff")
-    s.text(cx + 0.72 * r * math.cos(plus_ang), cy + 0.72 * r * math.sin(plus_ang) + 5, "+", size=14,
-           anchor="middle", weight="bold", fill="#ffffff")
-    return ("circle", cx, cy, r)
+def chip(s: Svg, a, b, label):
+    """1210 ceramic capacitor (3.2 x 2.5 mm, ~2.5 mm tall) soldered flat across holes a and b."""
+    (x1, y1), (x2, y2) = P(*a), P(*b)
+    cx, cy = (x1 + x2) / 2, (y1 + y2) / 2
+    horiz = abs(x2 - x1) > abs(y2 - y1)
+    L, Wd, T = 3.2 * S, 2.5 * S, 0.55 * S
+    w, h = (L, Wd) if horiz else (Wd, L)
+    x0, y0 = cx - w / 2, cy - h / 2
+    s.rect(x0, y0, w, h, fill="#c9a77c", stroke="#6d5330", width=1.2, rx=2)
+    for e in (0, 1):     # tinned end terminations
+        if horiz:
+            s.rect(x0 + e * (w - T), y0, T, h, fill="#d8dde2", stroke="#6d5330", width=1, rx=1.5)
+        else:
+            s.rect(x0, y0 + e * (h - T), w, T, fill="#d8dde2", stroke="#6d5330", width=1, rx=1.5)
+    s.text(cx, cy + 4, label, size=11, anchor="middle", weight="bold", fill="#1a1a1a")
+    return ("rect", x0, y0, w, h)
 
 
-def ecap_flat(s: Svg, x0, y0, x1, y1, lead_end, label):
-    """Electrolytic lying flat (can outline x0..x1, y0..y1 in mm); lead_end 'bottom' or 'top'."""
-    mm_rect(s, x0, y0, x1 - x0, y1 - y0, fill="#20406e", stroke="#0d2240", width=1.4, rx=1.2 * S)
-    # minus stripe along the left side
-    mm_rect(s, x0 + 0.3, y0 + 0.9, 1.3, (y1 - y0) - 1.8, fill="#b0bec5", stroke="none", width=0, rx=2)
-    cy = (y0 + y1) / 2
-    s.text(px((x0 + x1) / 2 + 0.4), py(cy) + 5, label, size=13, anchor="middle", weight="bold", fill="#ffffff")
-    return ("rect", px(x0), py(y0), (x1 - x0) * S, (y1 - y0) * S)
+def hex_nut(s: Svg, x, y):
+    """M2.5 nut (5 mm across flats) on the component side, over a mounting hole (mm)."""
+    r = 2.5 / math.cos(math.pi / 6) * S
+    cx, cy = px(x), py(y)
+    pts = [(cx + r * math.cos(math.pi / 6 + i * math.pi / 3), cy + r * math.sin(math.pi / 6 + i * math.pi / 3))
+           for i in range(6)]
+    s.polygon(pts, fill="#cfd8dc", stroke="#607d8b", width=1.3, opacity=0.9)
+    s.circle(cx, cy, 1.35 * S, fill="#ffffff", stroke="#616161", width=1.4)
 
 
-def header_v(s: Svg, k, r0, n, pin_colors=None):
-    """Vertical 1 x n male header."""
-    x0, y0 = px(hx(k) - 1.27), py(hy(r0) - 1.27)
-    s.rect(x0, y0, 2.54 * S, 2.54 * n * S, fill="#263238", stroke="#000000", width=1, rx=2)
+def pads_v(s: Svg, k, r0, n):
+    """Vertical row of n holes with wires soldered straight in (no header)."""
     for i in range(n):
         cx, cy = P(k, r0 + i)
-        s.rect(cx - 4.2, cy - 4.2, 8.4, 8.4, fill=(pin_colors or {}).get(i, "#d4af37"), stroke="#6d5b1f",
-               width=0.8, rx=1)
-    return ("rect", x0, y0, 2.54 * S, 2.54 * n * S)
+        s.rect(cx - 4.4, cy - 4.4, 8.8, 8.8, fill="#d4af37", stroke="#6d5b1f", width=0.9, rx=1.5)
+        s.circle(cx, cy, 2.2, fill="#5d4a12", stroke="none", width=0)
+
+
+def lead_bundle(s: Svg, pts_mm, colors, gap=3.0):
+    """Wires soldered into a row of holes, gathered into a flat bundle on the component side (mm points)."""
+    pts = [Q(x, y) for x, y in pts_mm]
+    d = path_d(pts, rad=14)
+    n = len(colors)
+    wd = gap * n + 3.6
+    s.path(d, stroke="#212121", width=wd)
+    for i, c in enumerate(colors):
+        o = (i - (n - 1) / 2) * gap
+        s.path(path_d(offset_px(pts, o), rad=14), stroke=c, width=gap - 0.8)
+    return ("poly", offset_px(pts, wd / 2) + offset_px(pts, -wd / 2)[::-1])
+
+
+def offset_px(pts, dist):
+    """Offset a px polyline sideways (for the wires in a bundle)."""
+    out = []
+    for i, (x, y) in enumerate(pts):
+        a = pts[max(i - 1, 0)]
+        b = pts[min(i + 1, len(pts) - 1)]
+        dx, dy = b[0] - a[0], b[1] - a[1]
+        n = math.hypot(dx, dy) or 1
+        out.append((x - dy / n * dist, y + dx / n * dist))
+    return out
 
 
 def xiao_pads(s: Svg):
@@ -262,8 +291,7 @@ def draw_board(s: Svg):
             s.circle(cx, cy, 0.8 * S, fill="#dcc08d", stroke="none", width=0)
             s.circle(cx, cy, 0.42 * S, fill="#ffffff", stroke="none", width=0)
     for mx, my in MOUNT:
-        s.circle(px(mx), py(my), 2.75 * S, fill="none", stroke="#9e9e9e", width=1, stroke_dasharray="3 3")
-        s.circle(px(mx), py(my), 1.35 * S, fill="#ffffff", stroke="#616161", width=1.6)
+        hex_nut(s, mx, my)
     s.line(px(0), py(0) - 26, px(0), py(35) + 26, stroke="#9e9e9e", width=1, stroke_dasharray="10 4 2 4")
 
     # solder-side wires (white halo marks crossings: insulated, not joined)
@@ -325,45 +353,26 @@ def draw_board(s: Svg):
         s.rect(cx_ - 4.2, cy_ - 4.2, 8.4, 8.4, fill="#d4af37", stroke="#6d5b1f", width=0.8, rx=1)
         s.text(cx_, cy_ - 11, nm, size=11, anchor="middle", fill="#ffffff", weight="bold")
 
-    # headers
-    clips.append(header_v(s, 15, 2, 8))
-    clips.append(header_v(s, 5, 0, 4))
-
-    # J1: JST-PH side entry at the bottom edge, mouth facing down; pins (k20, r11) -, (k21, r11) +
-    jx = (hx(20) + hx(21)) / 2
-    mm_rect(s, jx - 3.95, hy(11) - 1.6, 7.9, 5.6, fill="#f5f0e1", stroke="#8d8672", width=1.3, rx=0.5 * S)
-    mm_rect(s, jx - 3.0, hy(11) + 1.6, 6.0, 2.2, fill="#e3dcc6", stroke="#b0a888", width=1, rx=2)
-    for k in (20, 21):
-        cx_, cy_ = P(k, 11)
-        s.rect(cx_ - 3.4, cy_ - 3.4, 6.8, 6.8, fill="#d4af37", stroke="#6d5b1f", width=0.8, rx=1)
-    s.text(P(20, 11)[0], P(20, 11)[1] + 22, "−", size=14, anchor="middle", weight="bold")
-    s.text(P(21, 11)[0], P(21, 11)[1] + 22, "+", size=14, anchor="middle", weight="bold")
-    clips.append(("rect", px(jx - 3.95), py(hy(11) - 1.6), 7.9 * S, 5.6 * S))
+    # J2, J3: no header; the wires are soldered straight into the holes (drawn after the hidden overlay)
+    # J1: the JST-PH pigtail's two leads, soldered into (k20, r11) - and (k21, r11) +
 
     # resistors, C1
     clips.append(resistor(s, (5, 6), (5, 10), BANDS["220k1"]))       # R2
     clips.append(resistor(s, (6, 8), (6, 12), BANDS["220k1"]))       # R1
     clips.append(resistor(s, (10, 8), (14, 8), BANDS["1k"]))         # R3
-    # R4 upright: body over (k4, r10), bent lead to (k4, r9)
-    (rx1, ry1), (rx2, ry2) = P(4, 9), P(4, 10)
-    s.line(rx1, ry1, rx2, ry2, stroke="#9e9e9e", width=2.2)
-    s.circle(rx2, ry2, 1.3 * S, fill="#ead2a4", stroke="#8d6e3f", width=1.2)
-    s.circle(rx2, ry2, 0.9 * S, fill="none", stroke="#fbc02d", width=2.2)
-    clips.append(("circle", rx2, ry2, 1.3 * S))
+    clips.append(resistor(s, (8, 9), (12, 9), BANDS["4k7"]))        # R4, lying flat below U1
     (c1x, c1y), (c2x, c2y) = P(7, 8), P(7, 9)
     s.line(c1x, c1y, c2x, c2y, stroke="#9e9e9e", width=2)
     s.rect(c1x - 1.3 * S, (c1y + c2y) / 2 - 2.0 * S, 2.6 * S, 4.0 * S, fill="#e0a526", stroke="#8d6200",
            width=1.2, rx=1.2 * S)
     clips.append(("rect", c1x - 1.3 * S, (c1y + c2y) / 2 - 2.0 * S, 2.6 * S, 4.0 * S))
 
-    # electrolytics: C2 lying flat in the pocket right of J2, C3 standing low-profile at U3's input
-    clips.append(ecap_flat(s, 6.55, 0.75, 12.85, 11.95, "bottom", "C2"))
-    for k in (16, 17):
-        x_, y_ = P(k, 4)
-        s.line(x_, py(11.95), x_, y_, stroke="#9e9e9e", width=2.2)
-    s.text(P(17, 4)[0] + 1, py(11.2), "+", size=14, anchor="middle", weight="bold", fill="#ffffff")
-    c3 = P(1, 11)
-    clips.append(ecap_top(s, c3[0], c3[1], 6.3, math.pi / 2, "C3"))
+    # ceramic chips, 1210, each soldered flat across two adjacent pads: C2 (2 x 47 uF) between J2's
+    # GND drop (k16) and 5V riser (k17); C3 (2 x 100 uF) at U3's input, GND (r11) to VBAT (r12)
+    for r in (4, 6):
+        clips.append(chip(s, (16, r), (17, r), "C2"))
+    for k in (1, 2):
+        clips.append(chip(s, (k, 11), (k, 12), "C3"))
 
     # SW4 position (right margin): wire link or switch leads between (k23, r10) and (k23, r12)
     (a1, b1), (a2, b2) = P(23, 10), P(23, 12)
@@ -371,10 +380,29 @@ def draw_board(s: Svg):
     s.path(d, stroke="#212121", width=6.4)
     s.path(d, stroke=COL["vbat"], width=3.8, stroke_dasharray="7 4")
 
+    # component-side leads (they hide the solder-side wires beneath them, like the parts do)
+    for k, col in ((20, COL["gnd"]), (21, COL["vbat"])):          # J1: JST-PH pigtail, off the bottom edge
+        x_, y_ = P(k, 11)
+        d = path_d([(x_, y_), (x_, py(35) + 12)])
+        s.path(d, stroke="#212121", width=6.4)
+        s.path(d, stroke=col, width=3.8)
+        clips.append(("rect", x_ - 3.2, y_, 6.4, py(35) + 12 - y_))
+    s.text(P(20, 11)[0] - 11, py(35) + 12, "−", size=14, anchor="end", weight="bold")
+    s.text(P(21, 11)[0] + 11, py(35) + 12, "+", size=14, anchor="start", weight="bold")
+    # J2: 8 wires to the HAT, gathered along the column and off the bottom edge
+    clips.append(lead_bundle(s, [(hx(15), hy(9)), (hx(15), 35.5)],
+                             [COL[c] for c in ("v5", "gnd", "spi", "spi", "spi", "spi", "ctl", "ctl")], gap=2.9))
+    s.line(px(hx(15)), py(hy(2)), px(hx(15)), py(hy(9)), stroke="#212121", width=6)
+    # J3: 4 wires to the button board, past U3's right edge and out through the tray's wire gap
+    clips.append(lead_bundle(s, [(hx(5), hy(3)), (-22.4, 13.4), (-22.4, 31.2), (-26.8, 35.5)],
+                             [COL["btn"], COL["btn"], COL["btn"], COL["gnd"]], gap=2.9))
+    s.line(px(hx(5)), py(hy(0)), px(hx(5)), py(hy(3)), stroke="#212121", width=6)
+
     # hidden solder-side wires under parts: dashed overlay clipped to the part outlines
     shapes = "".join(
         f'<rect x="{c[1]:.1f}" y="{c[2]:.1f}" width="{c[3]:.1f}" height="{c[4]:.1f}"/>' if c[0] == "rect"
-        else f'<circle cx="{c[1]:.1f}" cy="{c[2]:.1f}" r="{c[3]:.1f}"/>' for c in clips)
+        else f'<circle cx="{c[1]:.1f}" cy="{c[2]:.1f}" r="{c[3]:.1f}"/>' if c[0] == "circle"
+        else '<polygon points="' + " ".join(f"{x:.1f},{y:.1f}" for x, y in c[1]) + '"/>' for c in clips)
     s.defs.append(f'<clipPath id="hid">{shapes}</clipPath>')
     inner = []
     for net, cls, pts in WIRES:
@@ -386,6 +414,12 @@ def draw_board(s: Svg):
                      f'stroke-dasharray="6 4" stroke-linecap="butt"/>')
     s.add('<g clip-path="url(#hid)">' + "".join(inner) + "</g>")
     xiao_pads(s)
+    pads_v(s, 15, 2, 8)     # J2
+    pads_v(s, 5, 0, 4)      # J3
+    for k, col in ((20, COL["gnd"]), (21, COL["vbat"])):
+        x_, y_ = P(k, 11)
+        s.rect(x_ - 4.4, y_ - 4.4, 8.8, 8.8, fill="#d4af37", stroke="#6d5b1f", width=0.9, rx=1.5)
+        s.circle(x_, y_, 2.2, fill="#5d4a12", stroke="none", width=0)
 
     # component-side wires: U4 pads to the grid, XIAO BAT+ lead
     pad = lambda n: (px(U4PADS[n]), py(U4PAD_Y))
@@ -430,22 +464,24 @@ def annotate(s: Svg):
     tag(s, px(-20.32), 152, "J3")
     leader(s, px(-20.32), py(1.6), px(-20.32), 161)
     tag(s, px(5.08), py(4.35), "J2")
-    tag(s, px(-2.54), py(26.0), "R3")
-    s.text(px(-26.9), py(5) + 4, "M2.5", size=11, weight="bold", fill=COL["text2"])
+    s.text(px(-28.3), py(4.15) + 4, "M2.5", size=11, weight="bold", fill=COL["text2"])
     row1, row2 = py(35) + 24, py(35) + 52
-    for name, x, y_part, row in (("R4", hx(4), hy(10) + 1.3, row1), ("R1", hx(6), 31.45, row1),
-                                 ("R2", hx(5), 26.35, row2), ("C1", hx(7), 26.5, row2),
-                                 ("J1 battery", (hx(20) + hx(21)) / 2, 34.0, row1), ("SW4", hx(23), 33.4, row2),
-                                 ("M2.5", 30.0, 32.4, row1)):
+    for name, x, y_part, row in (("R2", hx(5), 26.35, row2), ("R1", hx(6), 31.45, row1),
+                                 ("C1", hx(7), 26.5, row2), ("R4", hx(10), hy(9) + 1.25, row1),
+                                 ("R3", -0.9, hy(8) + 1.25, row2), ("SW4", hx(23), 33.4, row2),
+                                 ("M2.5", 31.75, 34.9, row1)):
         leader(s, px(x), py(y_part), px(x), row - 11)
         tag(s, px(x), row, name)
+    tag(s, px((hx(20) + hx(21)) / 2), row1, "J1 pigtail")
+    s.text(px(hx(15)), row1 + 9, "8 wires to U2", size=12, anchor="middle", weight="bold")
+    s.text(px(-28.0), row1 + 9, "4 wires to the buttons", size=12, anchor="middle", weight="bold")
 
     # ---- right panel: header pinouts and parts
     x0 = 1030
     y = 150
     s.text(x0, y, "J2 → HAT", size=14, weight="bold")
-    s.text(x0 + 76, y, "kit PH2.0 8-pin cable, pin 1 at the top", size=12, fill=COL["text2"])
-    rows = [("5V", "v5", "U3 5V (5V_EPD), C2+"), ("GND", "gnd", "GND"), ("MISO", "spi", "U1 D9 · GPIO8"),
+    s.text(x0 + 76, y, "the kit's 8 wires, pin 1 at the top", size=12, fill=COL["text2"])
+    rows = [("5V", "v5", "U3 5V (5V_EPD), C2"), ("GND", "gnd", "GND"), ("MISO", "spi", "U1 D9 · GPIO8"),
             ("MOSI", "spi", "U1 D10 · GPIO9"), ("SCK", "spi", "U1 D8 · GPIO7"), ("CS", "spi", "U1 D4 · GPIO5"),
             ("RST", "ctl", "U1 D6 · GPIO43, via R3"), ("HRDY", "ctl", "U1 D7 · GPIO44")]
     for i, (nm, key, to) in enumerate(rows):
@@ -454,7 +490,13 @@ def annotate(s: Svg):
         s.line(x0 + 20, yy - 4, x0 + 40, yy - 4, stroke=COL[key], width=4, stroke_linecap="butt")
         s.text(x0 + 48, yy, nm, size=12.5, weight="bold")
         s.text(x0 + 104, yy, to, size=12.5)
-    y = y + 24 + 8 * 20 + 16
+    y = y + 24 + 7 * 20 + 24
+    for i, r in enumerate(["Soldered straight on here (note 6). At the HAT the",
+                           "kit cable's plug is cut off and its 8 wires are soldered",
+                           "to the HAT's pads (its 8-pin socket and 2×20 header",
+                           "come off)."]):
+        s.text(x0, y + i * 17, r, size=12, fill=COL["text2"])
+    y = y + 3 * 17 + 30
     s.text(x0, y, "J3 → button board", size=14, weight="bold")
     s.text(x0 + 150, y, "4-wire lead, pin 1 at the top", size=12, fill=COL["text2"])
     for i, (nm, key, to) in enumerate([("BACK", "btn", "U1 D0 · GPIO1"), ("REFRESH", "btn", "U1 D1 · GPIO2"),
@@ -464,15 +506,20 @@ def annotate(s: Svg):
         s.line(x0 + 20, yy - 4, x0 + 40, yy - 4, stroke=COL[key], width=4, stroke_linecap="butt")
         s.text(x0 + 48, yy, nm, size=12.5, weight="bold")
         s.text(x0 + 124, yy, to, size=12.5)
-    y = y + 24 + 4 * 20 + 16
+    y = y + 24 + 3 * 20 + 24
+    for i, r in enumerate(["Soldered straight on here (note 6). The lead has an",
+                           "inline 4-pin JST-PH plug (J4), so the case comes apart."]):
+        s.text(x0, y + i * 17, r, size=12, fill=COL["text2"])
+    y = y + 17 + 30
     s.text(x0, y, "J1 → battery", size=14, weight="bold")
-    s.text(x0 + 104, y, "JST-PH 2-pin, side entry", size=12, fill=COL["text2"])
-    s.text(x0, y + 22, "− to U4 B−, + to U4 B+", size=12.5)
-    y = y + 22 + 30
+    s.text(x0 + 104, y, "JST-PH 2-pin pigtail", size=12, fill=COL["text2"])
+    s.text(x0, y + 22, "Its leads: − to U4 B−, + to U4 B+.", size=12.5)
+    s.text(x0, y + 40, "Check the battery's plug with a meter first.", size=12.5)
+    y = y + 40 + 30
     s.text(x0, y, "Parts", size=14, weight="bold")
     parts = [("R1, R2", "220 kΩ 1 % (red red black orange brown)"), ("R3", "1 kΩ (brown black red)"),
-             ("R4", "4.7 kΩ (yellow violet red), upright"), ("C1", "100 nF ceramic"),
-             ("C2", "220 µF 10 V low-ESR, lying flat"), ("C3", "470 µF 6.3 V low-ESR, ≤ 8 mm tall"),
+             ("R4", "4.7 kΩ (yellow violet red)"), ("C1", "100 nF ceramic"),
+             ("C2", "2 × 47 µF 10 V X5R, 1210"), ("C3", "2 × 100 µF 6.3 V X5R, 1210"),
              ("SW4", "optional power switch, or a wire link")]
     for i, (a_, b_) in enumerate(parts):
         yy = y + 22 + i * 19
@@ -480,7 +527,7 @@ def annotate(s: Svg):
         s.text(x0 + 58, yy, b_, size=12.5)
 
     # ---- legend, line styles, notes
-    ly = 736
+    ly = 802
     s.legend(40, ly, keys=["vbat", "v5", "gnd", "spi", "ctl", "btn", "sense"], cols=2, col_w=292,
              title="Colour code")
 
@@ -489,7 +536,7 @@ def annotate(s: Svg):
     s.text(kx + 12, ly + 22, "Wires", size=13, weight="bold")
     items = [
         ("sig", "Solder-side wire, seen through the board"),
-        ("bus", "Bus wire, 20–22 AWG"),
+        ("bus", "Power: bus wire or 26 AWG"),
         ("jump", "Insulated wire on the component side"),
         ("hid", "Dashed: runs under a part"),
         ("dot", "Solder joint"),
@@ -517,18 +564,26 @@ def annotate(s: Svg):
             s.line(cx, cy, cx + 40, cy, stroke=COL["ctl"], width=2.6)
         s.text(cx + 52, cy + 4.5, label, size=12.5)
 
-    ny = 884
+    ny = 950
     notes = [
-        "U1 is soldered flat, flush with the top edge. Both USB-C connectors overhang the top edge by 1.5 mm.",
+        "U1 and U4 are soldered flat. U1's end is on the outline's top edge, 2.9 mm above the first row of holes, "
+        "and both USB-C connectors reach 1.5 mm past that edge, level with each other.",
         "Before fitting U1, solder a short wire to its BAT+ pad and pass it through the hole beneath it. "
         "BAT− is the same net as the GND pin.",
-        "VBAT_SYS leaves SW4 along the bottom (U3, C3, R1) and along the top margin (U1 BAT+). GND and 5V_EPD "
-        "run along the bottom.",
-        "The enclosure leaves 9 mm above the board: lay C2 flat, use a low-profile C3, and fit J2 and J3 with "
-        "right-angle pins, or solder the leads.",
-        "U4's pad order varies between makers: follow its silkscreen. J1 is 2.0 mm pitch: splay its pins. "
-        "Check the battery's polarity with a meter.",
-        "M2.5 holes, from the top-left corner: 5 mm right and 5 mm down; 65 mm right and 31 mm down.",
+        "VBAT_SYS runs from SW4 along the bottom (U3, C3, R1), and up left of U4 and along the top margin (U1 BAT+). "
+        "GND and 5V_EPD run along the bottom.",
+        "The board sits in a 0.8 mm recess in the back cover, on ledges along its left and right edges (the left "
+        "one notched under U3's VIN pin) and on the two screw bosses: trim the joints underneath to 1.2 mm.",
+        "Nothing may stand more than 5 mm above the board (the USB-C connectors are the tallest). R1–R4 and C1 "
+        "lie flat; C2 and C3 are 1210 chips, each soldered flat across two pads.",
+        "J2, J3: there's no room for connectors between U1, U3 and U4, so the wires are soldered straight in. The "
+        "button lead has an inline JST-PH plug (J4) instead.",
+        "U4's pad order varies between makers: follow its silkscreen. Check the battery plug's polarity against "
+        "J1's leads with a meter.",
+        "Cut 27 × 13 holes. Cut midway between holes (68.6 × 33 mm), or up to the 70 × 35 mm outline drawn: the "
+        "screws, not the edges, place the board.",
+        "M2.5 holes: drill 2.7 mm through the middle of the four holes in the top-left and bottom-right corners, "
+        "where the drill centres itself. Countersunk screws from the back, nuts on top.",
     ]
     s.rect(40, ny, 1320, 34 + len(notes) * 22, fill=COL["note"], stroke=COL["noteline"], width=1.2, rx=6)
     s.text(54, ny + 24, "Notes", size=13, weight="bold")

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from svgkit import COL, Svg, circled, ground, text_w
 
-W, H = 1400, 1045
+W, H = 1400, 1065
 PIN = 20  # pin stub length
 
 
@@ -146,10 +146,11 @@ def build() -> str:
     battery_v(s, bx, RAIL, 210)
     s.line(bx, RAIL, 180, RAIL, stroke=COL["vbat"], width=2.4)
     s.line(bx, 210, 180, 210, stroke=COL["gnd"], width=2.4)
-    s.lines(36, 136, [("BT1", dict(weight="bold", size=13)), "LiPo 3.7 V", "5000 mAh", "JST-PH"], size=12, lh=16)
+    s.lines(36, 136, [("BT1", dict(weight="bold", size=13)), "LiPo 3.7 V", "5000 mAh", "JST-PH plug"], size=12,
+            lh=16)
     circled(s, 116, 244, 4)
-    s.lines(36, 272, ["Check polarity with a meter:", "JST-PH polarity is not standard."], size=12, lh=16,
-            fill=COL["text2"])
+    s.lines(36, 268, ["It plugs into J1, a JST-PH pigtail on the carrier.", "Check its polarity with a meter:",
+                      "JST-PH polarity is not standard."], size=12, lh=16, fill=COL["text2"])
 
     # ---- U4 charger
     u4 = module(s, 200, 90, 130, 150, ["U4", "TP4056", "+ DW01A"],
@@ -176,9 +177,9 @@ def build() -> str:
     for xx in (X_R1, X_BATP, X_C3):
         s.dot(xx, RAIL, COL["vbat"], 4.5)
     # C3 bulk cap at the booster input
-    cap_v(s, X_C3, RAIL, 190, COL["vbat"], polar=True)
+    cap_v(s, X_C3, RAIL, 190, COL["vbat"])
     ground(s, X_C3, 190)
-    s.lines(X_C3 + 20, 152, [("C3 470 µF", dict(weight="bold")), "6.3 V low-ESR"], size=12, lh=15)
+    s.lines(X_C3 + 20, 152, [("C3 2 × 100 µF", dict(weight="bold")), "6.3 V X5R 1210"], size=12, lh=15)
 
     # ---- U3 MiniBoost
     X_EN = 880
@@ -204,10 +205,10 @@ def build() -> str:
     s.label_box(1110, RAIL - 18, "5V_EPD", "v5", size=12.5)
     s.text(1110, RAIL + 22, "5.2 V, off in sleep", size=11.5, anchor="middle", fill=COL["text2"])
     s.dot(X5, 372, COL["v5"], 4.5)
-    s.line(1060, 372, X5, 372, stroke=COL["v5"], width=2.4)
-    cap_v(s, 1060, 372, 420, COL["v5"], polar=True)
-    ground(s, 1060, 420)
-    s.lines(1078, 396, [("C2 220 µF", dict(weight="bold")), "10 V low-ESR"], size=12, lh=15)
+    s.line(1050, 372, X5, 372, stroke=COL["v5"], width=2.4)
+    cap_v(s, 1050, 372, 420, COL["v5"])
+    ground(s, 1050, 420)
+    s.lines(1068, 396, [("C2 2 × 47 µF", dict(weight="bold")), "10 V X5R 1210"], size=12, lh=15)
 
     # ---- U1 XIAO ESP32-S3
     ys = dict(MISO=480, MOSI=520, SCK=560, CS=600, RST=640, HRDY=680)
@@ -231,7 +232,7 @@ def build() -> str:
     # antenna
     s.line(770, 400, 770, 386, stroke=COL["coax"], width=2.2, stroke_dasharray="5 3")
     antenna(s, 770, 386)
-    s.lines(756, 366, [("ANT1", dict(weight="bold")), "2.4 GHz FPC"], size=12, lh=15, anchor="end")
+    s.lines(754, 357, [("ANT1", dict(weight="bold")), "Taoglas", "FXP831"], size=12, lh=14, anchor="end")
 
     # ---- U2 HAT
     u2 = module(s, 1110, 450, 150, 270, ["U2", "IT8951", "Driver HAT (B)", "DIP: SPI"],
@@ -305,9 +306,11 @@ def build() -> str:
         s.dot(xg, y, COL["gnd"], 4)
     s.line(xg, 620, xg, 740, stroke=COL["gnd"], width=2)
     ground(s, xg, 740)
-    s.lines(36, 628, ["Internal pull-ups,", "no resistors.", "Common side", "to GND."], size=12, lh=16,
+    s.lines(36, 628, ["Internal pull-ups,", "no resistors.", "Common side", "to GND.", "",
+                      "SW1–SW3: Omron B3F-4000,", "12 × 12 × 4.3 mm, flat plunger"], size=12, lh=16,
             fill=COL["text2"])
-    s.text(36, 780, "On the button board, via J3 (carrier) and a 4-wire lead.", size=11.5, fill=COL["text2"])
+    s.text(36, 780, "On the button board: a 4-wire lead to J3, with an inline JST-PH plug (J4).", size=11.5,
+           fill=COL["text2"])
 
     # ---- notes, legend, title block
     notes = [
@@ -315,12 +318,13 @@ def build() -> str:
         "② R4 keeps the booster off until firmware enables it (MiniBoost EN has a",
         "    100 kΩ pull-up to VIN; with EN low, VOUT is disconnected from VIN).",
         "③ HAT DIP switches: SPI. The HAT drives the panel through the kit's adapter board.",
-        "④ Check BT1 polarity with a meter before plugging it into J1.",
+        "④ BT1 plugs into J1, a JST-PH pigtail on the carrier: check the plug's polarity first.",
         "⑤ U4 B− is the battery side of the protection FETs: not GND.",
-        "U2 connects through J2 (1×8 on the carrier) and the kit's PH2.0 8-pin cable.",
+        "U2 ↔ J2: the kit's 8-wire cable with its plug cut off, soldered to the HAT's SPI pads",
+        "    (its 8-pin socket and 2×20 Pi header come off) and to J2 on the carrier.",
         "U1 USB-C: firmware and logs. U4 USB-C: charging. U1 5V and 3V3: not connected.",
     ]
-    s.rect(20, 815, 660, 210, fill=COL["note"], stroke=COL["noteline"], width=1.2, rx=8)
+    s.rect(20, 815, 660, 230, fill=COL["note"], stroke=COL["noteline"], width=1.2, rx=8)
     s.text(34, 840, "Notes", size=13, weight="bold")
     for i, r in enumerate(notes):
         ind = 20 if r.startswith("    ") else 0
@@ -329,7 +333,7 @@ def build() -> str:
 
     s.legend(700, 815, title="Colour code", col_w=330, size=12.5)
 
-    tb_x, tb_y, tb_w, tb_h = 1060, 815, 320, 210
+    tb_x, tb_y, tb_w, tb_h = 1060, 815, 320, 230
     s.rect(tb_x, tb_y, tb_w, tb_h, fill="#ffffff", stroke=COL["line"], width=1.6, rx=4)
     s.text(tb_x + 14, tb_y + 34, "brwr-trmnl v1 — schematic", size=17, weight="bold")
     rows = [("Date", "2026-09-26"), ("Licence", "GPL-3.0"), ("Sheet", "1 of 1"),
