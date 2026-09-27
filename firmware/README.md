@@ -2,6 +2,12 @@
 
 created for the [TRMNL](https://trmnl.com) e-ink display.
 
+> [!NOTE]
+> **brwr-trmnl:** apart from this note, this is TRMNL's own README. For the
+> brwr-trmnl board (building, flashing, and what changed) see
+> [BRWR.md](BRWR.md). TRMNL's Flash Assistant and released images are built
+> for TRMNL's devices, not for this hardware.
+
 > [!IMPORTANT]
 > the `main` branch is under constant development and may contain breaking changes. flash at your own risk.
 >
