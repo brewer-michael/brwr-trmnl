@@ -83,7 +83,11 @@ wall, so it prints almost solid.
   - 4 × self-adhesive rubber pads, Ø25 × 1 mm
 - **Steel:** about 0.75 m of 3 mm mild steel rod (see the cut list below).
 - **Switches:** 3 × Omron B3F-4000 (12 × 12 × 4.3 mm, flat plunger) on an
-  84 × 20 mm protoboard strip.
+  84 × 20 mm protoboard strip, 25.4 mm (10 holes) apart.
+- **Button lead plug:** a pre-wired 4-pin JST-PH pair, inline in the button
+  lead, so the frame and the back cover come apart. It lies flat on the back
+  cover beside the adapter board, centred at (−50, −53) (`btn_plug_pos`), and
+  the clash check includes it.
 - **Antenna:** Taoglas FXP831 (45 × 7 mm FPC, 100 mm of 1.37 mm coax, U.FL).
 - **Foam:**
   - a 0.5 mm gasket on the window lip
@@ -167,17 +171,20 @@ where the charger's USB-C plus 1 mm of air takes over. The model refuses a
      from outside and nuts on the component side.
    - **Carrier:** trim its joints to 1.2 mm. It rests on the two ledges of its
      recess and is held by M2.5 × 6 countersunk screws from outside, nuts on
-     top. Measured from the board's top-left corner with the components facing
-     you, one hole is 5 mm right and 5 mm down, the other 65 mm right and
-     31 mm down.
+     top. Its two holes are drilled 2.7 mm through the middle of the four
+     holes in its top-left and bottom-right corners (components facing you),
+     so they sit on the protoboard's grid: X ±31.75 mm, 4.15 mm and 32.09 mm
+     below the top of its 70 × 35 mm outline. A notch in the left ledge clears
+     the MiniBoost's VIN joint.
    - **Battery:** on its foam pad in the cradle recess, lead out through the
      slot toward the middle.
    - **Antenna:** stick it into the recess on the inside of the top wall
      (X 38–83, front edge against the front plate). Run the coax over the
      carrier to the XIAO's U.FL.
-8. **Close up.** Put foam strips on the rib pads and the magnet tubes, tie the
-   button wires up the back at X = −30, and close the case with the nine M3
-   screws. The two tongues on the back cover close the bottom of the USB
+8. **Close up.** Put foam strips on the rib pads and the magnet tubes, plug
+   the button lead together and lay its plug flat beside the adapter board,
+   tie the button wires up the back at X = −30, and close the case with the
+   nine M3 screws. The two tongues on the back cover close the bottom of the USB
    slots.
 
 **On a wall:** the back is too thin for keyholes. Screw a thin steel plate to
@@ -278,12 +285,20 @@ toward the front.
   instead.
 - **Two small features moved for the button strip's recess.** The logo moved
   to Y = −58, and the lowest zip-tie block is gone.
+- **Screws and buttons sit on the protoboards' 2.54 mm grid,** so they can be
+  drilled where the grid says rather than measured.
+  - The carrier's screws are in the middle of its corner squares of four
+    holes, at X ±31.75, 4.15 and 32.09 mm below its top edge (brief ±30;
+    first pass 5 and 31 mm). A 2.7 mm drill centres itself there.
+  - The strip's screws are its holes at X ±36.83 (brief ±38).
+  - The buttons are 25.4 mm (10 holes) apart (brief 26).
+  - A notch in the carrier's left ledge clears the MiniBoost's VIN joint,
+    which lands on the ledge.
 - **Kept from the first pass:**
   - magnets at (±90, ±65) under a 36 mm board rule (the brief had ±58 and
     30 mm)
   - a cap preload of −0.2 mm (a gap)
   - the cap keyway
-  - the right carrier screw 4 mm above the board's bottom edge
   - USB slots open toward the back edge and closed by tongues
   - the engraved logo
   - the 144 mm flex relief

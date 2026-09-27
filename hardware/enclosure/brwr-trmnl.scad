@@ -110,11 +110,16 @@ car_floor = 0.8;         // mm, back plate left under the board's recess (lead)
 car_ledge_h = 1.2;       // mm, ledges that carry the board; room for its solder joints (lead)
 car_ledge_w = 1.5;       // mm, ledge width along the board's left and right edges (design)
 car_air_min = 1.0;       // mm, minimum gap from the tallest part to the panel or rim (design)
-car_boss_d = 6.5;        // mm, screw boss diameter in the recess (design)
+car_boss_d = 6.0;        // mm, screw boss diameter in the recess (design: clears the joints one hole out)
 car_clear = 0.4;         // mm, board to tray rim, per side (design)
 car_tray_wall = 1.2;     // mm, tray rim thickness (design)
 car_tray_rim = 1.0;      // mm, rim height above the PCB underside (design)
-car_screws = [[-30, 30], [30, 4]]; // mm, M2.5 screws as [X, height above the board's bottom edge] (spec -30/+30; right one moved, see README)
+car_screws = [[-31.75, 30.85], [31.75, 2.91]]; // mm, M2.5 screws as [X, height above the board's bottom edge]: the middle of the
+                         // top-left and bottom-right corner squares of four protoboard holes, where a 2.7 mm drill centres
+                         // itself (spec -30/+30; moved onto the carrier layout's hole grid, see README)
+car_ledge_notches = [[-33.02, 23.2]]; // mm, joints that land on a ledge, as [X, depth below the board's top edge]: the
+                         // MiniBoost's VIN pin (carrier layout hole k0, r8) (design)
+car_notch_len = 4;       // mm, ledge cut away along the edge at each such joint: a 2 mm pad and 1 mm either side (design)
 car_screw_len = 6;       // mm, M2.5 x 6 countersunk from outside into a nut on the board (design)
 car_wire_gap = [-30, 9]; // mm, gap in the tray rim for incoming wires, [X centre, width] (design; edges not in line with the tie blocks)
 usb_x = [-8, 22];        // mm, USB-C centres: XIAO, charger (spec)
@@ -159,7 +164,7 @@ bat_lead_slot = 20;      // mm, slot in the cradle's -X wall for the lead (desig
 bat_air_min = 1.0;       // mm, minimum gap from the cell to the rib tops and panel (design)
 
 /* [Front buttons: Omron B3F-4000] */
-btn_x = [-26, 0, 26];    // mm, button centres (spec)
+btn_x = [-25.4, 0, 25.4]; // mm, button centres: 10 holes apart on the strip's 2.54 mm grid (spec 26)
 btn_y = -89;             // mm, button centres (design: below the flex relief, strip clears the bottom wall)
 sw_size = 12;            // mm, 12 x 12 tactile switch body (spec)
 sw_h = 4.3;              // mm, height incl. the flat plunger (Omron B3F-4000, lead)
@@ -171,8 +176,11 @@ strip_size = [84, 20];   // mm, protoboard strip W x H (spec)
 strip_t = 1.6;           // mm, protoboard thickness
 strip_solder_h = 2.0;    // mm, joints and screw heads behind the strip (design)
 strip_joint_clear = 0.3; // mm, joints to the recess floor under the strip (design)
-strip_screw_x = [-38, 38]; // mm, M2.5 insert bosses on the bezel (spec)
+strip_screw_x = [-36.83, 36.83]; // mm, M2.5 insert bosses on the bezel: the strip's holes 14.5 pitches either side of its centre (spec 38)
 strip_boss_d = 6;        // mm (design)
+btn_plug_pos = [-50, -53]; // mm, the button lead's inline 4-pin JST-PH pair, lying flat on the back cover
+                         // beside the adapter board, so the frame and the back cover come apart (design)
+btn_plug_size = [11, 16, 6]; // mm, the mated pair with heat-shrink, X x Y x Z (estimate)
 cap_d = 11;              // mm, cap face and stem (spec)
 cap_hole_d = 11.4;       // mm, hole in the front face (spec)
 cap_proud = 0.5;         // mm, cap face in front of the bezel face (spec 0 to 0.5)
@@ -929,9 +937,19 @@ module carrier_recess() {
 }
 
 module carrier_ledges() {
-  // the board rests on ledges along its left and right edges and on the two screw bosses
-  for (s = [-1, 1]) mirror([s < 0 ? 1 : 0, 0, 0])
-    box([car_hi[0] - car_ledge_w, car_rec_lo[1], car_floor - eps], [car_rec_hi[0], car_rec_hi[1], z_car_pcb]);
+  // the board rests on ledges along its left and right edges and on the two screw bosses;
+  // a notch in a ledge clears a joint that lands on it (the MiniBoost's VIN pin)
+  difference() {
+    for (s = [-1, 1]) mirror([s < 0 ? 1 : 0, 0, 0])
+      box([car_hi[0] - car_ledge_w, car_rec_lo[1], car_floor - eps], [car_rec_hi[0], car_rec_hi[1], z_car_pcb]);
+    for (n = car_ledge_notches) {
+      y = car_top - n[1];
+      x_in = sign(n[0]) * (car_hi[0] - car_ledge_w - cut_over);     // past the ledge's inner face
+      x_out = sign(n[0]) * (car_rec_hi[0] + cut_over);               // past the rim side
+      box([min(x_in, x_out), y - car_notch_len / 2, car_floor - eps - cut_over],
+          [max(x_in, x_out), y + car_notch_len / 2, z_car_pcb + cut_over]);
+    }
+  }
   for (p = car_screw_pos) translate([p[0], p[1], car_floor - eps]) cylinder(d = car_boss_d, h = z_car_pcb - car_floor + eps);
 }
 
@@ -1325,6 +1343,9 @@ module carrier_env(s = 0) {
     sbox([car_lo[0] + car_ledge_w, car_lo[1], z_car_pcb - car_ledge_h], [car_hi[0] - car_ledge_w, car_hi[1], z_car_pcb], s);
     for (p = car_screw_pos) translate([p[0], p[1], 0]) cylinder(d = car_boss_d + 2 * car_clear, h = depth);
   }
+  // and the ones in the ledge notches (2 mm pads)
+  for (n = car_ledge_notches)
+    sbox([n[0] - 1, car_top - n[1] - 1, z_car_pcb - car_ledge_h], [n[0] + 1, car_top - n[1] + 1, z_car_pcb], s);
   for (i = [0 : len(usb_x) - 1])
     sbox([usb_x[i] - usb_size[0] / 2, car_top + usb_overhang - usb_len, z_usb[i] - usb_size[1] / 2],
          [usb_x[i] + usb_size[0] / 2, car_top + usb_overhang, z_usb[i] + usb_size[1] / 2], s);
@@ -1359,6 +1380,11 @@ module strip_model() {
     // flat plunger at its free height, or pressed by the cap if preloaded
     color(c_metal) cylinder(d = sw_plunger_d, h = sw_h - max(cap_preload, 0));
   }
+}
+
+module btn_plug_env(s = 0) {
+  sbox([btn_plug_pos[0] - btn_plug_size[0] / 2, btn_plug_pos[1] - btn_plug_size[1] / 2, z_in],
+       [btn_plug_pos[0] + btn_plug_size[0] / 2, btn_plug_pos[1] + btn_plug_size[1] / 2, z_in + btn_plug_size[2]], s);
 }
 
 module strip_env(s = 0) {
@@ -1421,6 +1447,7 @@ module internals() {
   battery_model();
   antenna_model();
   strip_model();
+  color(c_cap) btn_plug_env();
   if (show_rods) color(c_rod) { bezel_rods(); back_rods(); }
 }
 
@@ -1438,6 +1465,7 @@ module all_envelopes(s = 0) {
   fpc_zone_env(s);
   sbox(ant_lo, ant_hi, s);
   strip_env(s);
+  btn_plug_env(s);
   magnets_env(s);
   panel_env(s);
   bezel_rods(s);
@@ -1699,6 +1727,13 @@ module design_checks() {
   assert(btn_y + cap_flange_d / 2 <= pocket_bot - fpc_relief_d, "cap flange reaches the flex relief");
   assert(sleeve_len >= seat_h, "sleeve shorter than the cap seat");
   assert(z_strip_floor >= recess_floor_min - eps, str("strip recess floor ", r2(z_strip_floor), " mm is too thin"));
+  // the button lead's inline plug lies under the panel and its folded flex, beside the adapter board
+  plug_lo = [btn_plug_pos[0] - btn_plug_size[0] / 2, btn_plug_pos[1] - btn_plug_size[1] / 2, z_in];
+  plug_hi = [btn_plug_pos[0] + btn_plug_size[0] / 2, btn_plug_pos[1] + btn_plug_size[1] / 2, z_in + btn_plug_size[2]];
+  adapter_lo = [fpc_adapter_x - fpc_adapter[0] / 2, panel_bot + fpc_fold_h - fpc_adapter[1] / 2, z_panel_back - fpc_t - fpc_adapter[2]];
+  adapter_hi = [fpc_adapter_x + fpc_adapter[0] / 2, panel_bot + fpc_fold_h + fpc_adapter[1] / 2, z_panel_back - fpc_t];
+  assert(plug_hi[2] + car_air_min <= z_panel_back - fpc_t, "button plug too tall for the space under the folded flex");
+  assert(box_dist(plug_lo, plug_hi, adapter_lo, adapter_hi) >= 2 + eps, "button plug within 2 mm of the adapter board");
   // caps: a preload must stay below the switch travel, a gap must stay small;
   // either way the flange seat (not the switch) holds the cap in place
   assert(cap_preload < sw_travel, "cap preload would keep the switch pressed");
@@ -1773,6 +1808,9 @@ module design_checks() {
            r2(z_strip_back), "-", r2(z_strip_front), ", switch body to ", r2(z_strip_front + sw_body_h), ", plunger to ",
            r2(z_plunger_top), ", gap ", -cap_preload, ", cap ", r2(z_cap_back), "-", r2(z_cap_face), ", sleeve ", r2(z_sleeve_end), "-", r2(z_lip),
            "; clicks after ", r2(cap_stroke), " mm with the face ", r2(cap_proud - cap_stroke), " mm proud"));
+  echo(str("BUTTON PLUG at ", btn_plug_pos, ", ", btn_plug_size[0], " x ", btn_plug_size[1], " x ", btn_plug_size[2], " mm on the back cover (",
+           r2(plug_lo[2]), "-", r2(plug_hi[2]), "): adapter board ", r2(box_dist(plug_lo, plug_hi, adapter_lo, adapter_hi)),
+           " mm, folded flex ", r2(z_panel_back - fpc_t - plug_hi[2]), " mm above"));
   echo(str("STACK magnets: skin 0-", mag_skin, ", magnet ", r2(z_mag[0]), "-", r2(z_mag[1]), ", steel ", r2(z_steel[0]), "-", r2(z_steel[1]),
            ", epoxy to ", r2(z_mag_epoxy), ", tube to ", r2(z_mag_boss), "; rubber pad -", pad[1], "-0"));
   echo(str("STACK USB slots: XIAO centre ", r2(z_usb[0]), " (slot ", r2(z_usb[0] - usb_slot[1] / 2), "-", r2(z_usb[0] + usb_slot[1] / 2),
