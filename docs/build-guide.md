@@ -230,7 +230,10 @@ firmware work together.
    Assistant. Press each button: NEXT and BACK change the screen, and
    **Last refresh** updates in Home Assistant.
 6. Plug a USB-C charger into the charger module's port: its LED turns red
-   while it charges.
+   while it charges. **If the LED stays dark with a USB-C-to-C charger**, the
+   module has no CC resistors and charges only from a USB-A charger with a
+   USB-A-to-C cable ([power.md](power.md#charging)). Find out now, before
+   the module is sealed inside the case.
 
 Before assembly, unplug the battery, the flat cable at the HAT and the
 button lead (J4). The antenna can stay plugged into the XIAO: it goes on the
