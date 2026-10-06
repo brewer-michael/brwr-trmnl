@@ -19,7 +19,7 @@ total, and a second one much less.
 | U1 | 1 | [Seeed Studio XIAO ESP32S3](https://www.seeedstudio.com/XIAO-ESP32S3-p-5627.html) (113991114) | 8 MB flash, 8 MB PSRAM, USB-C, U.FL antenna socket. Not the Sense version. Its bundled antenna is too tall for the case | $7.49 seen |
 | ANT1 | 1 | [Taoglas FXP831](https://www.digikey.com/en/products/detail/FXP831.07.0100C/931-1121-ND/2690271) (FXP831.07.0100C) | Peel-and-stick Wi-Fi antenna, 45 × 7 mm, 100 mm lead with a U.FL plug. It sticks to a fin on the back cover. Any 2.4 GHz FPC antenna up to 45 × 7 mm with a U.FL lead of at least 100 mm works | $5.14 seen |
 | U3 | 1 | [Adafruit MiniBoost 5V @ 1A](https://www.adafruit.com/product/4654) (4654) | TPS61023 booster with an enable pin that disconnects the output completely | $3.95 seen |
-| U4 | 1 | TP4056 USB-C charger module with protection | 1 A, DW01A + FS8205A, pads B+/B− and OUT+/OUT−. Search "TP4056 Type-C protection"; 10-packs ~$8–10. Prefer one that lists 5.1k CC resistors | $1.00 typical |
+| U4 | 1 | TP4056 USB-C charger module with protection | 1 A, DW01A + FS8205A, pads B+/B− and OUT+/OUT−. Search "TP4056 Type-C protection"; 10-packs ~$8–10. **Buy one that lists 5.1k CC resistors.** Without them, a USB-C charger with a C-to-C cable sends no power and the module only charges from a USB-A-to-C cable ([power.md](power.md#charging)) | $1.00 typical |
 | BT1 | 1 | LiPo 3.7 V 5000 mAh, 6 × 60 × 100 mm ("6060100") | With protection board and JST-PH 2.0 lead. **No thicker than 6 mm**, and **check the lead's polarity** | $16.00 typical |
 | SW1–SW3 | 3 | Tactile switch 12 × 12 × 4.3 mm, flat plunger | Omron B3F-4000 or any equivalent; the printed caps press them | $1.65 |
 | R1, R2 | 2 | 220 kΩ 1%, ¼ W | Battery voltage divider | $0.20 |
