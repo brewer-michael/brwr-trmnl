@@ -117,8 +117,16 @@ again, so a router outage doesn't drain the battery.
   also charges, slowly (100 mA, about two days from empty).
 - It keeps working while it charges.
 - **If a USB-C-to-C charger does nothing**, the charger module is missing the
-  resistors that USB-C chargers look for. Use a USB-A-to-C cable, or buy a
-  module that lists "5.1k CC resistors".
+  CC resistors (see the note above). Use a USB-A charger with a USB-A-to-C
+  cable, or swap in a module that lists "5.1k CC resistors".
+  > **USB-C chargers need a module with 5.1k CC resistors.** A USB-C charger
+  > sends no power until the device asks for it through two 5.1 kΩ resistors
+  > on the port's CC pins. Many cheap TP4056 USB-C modules leave them off. Those
+  > modules charge only from a **USB-A charger with a USB-A-to-C cable**: a
+  > USB-C-to-C charger does nothing, and the LED stays dark. Buy a module whose
+  > listing says "5.1k CC resistors". Test it as soon as it arrives: plug it into
+  > a USB-C-to-C charger, and if the LED doesn't light, either return it or plan
+  > to charge with a USB-A-to-C cable.
 
 ## When the battery runs out
 
